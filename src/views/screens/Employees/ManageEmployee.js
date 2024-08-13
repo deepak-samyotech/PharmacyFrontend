@@ -218,7 +218,8 @@ function ManageEmployee() {
 
 
     const response = await updateEmployeeData(formData, editedRowData.id);
-
+    
+    console.log("response", response);
     if (response) {
       setOpen(false);
       toast.success("Data Updated Successfully");

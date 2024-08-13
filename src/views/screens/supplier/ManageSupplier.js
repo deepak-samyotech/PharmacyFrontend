@@ -571,7 +571,7 @@ function ManageSupplier() {
                     <Grid item xs={6} md={10} lg={10}>
                       <h3 className="text-primary">Update Supplier</h3>
                     </Grid>
-                    <Grid item xs={6} md={2} lg={2}>
+                    <Grid item xs={6} md={2} lg={2} >
                       Wednesday 7th of February 2024 04:37:08 PM
                     </Grid>
                   </Grid>
