@@ -1,0 +1,20 @@
+.table-header {
+  background-color: #dcdcdc;
+  color: white;
+}
+
+.table-row:hover {
+  background-color: #f0f0f0;
+}
+
+.sortable-header .sort-icon {
+  visibility: hidden; /* Hide the sort icon by default */
+  transition: ease-in-out;
+  color: #9b9696;
+}
+
+.sortable-header:hover .sort-icon {
+  visibility: visible; /* Show the sort icon on hover */
+  transition: ease-in-out;
+  color: #9b9696;
+}

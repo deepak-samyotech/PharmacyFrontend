@@ -1,0 +1,547 @@
+
+import React, { useState } from 'react';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Grid from '@mui/material/Unstable_Grid2';
+import Button from '@mui/material/Button';
+import AddIcon from '@mui/icons-material/Add';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import Box from '@mui/material/Box';
+import Fab from '@mui/material/Fab';
+import PrintIcon from '@mui/icons-material/Print';
+import EditIcon from '@mui/icons-material/Edit';
+import Divider from '@mui/material/Divider';
+import CopyToClipboard from 'react-copy-to-clipboard';
+import CSVDownload from 'react-csv';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import { useNavigate } from 'react-router-dom';
+import { Stack, Link, Typography } from '@mui/material';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import Input from '@mui/material/Input';
+import TablePagination from '@mui/material/TablePagination';
+import IconButton from '@mui/material/IconButton';
+import Modal from '@mui/material/Modal';
+import TextField from '@mui/material/TextField';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import Checkbox from '@mui/material/Checkbox';
+import MenuItem from '@mui/material/MenuItem';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormLabel from '@mui/material/FormLabel';
+import './manageMedicine.css';
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: '70%',
+  // height: '90%',
+  bgcolor: 'background.paper',
+  // border: '2px solid #000',
+  boxShadow: 24
+  // p: 4,
+  // margin: '20px'
+};
+
+function ManageMedicine() {
+  //for age
+  const [age, setAge] = useState('');
+
+  const handleChange = (event) => {
+    setAge(event.target.value);
+  };
+  // number input id
+  const [trade, setTrade] = useState('');
+  const handleNumberChange1 = (event) => {
+    const inputValue = event.target.value.replace(/[^0-9]/g, '');
+    setTrade(inputValue);
+  };
+  const [boxSize, setBoxSize] = useState('');
+  const handleNumberChange2 = (event) => {
+    const inputValue = event.target.value.replace(/[^0-9]/g, '');
+    setBoxSize(inputValue);
+  };
+  const [mrp, setMrp] = useState('');
+  const handleNumberChange3 = (event) => {
+    const inputValue = event.target.value.replace(/[^0-9]/g, '');
+    setMrp(inputValue);
+  };
+  const [boxPrice, setBoxPrice] = useState('');
+  const handleNumberChange4 = (event) => {
+    const inputValue = event.target.value.replace(/[^0-9]/g, '');
+    setBoxPrice(inputValue);
+  };
+  const [quantity, setQuantity] = useState('');
+  const handleNumberChange5 = (event) => {
+    const inputValue = event.target.value.replace(/[^0-9]/g, '');
+    setQuantity(inputValue);
+  };
+
+  // image uploading id
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    console.log('Selected File:', file);
+    displayImage(file);
+  };
+  //display image
+  const displayImage = (file) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setSelectedImage(reader.result);
+    };
+    if (file) {
+      reader.readAsDataURL(file);
+    }
+  };
+  //checkbox
+  const [isChecked, setIsChecked] = useState(false);
+
+  const handleChangeCB = () => {
+    setIsChecked(true);
+  };
+
+  //search
+  const [searchTerm, setSearchTerm] = useState('');
+
+  //pagination
+
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
+  };
+
+  // navigation
+  const navigate = useNavigate();
+  const handleButtonClick = () => {
+    navigate('/medicine/add-medicine');
+  };
+
+  const data = [
+    {
+      id: 1,
+      medicineName: 'Item 1',
+      genericName: 'Description 1',
+      form: 5,
+      company: 10.99,
+      expDate: '12/2/2024',
+      barcode: 1234566,
+      mrp: 500,
+      imageUrl: 'https://example.com/image1.jpg'
+    },
+    {
+      id: 2,
+      medicineName: 'Item 2',
+      genericName: 'ds 1',
+      form: 3,
+      company: 144,
+      expDate: '1342/2024',
+      barcode: 234341234566,
+      mrp: 14131000,
+      imageUrl: 'https://example.com/image1224134.jpg'
+    }
+  ];
+
+  const [copied, setCopied] = useState(false);
+  const handlePrint = () => {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write('<html><head><title>Medicine Data</title></head><body>');
+
+    // Add table HTML to the new window
+    printWindow.document.write(document.querySelector('.printable-table').innerHTML);
+
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+  };
+
+  const handleExportCSV = () => {
+    // Define CSV headers
+    const headers = [
+      { label: 'Medicine Name', key: 'medicineName' },
+      { label: 'Generic Name', key: 'genericName' },
+      { label: 'Form', key: 'form' },
+      { label: 'Company', key: 'company' },
+      { label: 'Expire Date', key: 'expDate' },
+      { label: 'Barcode', key: 'barcode' },
+      { label: 'M.R.P.', key: 'mrp' },
+      { label: 'Image', key: 'imageUrl' }
+    ];
+
+    // Create CSV data
+    const csvData = [headers, ...data.map((item) => Object.values(item))];
+
+    // Create CSV file
+    const csvFile = new Blob([csvData.map((row) => row.join(',')).join('\n')], { type: 'text/csv' });
+    const csvUrl = URL.createObjectURL(csvFile);
+
+    // Trigger download
+    const link = document.createElement('a');
+    link.href = csvUrl;
+    link.setAttribute('download', 'medicine_data.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleExportExcel = () => {
+    // Create Excel workbook
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(data), 'Medicine Data');
+
+    // Create Excel file
+    const excelFile = XLSX.write(workbook, { bookType: 'xlsx', type: 'blob' });
+    const excelUrl = URL.createObjectURL(excelFile);
+
+    // Trigger download
+    const link = document.createElement('a');
+    link.href = excelUrl;
+    link.setAttribute('download', 'medicine_data.xlsx');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleExportPDF = () => {
+    const pdf = new jsPDF();
+    pdf.text('Medicine Data', 10, 10);
+    pdf.autoTable({
+      head: [['Medicine Name', 'Generic Name', 'Form', 'Company', 'Expire Date', 'Barcode', 'M.R.P.', 'Image']],
+      body: data.map((item) => Object.values(item))
+    });
+    pdf.save('medicine_data.pdf');
+  };
+  const linkStyles = {
+    color: '#2196f3',
+    textDecoration: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    cursor: 'pointer'
+  };
+  //models
+  const [open, setOpen] = React.useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  return (
+    <>
+      <div>
+        <Stack direction="row" spacing={2} style={{ marginBottom: '15px' }}>
+          <Button
+            onClick={handleButtonClick}
+            variant="contained"
+            startIcon={<AddIcon />}
+            style={{ boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)' }}
+          >
+            Add Medicine
+          </Button>
+        </Stack>
+        <Card style={{ backgroundColor: '#ffffff' }}>
+          <CardContent>
+            <div className="bg-light">
+              <Grid container spacing={2}>
+                <Grid xs={6} md={10} lg={10}>
+                  <h3> Manage Medicine</h3>
+                </Grid>
+              </Grid>
+              <Divider sx={{ borderColor: '#2196f3', marginBottom: '10px' }} />
+              <Stack direction="row" spacing={2} style={{ marginBottom: '10px' }}>
+                <CopyToClipboard text="Your data to copy" onCopy={() => setCopied(true)}>
+                  <Typography component={Link} style={linkStyles} onClick={() => {}}>
+                    <CloudDownloadIcon sx={{ marginRight: '4px' }} /> Copy
+                  </Typography>
+                </CopyToClipboard>
+
+                <Typography component={Link} style={linkStyles} onClick={handleExportCSV}>
+                  <InsertDriveFileIcon sx={{ marginRight: '4px' }} /> CSV
+                </Typography>
+
+                <Typography component={Link} style={linkStyles} onClick={handleExportExcel}>
+                  <InsertDriveFileIcon sx={{ marginRight: '4px' }} /> Excel
+                </Typography>
+
+                <Typography component={Link} style={linkStyles} onClick={handleExportPDF}>
+                  <PictureAsPdfIcon sx={{ marginRight: '4px' }} /> PDF
+                </Typography>
+
+                <Typography component={Link} style={linkStyles} onClick={handlePrint}>
+                  <PrintIcon sx={{ marginRight: '4px' }} /> Print
+                </Typography>
+
+                <Input
+                  placeholder="Search"
+                  style={{ marginLeft: 'auto', marginRight: '15px' }}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </Stack>
+
+              <div>
+                <div className="printable-table">
+                  <TableContainer component={Paper}>
+                    <Table>
+                      <TableHead>
+                        <TableRow style={{ backgroundColor: '#a5a5a5' }}>
+                          <TableCell style={{ color: 'white' }}>Medicine Name</TableCell>
+                          <TableCell style={{ color: 'white' }}>Generic Name</TableCell>
+                          <TableCell style={{ color: 'white' }}>Form</TableCell>
+                          <TableCell style={{ color: 'white' }}>Company</TableCell>
+                          <TableCell style={{ color: 'white' }}>Expire Date</TableCell>
+                          <TableCell style={{ color: 'white' }}>Barcode</TableCell>
+                          <TableCell style={{ color: 'white' }}>M.R.P.</TableCell>
+                          <TableCell style={{ color: 'white' }}>Image</TableCell>
+                          <TableCell style={{ color: 'white' }}>Action</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {data
+                          .filter((item) => Object.values(item).join(' ').toLowerCase().includes(searchTerm.toLowerCase()))
+                          .map((item) => (
+                            <TableRow key={item.id} className="table-row">
+                              <TableCell>{item.medicineName}</TableCell>
+                              <TableCell>{item.genericName}</TableCell>
+                              <TableCell>{item.form}</TableCell>
+                              <TableCell>{item.company}</TableCell>
+                              <TableCell>{item.expDate}</TableCell>
+                              <TableCell>{item.barcode}</TableCell>
+                              <TableCell>{item.mrp}</TableCell>
+                              <TableCell>
+                                <img src={item.imageUrl} alt={`Item ${item.id}`} style={{ maxWidth: '50px', maxHeight: '50px' }} />
+                              </TableCell>
+                              <TableCell>
+                                <Stack direction="row" spacing={1}>
+                                  <IconButton onClick={handleOpen} color="secondary" aria-label="add an alarm">
+                                    <EditIcon />
+                                  </IconButton>
+                                  <IconButton onClick={handlePrint} color="primary" aria-label="add to shopping cart">
+                                    <PrintIcon />
+                                  </IconButton>
+                                </Stack>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                  {/* <TableContainer component={Paper}>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow style={{ backgroundColor: '#DCDCDC' }}>
+                                                <TableCell>Medicine Name</TableCell>
+                                                <TableCell>Generic Name</TableCell>
+                                                <TableCell>Form</TableCell>
+                                                <TableCell>Company</TableCell>
+                                                <TableCell>Expire Date</TableCell>
+                                                <TableCell>Barcode</TableCell>
+                                                <TableCell>M.R.P.</TableCell>
+                                                <TableCell>Image</TableCell>
+                                                <TableCell>Action</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+
+                                            {data
+                                                .filter((item) =>
+                                                    Object.values(item)
+                                                        .join(' ')
+                                                        .toLowerCase()
+                                                        .includes(searchTerm.toLowerCase())
+                                                )
+                                                .map((item) => (
+
+                                                    <TableRow key={item.id}>
+                                                        <TableCell>{item.medicineName}</TableCell>
+                                                        <TableCell>{item.genericName}</TableCell>
+                                                        <TableCell>{item.form}</TableCell>
+                                                        <TableCell>{item.company}</TableCell>
+                                                        <TableCell>{item.expDate}</TableCell>
+                                                        <TableCell>{item.barcode}</TableCell>
+                                                        <TableCell>{item.mrp}</TableCell>
+                                                        <TableCell>
+                                                            <img src={item.imageUrl} alt={`Item ${item.id}`} style={{ maxWidth: '50px', maxHeight: '50px' }} />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Stack direction="row" spacing={1}>
+                                                                <IconButton color="secondary" aria-label="add an alarm">
+                                                                    <EditIcon />
+                                                                </IconButton>
+                                                                <IconButton color="primary" aria-label="add to shopping cart">
+                                                                    <PrintIcon />
+                                                                </IconButton>
+                                                            </Stack>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer> */}
+                </div>
+                <TablePagination
+                  rowsPerPageOptions={[10, 25, 100]}
+                  component="div"
+                  count={data.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      <Modal open={open} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
+        <Box sx={style}>
+          <Typography id="modal-modal-description">
+            <Card style={{ backgroundColor: '#ffffff' }}>
+              <CardContent>
+                <div className="bg-light">
+                  <Grid container spacing={2}>
+                    <Grid item xs={6} md={10} lg={10}>
+                      <h3 className="text-primary">Update Medicine</h3>
+                    </Grid>
+                    <Grid item xs={6} md={2} lg={2}>
+                      Wednesday 7th of February 2024 04:37:08 PM
+                    </Grid>
+                  </Grid>
+
+                  <hr />
+                  <div style={{ marginBottom: '20px' }}>
+                    <Grid container spacing={2}>
+                      {/* First Column */}
+                      <Grid item xs={12} md={6}>
+                        <Box component="form" sx={{ '& .MuiTextField-root': { m: 1, width: '100%' } }} noValidate autoComplete="off">
+                          <TextField id="outlined-textarea" label="Company Name" placeholder="Supplier Name" multiline />
+                          <TextField id="outlined-textarea" label="Generic Name" placeholder="Generic Name" multiline />
+                          <TextField id="outlined-textarea" label="Strength" placeholder="Strength" multiline />
+                          <TextField label="Trade Price" type="number" value={trade} onChange={handleNumberChange1} fullWidth />
+                          <TextField label="Box Size" type="number" value={boxSize} onChange={handleNumberChange2} fullWidth />
+                          <TextField id="expiry-date" label="Expiry Date" type="date" InputLabelProps={{ shrink: true }} />
+                          <TextField id="outlined-textarea" label="Side Effect" placeholder="Side Effect" multiline />
+                        </Box>
+                      </Grid>
+
+                      {/* Second Column */}
+                      <Grid item xs={12} md={6}>
+                        <Box component="form" sx={{ '& .MuiTextField-root': { m: 1, width: '100%' } }} noValidate autoComplete="off">
+                          <TextField id="outlined-textarea" label="Product Name" placeholder="Product Name" multiline />
+                          <TextField id="outlined-textarea" label="Barcode Number" placeholder="Barcode Number" multiline />
+                          <TextField label="M.R.P." type="number" value={mrp} onChange={handleNumberChange3} fullWidth />
+                          <TextField label="Box Pirce" type="number" value={boxPrice} onChange={handleNumberChange4} fullWidth />
+                          <TextField label="Short Quantity" type="number" value={quantity} onChange={handleNumberChange5} fullWidth />
+                          <Grid item>
+                            <FormControl fullWidth>
+                              <InputLabel id="demo-simple-select-label">Form</InputLabel>
+                              <Select
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                value={age}
+                                label="Age"
+                                onChange={handleChange}
+                              >
+                                <MenuItem value={'tablet'}>Tablet</MenuItem>
+                                <MenuItem value={'capsule'}>Capsule</MenuItem>
+                                <MenuItem value={'injection'}>Injection</MenuItem>
+                                <MenuItem value={'eyeDrop'}>Eye Drop</MenuItem>
+                                <MenuItem value={'suspension'}>Suspension</MenuItem>
+                                <MenuItem value={'cream'}>Cream</MenuItem>
+                                <MenuItem value={'saline'}>Saline</MenuItem>
+                                <MenuItem value={'inhaler'}>Inhaler</MenuItem>
+                                <MenuItem value={'power'}>Power</MenuItem>
+                                <MenuItem value={'spray'}>Spray</MenuItem>
+                                <MenuItem value={'paediatricDrop'}>Paediatric Drop</MenuItem>
+                                <MenuItem value={'nebuliserSolution'}>Nebuliser Solution</MenuItem>
+                                <MenuItem value={'powerForSuspension'}>Power for Suspension</MenuItem>
+                                <MenuItem value={'nasalDrop'}>Nasal Drops</MenuItem>
+                                <MenuItem value={'eyeOintment'}>Eye Ointment</MenuItem>
+                              </Select>
+                            </FormControl>
+                          </Grid>
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <TextField
+                              type="file"
+                              label="Upload Image"
+                              onChange={handleFileChange}
+                              InputLabelProps={{
+                                shrink: true
+                              }}
+                              inputProps={{
+                                accept: 'image/*'
+                              }}
+                            />
+                            {selectedImage && (
+                              <div>
+                                <img src={selectedImage} alt="Selected" style={{ maxWidth: '100%', maxHeight: '60px' }} />
+                              </div>
+                            )}
+                          </div>
+                        </Box>
+                      </Grid>
+                    </Grid>
+                    <Grid container spacing={2}>
+                      {/* First Column */}
+                      <Grid item xs={12} md={6}>
+                        <FormControlLabel
+                          className=""
+                          control={
+                            <Checkbox
+                              icon={<span style={{ width: '16px', height: '16px', border: '2px solid #000', borderRadius: '3px' }} />}
+                              checkedIcon={
+                                <span
+                                  style={{ width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                  ✓
+                                </span>
+                              }
+                              checked={isChecked}
+                              onChange={handleChangeCB}
+                              disabled={isChecked}
+                              name="addToFavourite"
+                            />
+                          }
+                          label="Add to Favourite"
+                        />
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <FormControl component="idset">
+                          <FormLabel component="legend">Discount</FormLabel>
+                          <RadioGroup row aria-label="discount" name="discount" defaultValue="yes">
+                            <FormControlLabel value="yes" control={<Radio />} label="Yes" />
+                            <FormControlLabel value="no" control={<Radio />} label="No" />
+                          </RadioGroup>
+                        </FormControl>
+                      </Grid>
+                    </Grid>
+                  </div>
+                  {/* <hr /> */}
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <Stack spacing={2} direction="row">
+                      <Button variant="contained">Submit</Button>
+                      <Button onClick={handleClose} variant="outlined">
+                        Cancel
+                      </Button>
+                    </Stack>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Typography>
+        </Box>
+      </Modal>
+    </>
+  );
+}
+
+export default ManageMedicine;

@@ -1,0 +1,23 @@
+.css-h4y409-MuiList-root {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+}
+.css-p64g7a-MuiList-root {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  padding-top: 0;
+  padding-bottom: 0px;
+}
+
+
+@media (min-width: 900px){
+  .css-u1tokn-MuiDrawer-docked .MuiDrawer-paper {
+      top: 80px !important;
+  }
+  }
