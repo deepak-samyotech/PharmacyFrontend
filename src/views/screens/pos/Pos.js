@@ -50,6 +50,7 @@ import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { toast } from "react-toastify";
+import context from "react-bootstrap/esm/AccordionContext";
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -100,7 +101,7 @@ const Pos = () => {
         //3.) top sale
         // Sort data based on sale count
         transformedData.sort((a, b) => b.saleCount - a.saleCount);
-        
+
         // Select top 10 medicines based on sale count
         const top10Medicines = transformedData.slice(0, 10);
 
@@ -383,6 +384,7 @@ const Pos = () => {
   const [open, setOpen] = useState(false);
   const [posId, setPosId] = useState("");
   const [posValue, setPosValue] = useState("");
+  const [posConfigData, setPosConfigData] = useState([]);
 
   const style = {
     position: "absolute",
@@ -394,13 +396,18 @@ const Pos = () => {
     boxShadow: 24,
   };
 
-  const handleOpen = async () => {
+  const fetchPosData = async () => {
+    const response2 = await axios.get("http://localhost:8080/pos");
+
+    await setPosConfigData(response2.data.filteredData);
+  }
+
+  const fetchPosConfiguredData = async () => {
     try {
-      setOpen(true);
-      
+
       const response = await axios.get("http://localhost:8080/medicine");
 
-      console.log("res -> ", response);
+      fetchPosData();
 
       if (!(response.data.data.length > 0)) {
         toast.warning("There is no Product");
@@ -417,15 +424,18 @@ const Pos = () => {
         toast.warning("All product values are configured.");
       }
 
-      await setPosData(filteredData);
-
-      console.log("posData -> ", posData);
+      setPosData(filteredData);
 
     } catch (error) {
       console.log(error);
       toast.error("Not able to open modal");
     }
+  }
 
+  const handleOpen = async () => {
+
+    setOpen(true);
+    fetchPosConfiguredData();
   }
 
   const handleSubmitPos = () => {
@@ -442,7 +452,98 @@ const Pos = () => {
       })
       .catch((error) => {
         console.error("Error:", error);
+        const errMessage = error.response.data.error;
+        toast.error(errMessage);
       });
+  }
+
+  const [newValue, setNewValue] = useState("");
+  const [open1, setOpen1] = useState(false);
+  const [editedRowData, setEditedRowData] = useState(null);
+
+
+  const handleClose1 = () => {
+    setOpen1(false);
+    newValue = "";
+  }
+
+  const handleOpen1 = (row) => {
+    console.log("Row = ", row);
+    setEditedRowData(row);
+    setOpen1(true);
+
+    setNewValue(row.value)
+  }
+
+  const handleEditSubmit = () => {
+    axios
+      .put(`http://localhost:8080/pos/${editedRowData.id}`, { newValue: newValue })
+      .then((response) => {
+        if (response.status === 200) {
+          setOpen1(false);
+          setEditedRowData(null);
+          setNewValue("");
+          fetchPosData();
+          toast.success("Value updated Successfully");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        const errMessage = error.response.data.error;
+        toast.error(errMessage);
+      });
+  }
+
+
+  const handleDeleteClick = (id) => {
+    axios
+      .delete(`http://localhost:8080/pos/${id}`)
+      .then((response) => {
+        if (response.status === 200) {
+          fetchPosData();
+          fetchPosConfiguredData();
+          toast.warning("Data deleted Successfully");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        const errMessage = error.response.data.error;
+        toast.error(errMessage);
+      });
+  }
+
+  // ---------------Add product-------------------------------
+  const [customerAndInvoiceDetails, setCustomerAndInvoiceDetails] = useState([
+    {
+      customer_id: '',
+      customer_name: '',
+      contact: '',
+      customer_type: '',
+      create_date: '',
+      total_balance: '',
+      total_paid: '',
+      total_due: '',
+      product_name: '',
+      quantity: '',
+      medicine_mrp: ''
+    }
+  ])
+
+  const handleAddProduct = () => {
+    customerAndInvoiceDetails.push(
+      {
+        customer_id: customer?.c_id,
+        customer_name: customer?.c_name,
+        contact: searchTerms,
+        customer_type: customerType,
+        product_name: medicines?.product_name,
+        medicine_mrp: medicines?.mrp,
+        quantity:quantity,
+        total_balance: '',
+        total_paid: paid,
+        total_due: calculateDue()
+      }
+    )
   }
 
   return (
@@ -607,8 +708,8 @@ const Pos = () => {
                 {/* Product ID TextField */}
                 <Grid item xs={12} md={2}>
                   <TextField
-                    label="Product ID"
-                    placeholder="Enter Product ID"
+                    label="POS Value"
+                    placeholder="Enter POS Value"
                     fullWidth
                     size="small"
                     value={searchTerm}
@@ -724,9 +825,21 @@ const Pos = () => {
                         }}
                       />
                     </Grid>
+
                   </>
+
                 ))}
               </Grid>
+              <Button
+                variant="contained"
+                color="primary"
+                // onClick={handleAddProduct}
+                onClick={handleAddToTable}
+                style={{ margin: "5px" }}
+              >
+                Add Product
+              </Button>
+
               <Grid container spacing={4} sx={{ marginBottom: "20px" }}>
                 {/* First Table */}
                 <Grid item xs={12} md={6}>
@@ -974,6 +1087,47 @@ const Pos = () => {
                       </Grid>
                     </Grid>
                     <hr />
+                    <TableContainer component={Paper}>
+                      <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>Configured Product Name</TableCell>
+                            <TableCell align="right">Value</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {posConfigData.map((row) => (
+                            <TableRow
+                              key={row.id}
+                              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                            >
+                              {/* <TableCell align="right">{row.id}</TableCell> */}
+                              <TableCell component="th" scope="row">
+                                {row.productName}
+                              </TableCell>
+                              <TableCell align="right">{row.value}</TableCell>
+                              <TableCell align="right">
+                                <Button
+                                  variant="contained"
+                                  color="primary"
+                                  onClick={() => handleOpen1(row)}
+                                  style={{ marginRight: "5px" }}
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  variant="contained"
+                                  color="warning"
+                                  onClick={() => handleDeleteClick(row.id)}
+                                >
+                                  Delete
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
                     <div style={{ marginBottom: "20px" }}>
                       <Grid container spacing={2}>
                         {/* First Column */}
@@ -1050,9 +1204,81 @@ const Pos = () => {
                           color="primary"
                           onClick={handleSubmitPos}
                         >
-                          Save Changes
+                          Save
                         </Button>
                         <Button onClick={() => setOpen(false)} variant="outlined">
+                          Cancel
+                        </Button>
+                      </Stack>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Typography>
+          </Box>
+        </Modal>
+
+        <Modal
+          open={open1}
+          onClose={handleClose1}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={style}>
+            <Typography id="modal-modal-description">
+              <Card style={{ backgroundColor: "#ffffff" }}>
+                <CardContent>
+                  <div className="bg-light">
+                    {/* <Grid container spacing={2}>
+                    <Grid item xs={6} md={10} lg={10}>
+                      <h3 className="text-primary">Update Supplier</h3>
+                    </Grid>
+                    <Grid item xs={6} md={2} lg={2} >
+                      Wednesday 7th of February 2024 04:37:08 PM
+                    </Grid>
+                  </Grid>
+                  <hr /> */}
+                    <div style={{ marginBottom: "20px" }}>
+                      <Grid container spacing={2}>
+                        {/* First Column */}
+                        <Grid item xs={12} md={6}>
+                          <Box
+                            component="form"
+                            sx={{
+                              "& .MuiTextField-root": { m: 1, width: "100%" },
+                            }}
+                            noValidate
+                            autoComplete="off"
+                          >
+                            <TextField
+                              multiline
+                              fullWidth
+                              value={newValue}
+                              label="New Value"
+                              onChange={(e) => setNewValue(e.target.value)}
+                              variant="outlined"
+                            />
+                          </Box>
+                        </Grid>
+                      </Grid>
+                    </div>
+                    {/* <hr /> */}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Stack spacing={2} direction="row">
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={handleEditSubmit}
+                        >
+                          Save Changes
+                        </Button>
+                        <Button onClick={handleClose1} variant="outlined">
                           Cancel
                         </Button>
                       </Stack>
