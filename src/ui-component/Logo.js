@@ -37,11 +37,11 @@ const Logo = () => {
   return (
     
      <>
-      {/* {data.map((item, index) => (
+      {data.map((item, index) => (
         <h1 key={index} className="">
             <img alt="logo" src={item.image} style={{width:'50px', height:"50px"}}/>
         </h1>
-      ))} */}
+      ))}
     </>
     //  <h1>hello bhiya</h1>
     

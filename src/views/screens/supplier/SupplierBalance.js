@@ -1,3 +1,4 @@
+/*eslint-disable*/
 import React, { useState, useEffect } from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -35,6 +36,7 @@ import TextField from "@mui/material/TextField";
 import axios from "axios";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import { toast } from "react-toastify";
 
 const style = {
   position: "absolute",
@@ -328,6 +330,7 @@ function SupplierBalance() {
         )
       );
       handleClose();
+      toast.success("Data updated Successfully.");
     } catch (error) {
       console.error("Error updating supplier:", error);
     }
@@ -337,6 +340,7 @@ function SupplierBalance() {
     try {
       await axios.delete(`http://localhost:8080/supplier_ledger/${id}`);
       setData((prevData) => prevData.filter((row) => row.id !== id));
+      toast.warning("Data deleted Successfully!");
     } catch (error) {
       console.error("Error deleting supplier:", error);
     }
@@ -415,6 +419,7 @@ function SupplierBalance() {
                                   variant="contained"
                                   color="primary"
                                   onClick={() => handleEditSupplier(row)}
+                                  style={{ marginRight: "5px" }}
                                 >
                                   Edit
                                 </Button>
@@ -460,81 +465,147 @@ function SupplierBalance() {
         </CardContent>
       </Card>
 
-      <Modal open={open} onClose={handleClose}>
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
         <Box sx={style}>
-          <Typography variant="h6" component="h2">
-            Edit Supplier
+          <Typography id="modal-modal-description">
+            <Card style={{ backgroundColor: "#ffffff" }}>
+              <CardContent>
+                <div className="bg-light">
+                  <Grid container spacing={2}>
+                    <Grid item xs={6} md={10} lg={10}>
+                      <h3 className="text-primary">Edit Supplier</h3>
+                    </Grid>
+                    <Grid item xs={6} md={2} lg={2} >
+                      Wednesday 7th of February 2024 04:37:08 PM
+                    </Grid>
+                  </Grid>
+                  <hr />
+                  <div style={{ marginBottom: "20px" }}>
+                    <Grid container spacing={2}>
+                      {/* First Column */}
+                      <Grid item xs={12} md={6}>
+                        <Box
+                          component="form"
+                          sx={{
+                            "& .MuiTextField-root": { m: 1, width: "100%" },
+                          }}
+                          noValidate
+                          autoComplete="off"
+                        >
+                          <TextField
+                            label="Supplier ID"
+                            value={editedRowData?.supplierId}
+                            onChange={(e) =>
+                              setEditedRowData({
+                                ...editedRowData,
+                                supplierId: e.target.value,
+                              })
+                            }
+                            fullWidth
+                            margin="normal"
+                          />
+
+                          <TextField
+                            label="Supplier Name"
+                            value={editedRowData?.supplierName}
+                            onChange={(e) =>
+                              setEditedRowData({
+                                ...editedRowData,
+                                supplierName: e.target.value,
+                              })
+                            }
+                            fullWidth
+                            margin="normal"
+                          />
+
+                          <TextField
+                            label="Total Amount"
+                            value={editedRowData?.totalAmount}
+                            onChange={(e) =>
+                              setEditedRowData({
+                                ...editedRowData,
+                                totalAmount: e.target.value,
+                              })
+                            }
+                            fullWidth
+                            margin="normal"
+                          />
+
+                          
+                        </Box>
+                      </Grid>
+                      {/* Second Column */}
+                      <Grid item xs={12} md={6}>
+                        <Box
+                          component="form"
+                          sx={{
+                            "& .MuiTextField-root": { m: 1, width: "100%" },
+                          }}
+                          noValidate
+                          autoComplete="off"
+                        >
+                          <TextField
+                            label="Paid Amount"
+                            value={editedRowData?.paidAmount}
+                            onChange={(e) =>
+                              setEditedRowData({
+                                ...editedRowData,
+                                paidAmount: e.target.value,
+                              })
+                            }
+                            fullWidth
+                            margin="normal"
+                          />
+
+                          <TextField
+                            label="Due Amount"
+                            value={editedRowData?.dueAmount}
+                            onChange={(e) =>
+                              setEditedRowData({
+                                ...editedRowData,
+                                dueAmount: e.target.value,
+                              })
+                            }
+                            fullWidth
+                            margin="normal"
+                          />
+                        </Box>
+                      </Grid>
+                    </Grid>
+                  </div>
+                  {/* <hr /> */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Stack spacing={2} direction="row">
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleSaveEdit}
+                      >
+                        Save Changes
+                      </Button>
+                      <Button onClick={handleClose} variant="outlined">
+                        Cancel
+                      </Button>
+                    </Stack>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </Typography>
-          <TextField
-            label="Supplier ID"
-            value={editedRowData?.supplierId}
-            onChange={(e) =>
-              setEditedRowData({
-                ...editedRowData,
-                supplierId: e.target.value,
-              })
-            }
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Supplier Name"
-            value={editedRowData?.supplierName}
-            onChange={(e) =>
-              setEditedRowData({
-                ...editedRowData,
-                supplierName: e.target.value,
-              })
-            }
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Total Amount"
-            value={editedRowData?.totalAmount}
-            onChange={(e) =>
-              setEditedRowData({
-                ...editedRowData,
-                totalAmount: e.target.value,
-              })
-            }
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Paid Amount"
-            value={editedRowData?.paidAmount}
-            onChange={(e) =>
-              setEditedRowData({
-                ...editedRowData,
-                paidAmount: e.target.value,
-              })
-            }
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            label="Due Amount"
-            value={editedRowData?.dueAmount}
-            onChange={(e) =>
-              setEditedRowData({
-                ...editedRowData,
-                dueAmount: e.target.value,
-              })
-            }
-            fullWidth
-            margin="normal"
-          />
-          <Stack direction="row" spacing={2}>
-            <Button variant="contained" onClick={handleSaveEdit}>
-              Save
-            </Button>
-            <Button variant="contained" onClick={handleClose}>
-              Cancel
-            </Button>
-          </Stack>
         </Box>
       </Modal>
+
     </div>
   );
 }

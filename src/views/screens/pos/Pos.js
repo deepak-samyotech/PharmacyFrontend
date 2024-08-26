@@ -18,6 +18,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  IconButton,
 } from "@mui/material";
 import Input from "@mui/material/Input";
 import Grid from "@mui/material/Unstable_Grid2";
@@ -35,6 +36,7 @@ import LocalMallIcon from "@mui/icons-material/LocalMall";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import LocalPharmacyIcon from "@mui/icons-material/LocalPharmacy";
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
 import axios from "axios";
 import DisabledByDefaultIcon from "@mui/icons-material/DisabledByDefault";
 import "./pos.css";
@@ -68,19 +70,37 @@ const Pos = () => {
   const [customer, setCustomer] = useState([]);
   const [cus_contact, setCus_contact] = useState("");
   const [product_id, setProduct_id] = useState("");
-  const [quantity, setQuantity] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const [tableData, setTableData] = useState([]);
-  const [discount, setDiscount] = useState("");
+  const [discount, setDiscount] = useState(0);
   const [products, setProducts] = useState("");
-  const [customerType, setCustomerType] = useState("");
+  const [customerType, setCustomerType] = useState("Walk_in");
   // post api for customer ledger
+  const [paybleAmmount, setPaybleAmmount] = useState("");
   const [paid, setPaid] = useState("");
   const [totalbalance, setTotalbalance] = useState("");
   const [totalDue, setTotalDue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [updatedQuantity, setUpdatedQuantity] = useState([]);
 
   // const [customerId, setCustomerId] = useState("");
   //post for invoice
   const [data3, setData3] = useState([]);
+
+  //pos 
+  const [posValue, setPosValue] = useState("");
+
+
+
+  const [newValue, setNewValue] = useState("");
+  const [newQuantity, setNewQuantity] = useState("1");
+  const [open1, setOpen1] = useState(false);
+  const [open2, setOpen2] = useState(false);
+  const [editedRowData, setEditedRowData] = useState(null);
+  const [editIndex, setEditIndex] = useState(null);
+
+
+  console.log("newquantity==========================>>>>>>>", newQuantity)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -114,12 +134,15 @@ const Pos = () => {
     const searchMedicines = async () => {
       try {
         const medicineResponse = await axios.get(
-          `http://localhost:8080/medicine/search?product_id=${product_id}`,
+          `http://localhost:8080/medicine/search?product_id=${posValue}`,
           {
             params: { query: searchTerm },
           }
         );
         setMedicines(medicineResponse.data.medicines);
+
+        //----
+        setProduct_id(medicineResponse.data.medicines.product_id);
       } catch (error) {
         console.error("Error searching for medicines:", error);
       }
@@ -135,15 +158,19 @@ const Pos = () => {
         );
         const customerData = customerResponse.data.customer;
         const customerType =
-          customerData.length > 0 ? customerData[0].c_type : "";
+          customerData.length > 0 ? customerData[0].c_type : "Walk_in";
+
         setCustomer(customerData);
         setCustomerType(customerType);
+        const disc = customerData.length > 0 ? customerData[0].regular_discount : 0;
+        setDiscount(disc);
+        console.log("discount : ", disc);
       } catch (error) {
         console.error("Error searching for customer:", error);
       }
     };
 
-    if (searchTerm && product_id) {
+    if (searchTerm && posValue) {
       setTimeout(() => {
         searchMedicines();
       }, 1000);
@@ -160,13 +187,14 @@ const Pos = () => {
     }
 
     fetchData();
-  }, [searchTerm, product_id, searchTerms, cus_contact]);
+  }, [searchTerm, posValue, searchTerms, cus_contact]);
 
-  console.error("setMedicines:", medicines);
+  // console.error("setMedicines:", medicines);
 
   const handleChange = (event) => {
+    setQuantity(1);
     setSearchTerm(event.target.value);
-    setProduct_id(event.target.value);
+    setPosValue(event.target.value);
   };
   const handleChange1 = (event) => {
     setSearchTerms(event.target.value);
@@ -174,8 +202,15 @@ const Pos = () => {
   };
 
   const handleQuantityChange = (event) => {
-    setQuantity(event.target.value);
+    let val = parseInt(event.target.value, 10);
+
+    if (val < 1) val = 1;
+    if (val > 100) val = 100;
+
+    setQuantity(val);
   };
+
+
 
   const medicineList = tableData.map((item) => item.productName);
   const qty = tableData.map((item) => item.quantity);
@@ -188,27 +223,79 @@ const Pos = () => {
 
 
   const handleAddToTable = () => {
-    const selectedMedicine = medicines.find(
-      (medicine) => medicine.product_id === product_id
-    );
-    if (selectedMedicine) {
-      const total = parseFloat(selectedMedicine.mrp) * parseFloat(quantity);
+    // const selectedMedicine = medicines.find(
+    //   (medicine) => medicine.product_id === product_id
+    // );
+    if (quantity <= 0 || medicines.length <= 0) {
+      toast.error("Empty Quantity or Products");
+      return;
+    }
+
+    if (quantity > medicines[0].instock) {
+      toast.error("Insufficient Stock");
+      return;
+    }
+
+    const isPresent = tableData.some((data) => data.p_id === medicines[0]._id);
+    if (isPresent) {
+      toast.warning("This Product is already added");
+      return;
+    }
+
+    if (medicines) {
+      console.log("I am here");
+      const total = parseFloat(medicines[0].mrp) * parseFloat(quantity);
       const newData = {
-        productName: selectedMedicine.product_name,
+        p_id: medicines[0]._id,
+        productName: medicines[0].product_name,
         quantity: quantity,
         total: total.toFixed(2),
-        genericName: selectedMedicine.generic_name, // Add generic name to newData
-        medMrp: selectedMedicine.mrp, // Add MRP to newData
-        discount: selectedMedicine.w_discount, // Add discount to newData
+        genericName: medicines[0].generic_name, // Add generic name to newData
+        medMrp: medicines[0].mrp, // Add MRP to newData
+        discount: medicines[0].w_discount, // Add discount to newData
+        inStockQuantity: medicines[0].instock
       };
+
+      console.log("New Table data : ", newData);
+
       setTableData([...tableData, newData]);
+
+      const productNewQuantityObj = {
+        _id: newData.p_id,
+        ProductNewQuantity: medicines[0].instock - quantity
+      };
+
+      setUpdatedQuantity(prevData => [...prevData, productNewQuantityObj]);
+
+      setPosValue("");
+      setQuantity(1);
+      setSearchTerm("");
     }
   };
 
   // post api for customer ledger & invoice
-
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    setIsLoading(true); // Disable the button
+
+    if (tableData.length <= 0) {
+      toast.error("At least one product is needed to generate an invoice");
+      setIsLoading(false); // Re-enable the button
+      return;
+    }
+
+    if (!searchTerms) {
+      toast.error("Customer Phone needed");
+      setIsLoading(false); // Re-enable the button
+      return;
+    }
+
+    if (!paid) {
+      toast.error("There need to be some amount paid");
+      setIsLoading(false);
+      return;
+    }
 
     // Construct formDataCustomerLedger
     const formDataCustomerLedger = new FormData();
@@ -233,9 +320,9 @@ const Pos = () => {
       medicine: item.productName,
       qty: item.quantity,
       product_total: item.total,
-      genericName: item.genericName, // Include generic name
-      medMrp: item.medMrp, // Include MRP
-      discount: item.discount, // Include discount
+      genericName: item.genericName,
+      medMrp: item.medMrp,
+      discount: item.discount,
     }));
 
     // Append medicineData array to formDataManageInvoice
@@ -249,6 +336,7 @@ const Pos = () => {
     formDataManageInvoice.append("total_paid", paid);
     formDataManageInvoice.append("total_due", calculateDue());
 
+    // Make the first API call
     axios
       .post(`http://localhost:8080/Customer_ledger`, formDataCustomerLedger, {
         headers: {
@@ -256,35 +344,83 @@ const Pos = () => {
         },
       })
       .then((response) => {
-        if (response.status === 200) {
-          Swal.fire({
-            title: "Data Save Successfully !",
-            text: "You clicked the button!",
-            icon: "success",
-          });
-        }
+        // Handle success for Customer_ledger
+        console.log("Customer ledger saved successfully", response);
       })
       .catch((error) => {
         console.error("Error:", error);
         Swal.fire({
-          title: "Error !",
-          text: "You clicked the button!",
+          title: "Error!",
+          text: "Failed to save customer ledger.",
           icon: "error",
         });
-      });
+      })
+      .finally(() => {
+        // Make the second API call inside finally block of first one to chain the execution
+        axios
+          .post(`http://localhost:8080/manage_invoice`, formDataManageInvoice, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          })
+          .then((response) => {
+            if (response.status === 200) {
+              // Swal.fire({
+              //   title: "Data Saved Successfully!",
+              //   text: "Invoice generated successfully.",
+              //   icon: "success",
+              // });
+              setTableData([]); // Clear table data after successful save
+              setSearchTerms("");
+              setPaid("");
+              setCustomerType("Walk_in");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            Swal.fire({
+              title: "Error!",
+              text: "Failed to save invoice.",
+              icon: "error",
+            });
+          })
+          .finally(() => {
+            // setIsLoading(false); // Re-enable the button after all API calls
 
-    axios
-      .post(`http://localhost:8080/manage_invoice`, formDataManageInvoice, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((response) => {
-      })
-      .catch((error) => {
-        console.error("Error:", error);
+            console.log("Update quantity array : - ", updatedQuantity);
+
+            // Make the third API call inside finally block of second one to chain the execution
+            axios
+              .put(`http://localhost:8080/medicine/updateQuantity`, updatedQuantity, {
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              })
+              .then((response) => {
+                if (response.status === 200) {
+                  Swal.fire({
+                    title: "Data Saved Successfully!",
+                    text: "Invoice generated successfully.",
+                    icon: "success",
+                  });
+                  setUpdatedQuantity([]);
+                }
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+                Swal.fire({
+                  title: "Error!",
+                  text: "Failed to update new Quantity.",
+                  icon: "error",
+                });
+              })
+              .finally(() => {
+                setIsLoading(false); // Re-enable the button after all API calls
+              });
+          });
       });
   };
+
 
   // Function to calculate the total amount
   const calculateTotal = () => {
@@ -301,8 +437,10 @@ const Pos = () => {
   // Function to calculate the payable amount
   const calculatePayable = () => {
     const totalAmount = calculateTotal();
-    if (totalAmount && customer.length > 0) {
-      const regularDiscount = parseFloat(customer[0].regular_discount || 0);
+    if (totalAmount) {
+      // const regularDiscount = parseFloat(customer[0].regular_discount || discount);
+      const regularDiscount = discount;
+      console.log(":Discount :: ", regularDiscount);
       const discountedAmount =
         totalAmount - (totalAmount * regularDiscount) / 100;
       return discountedAmount.toFixed(2);
@@ -355,9 +493,15 @@ const Pos = () => {
 
   // Handle removing a product from the table
   const handleRemoveProduct = (index) => {
+    console.log("TableData : ", tableData);
     const updatedTableData = [...tableData];
     updatedTableData.splice(index, 1);
     setTableData(updatedTableData);
+
+    // delete product new Qunatity also
+    const newQuantityData = [...updatedQuantity];
+    newQuantityData.splice(index, 1);
+    setUpdatedQuantity[newQuantityData];
   };
 
   //checkbox
@@ -383,7 +527,7 @@ const Pos = () => {
   const [posData, setPosData] = useState([]);
   const [open, setOpen] = useState(false);
   const [posId, setPosId] = useState("");
-  const [posValue, setPosValue] = useState("");
+
   const [posConfigData, setPosConfigData] = useState([]);
 
   const style = {
@@ -410,7 +554,7 @@ const Pos = () => {
       fetchPosData();
 
       if (!(response.data.data.length > 0)) {
-        toast.warning("There is no Product");
+        toast.warning("There is no Product to Configure");
         setOpen(false);
         return;
       }
@@ -419,10 +563,10 @@ const Pos = () => {
 
       console.log("filterdata -> ", filteredData);
 
-      if (!(filteredData.length > 0)) {
-        setOpen(false);
-        toast.warning("All product values are configured.");
-      }
+      // if (!(filteredData.length > 0)) {
+      //   setOpen(false);
+      //   toast.warning("All product values are configured.");
+      // }
 
       setPosData(filteredData);
 
@@ -457,14 +601,16 @@ const Pos = () => {
       });
   }
 
-  const [newValue, setNewValue] = useState("");
-  const [open1, setOpen1] = useState(false);
-  const [editedRowData, setEditedRowData] = useState(null);
-
 
   const handleClose1 = () => {
     setOpen1(false);
     newValue = "";
+  }
+
+  const handleClose2 = () => {
+    setOpen2(false);
+
+
   }
 
   const handleOpen1 = (row) => {
@@ -473,6 +619,12 @@ const Pos = () => {
     setOpen1(true);
 
     setNewValue(row.value)
+  }
+
+  const handleOpen2 = (index) => {
+    setOpen2(true);
+    setEditIndex(index);
+
   }
 
   const handleEditSubmit = () => {
@@ -492,6 +644,38 @@ const Pos = () => {
         const errMessage = error.response.data.error;
         toast.error(errMessage);
       });
+  }
+
+  const handleEdit2Submit = () => {
+    const updatedTableData = [...tableData];
+    let newQuantityData = [...updatedQuantity];
+
+
+    if (newQuantity) {
+
+      if (updatedTableData[editIndex].inStockQuantity - newQuantity < 0) {
+        toast.error("Insufficient stock");
+        return;
+      }
+
+      updatedTableData[editIndex].quantity = newQuantity;
+      newQuantityData[editIndex].ProductNewQuantity = updatedTableData[editIndex].inStockQuantity - newQuantity;
+
+      updatedTableData[editIndex].total = updatedTableData[editIndex].medMrp * parseFloat(newQuantity);
+
+      setTableData(updatedTableData);
+      setUpdatedQuantity(newQuantityData);
+
+      setPaybleAmmount(calculatePayable());
+      setTotalbalance(calculateTotal());
+
+      toast.success("Quantity Updated");
+      setOpen2(false);
+      setNewQuantity(1);
+    }
+    else {
+      toast.error("new Quantity needed");
+    }
   }
 
 
@@ -538,12 +722,42 @@ const Pos = () => {
         customer_type: customerType,
         product_name: medicines?.product_name,
         medicine_mrp: medicines?.mrp,
-        quantity:quantity,
+        quantity: quantity,
         total_balance: '',
         total_paid: paid,
         total_due: calculateDue()
       }
     )
+  }
+
+  const handleRadioButton = (event) => {
+    setCustomerType(event.target.value);
+    setSearchTerms("");
+    setCus_contact("");
+    setCustomer([]);
+    setSearchTerm("");
+    setPosValue("");
+    setMedicines([]);
+    setQuantity(1);
+
+  }
+
+  useEffect(() => {
+    setPaybleAmmount(calculatePayable());
+    setTotalbalance(calculateTotal());
+  }, [discount, tableData.length]);
+
+  const handleNewQuantityChange = (event) => {
+    console.log(event)
+    if (event.target.value == NaN) {
+      setNewQuantity(0)
+    }
+    let val = parseInt(event.target.value, 10);
+
+    if (val < 1) val = 1;
+    if (val > 100) val = 100;
+
+    setNewQuantity(val);
   }
 
   return (
@@ -561,7 +775,9 @@ const Pos = () => {
                         aria-labelledby="demo-row-radio-buttons-group-label"
                         name="row-radio-buttons-group"
                         value={customerType}
-                        onChange={(event) => setCustomerType(event.target.value)}
+                        // defaultValue="Walk_in"
+                        // onChange={(event) => setCustomerType(event.target.value)}
+                        onChange={(event) => handleRadioButton(event)}
                       >
                         <FormControlLabel
                           value="Walk_in"
@@ -715,6 +931,11 @@ const Pos = () => {
                     value={searchTerm}
                     onChange={handleChange}
                     sx={{ mr: 1 }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        handleAddToTable();
+                      }
+                    }}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -769,11 +990,13 @@ const Pos = () => {
                     label="Quantity"
                     fullWidth
                     placeholder="Enter Quantity"
+                    type="number"
                     size="small"
                     value={quantity}
                     onChange={handleQuantityChange}
                     sx={{ mr: 1 }}
-                    onKeyPress={(event) => {
+
+                    onKeyDown={(event) => {
                       if (event.key === "Enter") {
                         handleAddToTable();
                       }
@@ -784,6 +1007,10 @@ const Pos = () => {
                           <LocalMallIcon />
                         </InputAdornment>
                       ),
+                      inputProps: {
+                        min: 1,
+                        max: 100
+                      }
                     }}
                   />
                   {/* <button onClick={handleAddToTable}>Add to Table</button> */}
@@ -840,13 +1067,13 @@ const Pos = () => {
                 Add Product
               </Button>
 
-              <Grid container spacing={4} sx={{ marginBottom: "20px" }}>
+              <Grid container spacing={4} sx={{ marginBottom: "20px", }}>
                 {/* First Table */}
                 <Grid item xs={12} md={6}>
-                  <Paper>
-                    <TableContainer component={Paper}>
-                      <Table>
-                        <TableHead>
+                  <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+                    <TableContainer component={Paper} sx={{ maxHeight: 300 }}>
+                      <Table stickyHeader aria-label="sticky table">
+                        <TableHead sx={{ backgroundColor: "white" }}>
                           <TableRow>
                             <TableCell>Product Name</TableCell>
                             <TableCell>Quantity</TableCell>
@@ -854,14 +1081,25 @@ const Pos = () => {
                             <TableCell>Action</TableCell>
                           </TableRow>
                         </TableHead>
-                        <TableBody>
+                        <TableBody sx={{ zIndex: "-10" }} >
                           {tableData.map((item, index) => (
-                            <TableRow key={index}>
+                            <TableRow key={index} >
                               <TableCell>{item.productName}</TableCell>
                               <TableCell>{item.quantity}</TableCell>
                               <TableCell>{item.total}</TableCell>
+                              {/* <TableCell>
+                                <Fab aria-label="edit">
+                                  <EditIcon
+                                    onClick={() => handleRemoveProduct(index)}
+                                  />
+                                </Fab>
+                              </TableCell> */}
                               <TableCell>
                                 <Fab aria-label="edit">
+                                  <EditIcon
+                                    onClick={() => handleOpen2(index)}
+                                    sx={{ marginRight: "15px" }}
+                                  />
                                   <DisabledByDefaultIcon
                                     onClick={() => handleRemoveProduct(index)}
                                   />
@@ -888,7 +1126,7 @@ const Pos = () => {
                       <TextField
                         label="Total Tk."
                         type="text"
-                        value={calculateTotal()}
+                        value={totalbalance}
                         // onChange={(event) => handleTotalAmountChange(event.target.value)}
                         size="small"
                         InputProps={{
@@ -902,7 +1140,7 @@ const Pos = () => {
                           label="Discount"
                           type="number"
                           size="small"
-                          value={customer.regular_discount}
+                          value={discount}
                           onChange={(event) =>
                             handleNumberChange(event, "discount")
                           }
@@ -913,7 +1151,7 @@ const Pos = () => {
                         label="Payable Tk."
                         type="text"
                         size="small"
-                        value={calculatePayable()}
+                        value={paybleAmmount}
                         InputProps={{
                           readOnly: true,
                         }}
@@ -1051,7 +1289,11 @@ const Pos = () => {
                   >
                     Sale & Invoice
                   </Button>
-                  <Button variant="contained" onClick={handleSubmit}>
+                  <Button
+                    variant="contained"
+                    onClick={handleSubmit}
+                    disabled={isLoading}
+                  >
                     Save
                   </Button>
                   <Button
@@ -1229,15 +1471,6 @@ const Pos = () => {
               <Card style={{ backgroundColor: "#ffffff" }}>
                 <CardContent>
                   <div className="bg-light">
-                    {/* <Grid container spacing={2}>
-                    <Grid item xs={6} md={10} lg={10}>
-                      <h3 className="text-primary">Update Supplier</h3>
-                    </Grid>
-                    <Grid item xs={6} md={2} lg={2} >
-                      Wednesday 7th of February 2024 04:37:08 PM
-                    </Grid>
-                  </Grid>
-                  <hr /> */}
                     <div style={{ marginBottom: "20px" }}>
                       <Grid container spacing={2}>
                         {/* First Column */}
@@ -1279,6 +1512,82 @@ const Pos = () => {
                           Save Changes
                         </Button>
                         <Button onClick={handleClose1} variant="outlined">
+                          Cancel
+                        </Button>
+                      </Stack>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Typography>
+          </Box>
+        </Modal>
+
+        <Modal
+          open={open2}
+          onClose={handleClose2}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={style}>
+            <Typography id="modal-modal-description">
+              <Card style={{ backgroundColor: "#ffffff" }}>
+                <CardContent>
+                  <div className="bg-light">
+                    <div style={{ marginBottom: "20px" }}>
+                      <Grid container spacing={2}>
+                        {/* First Column */}
+                        <Grid item xs={12} md={6}>
+                          <Box
+                            component="form"
+                            sx={{
+                              "& .MuiTextField-root": { m: 1, width: "100%" },
+                            }}
+                            noValidate
+                            autoComplete="off"
+                            // width={500}
+                          >
+                            <TextField
+                              
+                              
+                              type="number"
+                              value={newQuantity}
+                              label="New Quantity"
+                              onChange={handleNewQuantityChange}
+                              variant="outlined"
+                              InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <LocalMallIcon />
+                                  </InputAdornment>
+                                ),
+                                inputProps: {
+                                  min: 1,
+                                  max: 100
+                                }
+                              }}
+                            />
+                          </Box>
+                        </Grid>
+                      </Grid>
+                    </div>
+                    {/* <hr /> */}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Stack spacing={2} direction="row">
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={handleEdit2Submit}
+                        >
+                          Save Changes
+                        </Button>
+                        <Button onClick={handleClose2} variant="outlined">
                           Cancel
                         </Button>
                       </Stack>

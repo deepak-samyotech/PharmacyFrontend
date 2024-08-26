@@ -31,6 +31,7 @@ import { styled } from '@mui/material/styles';
 import axios from 'axios'; 
 import "jspdf-autotable";
 import jsPDF from "jspdf";
+import { toast } from 'react-toastify';
  
 const style = {
   position: 'absolute',
@@ -85,27 +86,29 @@ function Doctor() {
   ];
   //GET API call
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/doctor');
-        const transformedData = response.data?.data?.map((item) => ({
-          id: item.id,
-          name: item.name,
-          email: item.email,
-          contact: item.contact,
-          address: item.address,
-        }));
-        setData(transformedData);
-        const ids = transformedData.map((item) => item.id);
-        setData(transformedData);
-        // setId(ids);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+  const fetchData = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/doctor');
+      const transformedData = response.data?.data?.map((item) => ({
+        id: item.id,
+        name: item.name,
+        email: item.email,
+        contact: item.contact,
+        address: item.address,
+      }));
+      setData(transformedData);
+      const ids = transformedData.map((item) => item.id);
+      setData(transformedData);
+      // setId(ids);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
+  useEffect(() => {
+    
     fetchData();
+
   }, []);
   const rows = data;
 
@@ -132,8 +135,11 @@ function Doctor() {
         },
       })
       .then((response) => {
-        if (response.status === 201) {
-          setSuccessAlert(true);
+        if (response.status === 200) {
+          // setSuccessAlert(true);
+          setOpen(false);
+          fetchData();
+          toast.success("Data added Successfully.")
         }
       })
       .catch((error) => {
@@ -543,7 +549,11 @@ function Doctor() {
                   >
                     Submit
                   </Button>
-                  <Button variant='outlined' style={{ margin: '10px' }}>
+                  <Button
+                    variant='outlined'
+                    style={{ margin: '10px' }}
+                    onClick={handleClose}
+                  >
                     Cancel
                   </Button>
                 </Grid>

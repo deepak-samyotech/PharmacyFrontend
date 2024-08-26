@@ -94,7 +94,7 @@ const TotalSalesCard = ({ isLoading }) => {
 
                             <div style={{ display: 'flex', alignItems: 'center', marginTop: 10, padding: '5px', margin: '5px' }}>
                                 <Typography variant="body1" style={{ marginLeft: 10, zIndex: 10, fontSize: '20px' }}>
-                                    3
+                                    22
                                 </Typography>
                                 {/* <Typography variant="body1" style={{ marginLeft: 'auto', zIndex: 10 }}>
                 2

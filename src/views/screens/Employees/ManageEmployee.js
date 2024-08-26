@@ -123,7 +123,8 @@ function ManageEmployee() {
       const transformedData = response.data?.data?.map((item) => ({
         id: item.id,
         employeeId: item.em_id,
-        name: item.firstName + " " + item.lastName,
+        // name: item.firstName + " " + item.lastName,
+        name: item.name,
         phoneNumber: item.contact,
         email: item.email,
         role: item.role,
@@ -188,8 +189,9 @@ function ManageEmployee() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append("firstName", name.split(" ")[0]);
-    formData.append("lastName", name.split(" ")[1]);
+    // formData.append("firstName", name.split(" ")[0]);
+    // formData.append("lastName", name.split(" ")[1]);
+    formData.append("name", name)
     formData.append("email", email);
     formData.append("password", password);
     formData.append("contact", contact);
@@ -222,6 +224,7 @@ function ManageEmployee() {
     console.log("response", response);
     if (response) {
       setOpen(false);
+      fetchData();
       toast.success("Data Updated Successfully");
       setSuccessAlert(true);
     }
@@ -614,14 +617,14 @@ function ManageEmployee() {
                             required
                             onChange={(e) => setPassword(e.target.value)}
                           />
-                          <TextField
+                          {/* <TextField
                             id="outlined-textarea"
                             label="Confirm Password"
                             placeholder="Confirm Password"
                             multiline
                             size="small"
                             required
-                          />
+                          /> */}
 
                           <div
                             style={{

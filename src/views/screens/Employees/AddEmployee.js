@@ -1,3 +1,4 @@
+/*eslint-disable*/
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -52,8 +53,9 @@ const AddEmployee = ({ ...others }) => {
   const [level, setLevel] = useState();
 
   //post api call
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  // const [firstName, setFirstName] = useState("");
+  // const [lastName, setLastName] = useState("");
+  const [name, setName] = useState("")
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [contact, setContact] = useState("");
@@ -87,8 +89,9 @@ const AddEmployee = ({ ...others }) => {
 
     const formData = new FormData();
 
-    formData.append("firstName", firstName);
-    formData.append("lastName", lastName);
+    // formData.append("firstName", firstName);
+    // formData.append("lastName", lastName);
+    formData.append("name", name)
     formData.append("email", email);
     formData.append("password", password);
     formData.append("contact", contact);
@@ -197,16 +200,16 @@ const AddEmployee = ({ ...others }) => {
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="First Name"
+                      label="Employee Name"
                       margin="normal"
-                      name="firstName"
+                      name="name"
                       type="text"
                       defaultValue=""
                       sx={{ ...theme.typography.customInput }}
-                      onChange={(e) => setFirstName(e.target.value)}
+                      onChange={(e) => setName(e.target.value)}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  {/* <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       label="Last Name"
@@ -217,7 +220,7 @@ const AddEmployee = ({ ...others }) => {
                       sx={{ ...theme.typography.customInput }}
                       onChange={(e) => setLastName(e.target.value)}
                     />
-                  </Grid>
+                  </Grid> */}
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth

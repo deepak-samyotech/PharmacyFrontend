@@ -1,3 +1,4 @@
+/*eslint-disable*/
 import React, { useState, useEffect } from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -30,6 +31,7 @@ import { styled } from '@mui/material/styles';
 import axios from 'axios';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { toast } from 'react-toastify';
 
 const style = {
   position: 'absolute',
@@ -84,28 +86,30 @@ function Police() {
   ];
   //GET API call
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/police');
-        const transformedData = response.data?.data?.map((item) => ({
-          id: item.id,
-          name: item.name,
-          email: item.email,
-          contact: item.contact,
-          address: item.address,
-        }));
-        setData(transformedData);
-        const ids = transformedData.map((item) => item.id);
-        setData(transformedData);
-        // setId(ids);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+  const fetchData = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/police');
+      const transformedData = response.data?.data?.map((item) => ({
+        id: item.id,
+        name: item.name,
+        email: item.email,
+        contact: item.contact,
+        address: item.address,
+      }));
+      setData(transformedData);
+      const ids = transformedData.map((item) => item.id);
+      setData(transformedData);
+      // setId(ids);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
+  useEffect(() => {
+  
     fetchData();
   }, []);
+
   const rows = data;
 
   // POST API call
@@ -131,8 +135,11 @@ function Police() {
         },
       })
       .then((response) => {
-        if (response.status === 201) {
-          setSuccessAlert(true);
+        if (response.status === 200) {
+          // setSuccessAlert(true);
+          fetchData();
+          setOpen(false);
+          toast.success("Data added Successfully");
         }
       })
       .catch((error) => {
@@ -524,7 +531,11 @@ function Police() {
                   >
                     Submit
                   </Button>
-                  <Button variant='outlined' style={{ margin: '10px' }}>
+                  <Button
+                    variant='outlined'
+                    style={{ margin: '10px' }}
+                    onClick={handleClose}
+                  >
                     Cancel
                   </Button>
                 </Grid>
