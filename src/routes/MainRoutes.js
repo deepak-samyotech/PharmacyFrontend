@@ -1,3 +1,4 @@
+/*eslint-disable*/
 import { lazy } from "react";
 import PrivateRoute from './PrivateRoute';
 // project imports
@@ -125,8 +126,8 @@ const Setting = Loadable(
 //Pos routing
 const Pos = Loadable(lazy(() => import("views/screens/pos/Pos")));
 //invoice
-const Invoice = Loadable(
-  lazy(() => import("views/screens/invoice/ManageInvoice"))
+const GenerateInvoice = Loadable(
+  lazy(() => import("views/screens/pos/invoice"))
 );
 
 // ==============================|| MAIN ROUTING ||============================== //
@@ -157,6 +158,10 @@ const MainRoutes = {
     {
       path: "/invoice/manage-invoice",
       element: <PrivateRoute><ManageInvoice /></PrivateRoute>,
+    },
+    {
+      path: "/invoice/generate-invoice",
+      element: <PrivateRoute><GenerateInvoice /></PrivateRoute>,
     },
     // -------------------medicine-----------------
     {

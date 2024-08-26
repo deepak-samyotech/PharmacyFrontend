@@ -1,3 +1,4 @@
+/*eslint-disable*/
 import React, { useState, useEffect } from 'react';
 import { useBarcode } from '@createnextapp/react-barcode'; //--------barcode
 import Box from '@mui/material/Box';
@@ -47,6 +48,7 @@ const AddMedicine = () => {
   const [barcodeNum, setBarcodeNum] = useState('');
   const [mrp, setMrp] = useState('');
   const [boxPrices, setBoxPrices] = useState('');
+  const [quantity, setQuantity] = useState('');
   const [ShortQty, setShortQty] = useState('');
   const [form, setForm] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
@@ -113,6 +115,7 @@ const AddMedicine = () => {
     formData.append('barcode', barcodeNum);
     formData.append('mrp', mrp);
     formData.append('box_price', boxPrices);
+    formData.append('instock', quantity);
     formData.append('short_stock', ShortQty);
     formData.append('form', form);
     formData.append('discount', discountType);
@@ -404,6 +407,17 @@ const AddMedicine = () => {
                       onChange={handleBoxPrice}
                       fullWidth
                       placeholder='Box Pirce'
+                    />
+                    <TextField
+                      size='small'
+                      label='Quantity'
+                      id='inStockQuantity'
+                      multiline
+                      required
+                      value={quantity}
+                      onChange={(e) => setQuantity(e.target.value)}
+                      fullWidth
+                      placeholder='Short Quantity'
                     />
                     <TextField
                       size='small'

@@ -1,3 +1,4 @@
+/*eslint-disable*/
 import React, { useState, useEffect } from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -114,6 +115,7 @@ function ManageMedicine() {
   const [barcodeNum, setBarcodeNum] = useState("");
   const [mrp, setMrp] = useState("");
   const [boxPrices, setBoxPrices] = useState("");
+  const [quantity, setQuantity] = useState("");
   const [ShortQty, setShortQty] = useState("");
   const [form, setForm] = useState("");
   const [selectedOption, setSelectedOption] = useState("Yes");
@@ -153,6 +155,7 @@ function ManageMedicine() {
           boxSize: item.box_size,
           sideEffect: item.side_effect,
           boxPrices: item.box_price,
+          quantity: item.instock,
           ShortQty: item.short_stock,
           formValue: item.form,
 
@@ -162,6 +165,7 @@ function ManageMedicine() {
 
 
 
+      console.log("transformedDataMedicine : ", transformedDataMedicine);
       // Log and set medicine data
       const ids = transformedDataMedicine.map((item) => item.id);
       setData(transformedDataMedicine);
@@ -241,6 +245,13 @@ function ManageMedicine() {
     setBoxPrices(calculatedBoxPrice.toFixed(2)); // Set the box price
 
   };
+
+  // Qty
+  const handleQuantity = (e) => {
+    const input = e.target.value;
+    const numericInput = input.replace(/\D/g, "");
+    setQuantity(numericInput);
+  };
   //Short Qty
   const handleShortQty = (e) => {
     const input = e.target.value;
@@ -250,7 +261,12 @@ function ManageMedicine() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setSelectedImage(file);
+      try {
+        const imageUrl = file;
+        setSelectedImage(imageUrl);
+      } catch (error) {
+        console.error("Error creating object URL:", error);
+      }
     }
   };
   const handleFileChange = (event) => {
@@ -297,6 +313,7 @@ function ManageMedicine() {
     setEditedRowData(row);
     setOpen(true);
 
+    console.log("Row : ", row );
     // Populate the modal fields with the data of the selected row
     setGenericName(row.genericName);
     setStrength(row.strength);
@@ -308,13 +325,14 @@ function ManageMedicine() {
     setBarcodeNum(row.barcode);
     setMrp(row.mrp);
     // setBoxPrices(row.boxPrice);
+    setQuantity(row.quantity);
     setShortQty(row.ShortQty);
     setForm(row.form);
     setSelectedOption(row.discountType);
     setSelectedSupplier(row.company);
 
     // If you have an image URL, you might want to set it to selectedImage as well
-    // setSelectedImage(row.imageUrl);
+    setSelectedImage(row.imageUrl || null);
   };
 
   const handleClose = () => setOpen(false);
@@ -334,6 +352,7 @@ function ManageMedicine() {
     formData.append("barcode", barcodeNum);
     formData.append("mrp", mrp);
     formData.append("box_price", boxPrices);
+    formData.append("instock", quantity);
     formData.append("short_stock", ShortQty);
     formData.append("form", form);
     formData.append("discount", discountType);
@@ -885,6 +904,17 @@ function ManageMedicine() {
                           />
                           <TextField
                             size="small"
+                            label="Quantity"
+                            id="Quantity"
+                            multiline
+                            required
+                            value={quantity}
+                            onChange={handleQuantity}
+                            fullWidth
+                            placeholder="Short Quantity"
+                          />
+                          <TextField
+                            size="small"
                             label="Short Quantity"
                             id="ShortQty"
                             multiline
@@ -956,9 +986,13 @@ function ManageMedicine() {
                               required
                               accept="image/*"
                               style={{ width: "100%" }}
-                              value={selectedImage}
+                              // value={selectedImage}
                             />
-
+                            {errors.selectedImage && (
+                              <div style={{ color: "red" }}>
+                                {errors.selectedImage}
+                              </div>
+                            )}
                             {selectedImage && (
                               <div
                                 style={{
@@ -967,7 +1001,8 @@ function ManageMedicine() {
                                 }}
                               >
                                 <img
-                                  src={URL.createObjectURL(selectedImage)}
+                                  // src={URL.createObjectURL(selectedImage)}
+                                  src={selectedImage}
                                   alt="Selected"
                                   style={{
                                     maxWidth: "100%",

@@ -99,6 +99,9 @@ const Pos = () => {
   const [editedRowData, setEditedRowData] = useState(null);
   const [editIndex, setEditIndex] = useState(null);
 
+  const [customerLedger, setCustomerLedger] = useState();
+  const [generateInvoice, setGenerateInvoice] = useState();
+
 
   console.log("newquantity==========================>>>>>>>", newQuantity)
 
@@ -243,7 +246,7 @@ const Pos = () => {
     }
 
     if (medicines) {
-      console.log("I am here");
+      
       const total = parseFloat(medicines[0].mrp) * parseFloat(quantity);
       const newData = {
         p_id: medicines[0]._id,
@@ -345,6 +348,9 @@ const Pos = () => {
       })
       .then((response) => {
         // Handle success for Customer_ledger
+        if (response.status === 200) {
+          setCustomerLedger(response.data.newCustomer_ledger)
+        }
         console.log("Customer ledger saved successfully", response);
       })
       .catch((error) => {
@@ -370,6 +376,9 @@ const Pos = () => {
               //   text: "Invoice generated successfully.",
               //   icon: "success",
               // });
+              console.log("response.data.newManage_Invoice : ", response.data.newManage_Invoice);
+              setGenerateInvoice(response.data.newManage_Invoice)
+              console.log("Invoice saved successfully", response);
               setTableData([]); // Clear table data after successful save
               setSearchTerms("");
               setPaid("");
@@ -415,6 +424,8 @@ const Pos = () => {
                 });
               })
               .finally(() => {
+                console.log("generateInvoice : ", generateInvoice);
+                // navigate("/invoice/generate-invoice", {state: generateInvoice });
                 setIsLoading(false); // Re-enable the button after all API calls
               });
           });
@@ -517,6 +528,10 @@ const Pos = () => {
   };
   const handleButtonClick1 = () => {
     navigate("/invoice/manage-invoice");
+  };
+
+  const handleButtonClick2 = () => {
+    navigate("/invoice/generate-invoice");
   };
 
   //current date & time
@@ -839,6 +854,15 @@ const Pos = () => {
                       style={{ boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)" }}
                     >
                       Manage Invoice
+                    </Button>
+                    <Button
+                      onClick={handleButtonClick2}
+                      variant="contained"
+                      size="small"
+                      startIcon={<MenuIcon />}
+                      style={{ boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)" }}
+                    >
+                      Generate Invoice
                     </Button>
                   </Stack>
                 </Grid>
@@ -1283,12 +1307,6 @@ const Pos = () => {
                 }}
               >
                 <Stack spacing={20} direction="row">
-                  <Button
-                    variant="contained"
-                    onClick={() => alert(" Sale & Invoice clicked")}
-                  >
-                    Sale & Invoice
-                  </Button>
                   <Button
                     variant="contained"
                     onClick={handleSubmit}

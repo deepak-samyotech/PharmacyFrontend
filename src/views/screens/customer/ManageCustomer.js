@@ -137,6 +137,8 @@ function ManageCustomer() {
   const handleOpen = (row, data) => {
     setEditedRowData(row);
     setOpen(true);
+
+    // console.log("Row : ", row );
     // Populate input fields with row data
     setCustomerName(row.customerName || "");
     setCustomerContact(row.phoneNumber || "");
