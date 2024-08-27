@@ -160,7 +160,7 @@ const MainRoutes = {
       element: <PrivateRoute><ManageInvoice /></PrivateRoute>,
     },
     {
-      path: "/invoice/generate-invoice",
+      path: "/manage_invoice/:id",
       element: <PrivateRoute><GenerateInvoice /></PrivateRoute>,
     },
     // -------------------medicine-----------------

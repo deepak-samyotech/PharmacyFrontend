@@ -96,11 +96,13 @@ const Pos = () => {
   const [newQuantity, setNewQuantity] = useState("1");
   const [open1, setOpen1] = useState(false);
   const [open2, setOpen2] = useState(false);
+  const [open3, setOpen3] = useState(false);
   const [editedRowData, setEditedRowData] = useState(null);
   const [editIndex, setEditIndex] = useState(null);
 
   const [customerLedger, setCustomerLedger] = useState();
-  const [generateInvoice, setGenerateInvoice] = useState();
+  const [generatedInvoiceId, setGeneratedInvoiceId] = useState();
+  const [isGenerateInvoice, setIsGenerateInvoice] = useState(false);
 
 
   console.log("newquantity==========================>>>>>>>", newQuantity)
@@ -246,7 +248,7 @@ const Pos = () => {
     }
 
     if (medicines) {
-      
+
       const total = parseFloat(medicines[0].mrp) * parseFloat(quantity);
       const newData = {
         p_id: medicines[0]._id,
@@ -311,7 +313,7 @@ const Pos = () => {
     // Construct formDataManageInvoice
     const formDataManageInvoice = new FormData();
     formDataManageInvoice.append("customerName", customerName);
-    formDataManageInvoice.append("contact", contact);
+    formDataManageInvoice.append("contact", searchTerms);
     formDataManageInvoice.append("customerType", customerType);
     formDataManageInvoice.append(
       "createDate",
@@ -377,7 +379,8 @@ const Pos = () => {
               //   icon: "success",
               // });
               console.log("response.data.newManage_Invoice : ", response.data.newManage_Invoice);
-              setGenerateInvoice(response.data.newManage_Invoice)
+         
+              setGeneratedInvoiceId(response?.data?.newManage_Invoice._id);
               console.log("Invoice saved successfully", response);
               setTableData([]); // Clear table data after successful save
               setSearchTerms("");
@@ -407,11 +410,13 @@ const Pos = () => {
               })
               .then((response) => {
                 if (response.status === 200) {
-                  Swal.fire({
-                    title: "Data Saved Successfully!",
-                    text: "Invoice generated successfully.",
-                    icon: "success",
-                  });
+                  // Swal.fire({
+                  //   title: "Data Saved Successfully!",
+                  //   text: "Invoice generated successfully.",
+                  //   icon: "success",
+                  // });
+                  toast.success("Order Sold Successfully.");
+                  setOpen3(true);
                   setUpdatedQuantity([]);
                 }
               })
@@ -424,14 +429,21 @@ const Pos = () => {
                 });
               })
               .finally(() => {
-                console.log("generateInvoice : ", generateInvoice);
+                console.log("generateInvoice 1: ", generatedInvoiceId);
                 // navigate("/invoice/generate-invoice", {state: generateInvoice });
                 setIsLoading(false); // Re-enable the button after all API calls
+                
               });
           });
       });
   };
 
+  // useEffect(() => {
+  //   console.log("generateInvoice 2: ", generatedInvoiceId);
+  //   // if (isGenerateInvoice) {
+  //     navigate(`/invoice/generate-invoice/${generatedInvoiceId}`);
+  //   // }
+  // }, [generatedInvoiceId])
 
   // Function to calculate the total amount
   const calculateTotal = () => {
@@ -530,8 +542,9 @@ const Pos = () => {
     navigate("/invoice/manage-invoice");
   };
 
-  const handleButtonClick2 = () => {
-    navigate("/invoice/generate-invoice");
+  const handleGenerateInvoice = () => {
+    
+    navigate(`/manage_invoice/${generatedInvoiceId}`);
   };
 
   //current date & time
@@ -625,7 +638,10 @@ const Pos = () => {
   const handleClose2 = () => {
     setOpen2(false);
 
+  }
 
+  const handleClose3 = () => {
+    setOpen3(false);
   }
 
   const handleOpen1 = (row) => {
@@ -855,7 +871,7 @@ const Pos = () => {
                     >
                       Manage Invoice
                     </Button>
-                    <Button
+                    {/* <Button
                       onClick={handleButtonClick2}
                       variant="contained"
                       size="small"
@@ -863,7 +879,7 @@ const Pos = () => {
                       style={{ boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)" }}
                     >
                       Generate Invoice
-                    </Button>
+                    </Button> */}
                   </Stack>
                 </Grid>
               </Grid>
@@ -1563,11 +1579,11 @@ const Pos = () => {
                             }}
                             noValidate
                             autoComplete="off"
-                            // width={500}
+                          // width={500}
                           >
                             <TextField
-                              
-                              
+
+
                               type="number"
                               value={newQuantity}
                               label="New Quantity"
@@ -1607,6 +1623,51 @@ const Pos = () => {
                         </Button>
                         <Button onClick={handleClose2} variant="outlined">
                           Cancel
+                        </Button>
+                      </Stack>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Typography>
+          </Box>
+        </Modal>
+
+        <Modal
+          open={open3}
+          onClose={handleClose3}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={style}>
+            <Typography id="modal-modal-description">
+              <Card style={{ backgroundColor: "#ffffff" }}>
+                <CardContent>
+                  <div className="bg-light">
+                    <Typography
+                      variant="h3"
+                      sx={{textAlign:"center"}}
+                    >
+                      Do you want to generate Invoice ?
+                    </Typography>
+                    {/* <hr /> */}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Stack spacing={2} direction="row">
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={handleGenerateInvoice}
+                        >
+                          Yes
+                        </Button>
+                        <Button onClick={handleClose3} variant="outlined">
+                          No
                         </Button>
                       </Stack>
                     </div>

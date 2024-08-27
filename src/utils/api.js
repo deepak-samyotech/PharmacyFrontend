@@ -1,4 +1,5 @@
 /*eslint-disable*/
+import { toast } from "react-toastify";
 import { apiUrl, baseurl } from "./constants";
 import axios from "axios";
 
@@ -16,4 +17,22 @@ export async function updateEmployeeData(formData, empId) {
 
   }
 }
+
+export async function getInvoiceData(url) {
+  try {
+    const response = await axios.get(url);
+
+    return response; 
+  } catch (error) {
+    console.error('Error:', error);
+    Swal.fire({
+      title: 'Error!',
+      text: 'Failed to save customer ledger.',
+      icon: 'error'
+    });
+  }
+}
+
+
+
 

@@ -1,23 +1,21 @@
-/*eslint-disable*/
-import {
-  Grid,
-  TableBody,
-  TableCell,
-  tableCellClasses,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
-  Typography
-} from '@mui/material';
+import { Button, Grid, TableBody, TableCell, tableCellClasses, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import './invoice.css';
 import { Box } from '@mui/system';
 import { styled } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Table } from 'react-bootstrap';
-import { useLocation } from 'react-router-dom';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import { useReactToPrint } from 'react-to-print';
+import { getInvoiceData } from 'utils/api';
+import { toast } from 'react-toastify';
 
-const invoice = () => {
+const Invoice = () => {
+  const [generateInvoiceData, setGenerateInvoiceData] = useState();
+  const [rows, setRows] = useState([]);
+  const componentRef = useRef();
+
   const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
     ...theme.typography.body2,
@@ -45,129 +43,147 @@ const invoice = () => {
     }
   }));
 
-  
-    
-    const location = useLocation();
+  const fetchInvoiceData = async () => {
+    axios
+      .get(window.location.href)
+      .then((response) => {
+        if (response?.status === 200) {
+          setGenerateInvoiceData(response?.data?.invoiceData);
+          setRows(response?.data?.invoiceData?.medicineData);
+        }
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        Swal.fire({
+          title: 'Error!',
+          text: 'Failed to save customer ledger.',
+          icon: 'error'
+        });
+      });
 
-    const { generateInvoice } = location.state || {};
+    // const response = await getInvoiceData(window.location.href);
 
-    console.log("generateInvoice : ", generateInvoice);
+    // if (response?.status === 200) {
+    //   setGenerateInvoiceData(response?.data?.invoiceData);
+    //   setRows(response?.data?.invoiceData?.medicineData);
+    // } else {
+    //   toast.error(response?.data?.error);
+    // }
+  };
 
-    const rows = generateInvoice?.medicineData;
-    
+  useEffect(() => {
+    fetchInvoiceData();
+  }, []);
+
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+    documentTitle: 'Invoice'
+  });
 
   return (
     <>
-      <Typography variant="h1" sx={{ textAlign: 'center', backgroundColor: 'black', color: 'white' }}>
-        INVOICE
-      </Typography>
+      <div ref={componentRef}>
+        <Typography variant="h1" sx={{ textAlign: 'center', backgroundColor: 'black', color: 'white' }}>
+          INVOICE
+        </Typography>
 
-      <Typography variant="body2" sx={{ marginTop: '20px', marginLeft: '20px' }}>
-        <p>Cusotmer Name : {generateInvoice.customerName}</p>
-        <p>Customer Type : {generateInvoice.customerType}</p>
-        <p>Phone No. : {generateInvoice.contact}</p>
-      </Typography>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
-        <div>
-          <Typography variant="h3" sx={{ marginLeft: '20px' }}>
-            Company Name
-          </Typography>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+          <div>
+            <Typography variant="body2" sx={{ marginTop: '20px', marginLeft: '20px' }}>
+              <p>Cusotmer Name : {generateInvoiceData?.customerName}</p>
+              <p>Customer Type : {generateInvoiceData?.customerType}</p>
+              <p>Phone No. : {generateInvoiceData?.contact}</p>
+            </Typography>
+          </div>
+          <div>
+            <Box sx={{ width: '100%' }}>
+              <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 1 }}>
+                <Grid item xs={6}>
+                  <Item2>Invoice Id</Item2>
+                </Grid>
+                <Grid item xs={6}>
+                  <Item>{generateInvoiceData?.invoiceId}</Item>
+                </Grid>
+                <Grid item xs={6}>
+                  <Item2>Date</Item2>
+                </Grid>
+                <Grid item xs={6}>
+                  <Item>{generateInvoiceData?.createDate}</Item>
+                </Grid>
+                <Grid item xs={6}>
+                  <Item2>Amount Due</Item2>
+                </Grid>
+                <Grid item xs={6}>
+                  <Item>{generateInvoiceData?.total_due || 0.0}</Item>
+                </Grid>
+              </Grid>
+            </Box>
+          </div>
         </div>
+
         <div>
-          <Box sx={{ width: '100%' }}>
+          <Paper sx={{ width: 'auto', marginTop: '10px' }}>
+            <TableContainer component={Paper}>
+              <Table sx={{ minWidth: 'auto' }} aria-label="customized table">
+                <TableHead>
+                  <TableRow>
+                    <StyledTableCell>Product Name</StyledTableCell>
+                    <StyledTableCell>Generic Name</StyledTableCell>
+                    <StyledTableCell>MRP</StyledTableCell>
+                    <StyledTableCell>Quantity</StyledTableCell>
+                    <StyledTableCell>Price</StyledTableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {rows &&
+                    rows.map((row, index) => (
+                      <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                        <TableCell align="center">{row?.medicine}</TableCell>
+                        <TableCell align="center">{row?.genericName}</TableCell>
+                        <TableCell align="center">{row?.medMrp}</TableCell>
+                        <TableCell align="center">{row?.qty}</TableCell>
+                        <TableCell align="center">{row?.product_total}</TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        </div>
+
+        <div>
+          <Box sx={{ width: '43%', marginTop: '20px', marginLeft: 'auto' }}>
             <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 1 }}>
               <Grid item xs={6}>
-                <Item2>Invoice #</Item2>
+                <Item2>Total</Item2>
               </Grid>
               <Grid item xs={6}>
-                              <Item>{ generateInvoice.invoiceId }</Item>
+                <Item>{generateInvoiceData?.grand_total}</Item>
               </Grid>
               <Grid item xs={6}>
-                <Item2>Date</Item2>
+                <Item2>Amount Paid</Item2>
               </Grid>
               <Grid item xs={6}>
-                              <Item>{ generateInvoice.createDate }</Item>
+                <Item>{generateInvoiceData?.total_paid}</Item>
               </Grid>
               <Grid item xs={6}>
-                <Item2>Amount Due</Item2>
+                <Item2>Balance Due</Item2>
               </Grid>
               <Grid item xs={6}>
-                <Item>{ generateInvoice.total_due}</Item>
+                <Item>{generateInvoiceData?.total_due || 0.0}</Item>
               </Grid>
             </Grid>
           </Box>
         </div>
       </div>
 
-      <div>
-        <Paper sx={{ width: 'auto', marginTop: '10px' }}>
-          <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 'auto' }} aria-label="customized table">
-              <TableHead>
-                <TableRow>
-                  <StyledTableCell>Product Name</StyledTableCell>
-                  <StyledTableCell>Generic Name</StyledTableCell>
-                  <StyledTableCell>MRP</StyledTableCell>
-                  <StyledTableCell>Quantity</StyledTableCell>
-                  <StyledTableCell>Price</StyledTableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows.map((row, index) => (
-                  <TableRow key={row.index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                    <TableCell align='center' >Demo</TableCell>
-                    <TableCell align='center'>{row.genericName}</TableCell>
-                    <TableCell align="center">{row.medMrp}</TableCell>
-                    <TableCell align="center">{row.qty}</TableCell>
-                    <TableCell align="center">{row.product_total}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-
-          {/* <TablePagination
-            rowsPerPageOptions={[10, 25, 100]}
-            component="div"
-            count={sortedRows.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={(e, newPage) => setPage(newPage)}
-            onRowsPerPageChange={(e) => {
-              setRowsPerPage(parseInt(e.target.value, 10));
-              setPage(0);
-            }}
-          /> */}
-        </Paper>
-          </div>
-          
-          <div >
-          <Box sx={{ width: '43%', marginTop:"20px", marginLeft:"auto"}}>
-            <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 1 }}>
-              <Grid item xs={6}>
-                <Item2>Total</Item2>
-              </Grid>
-              <Grid item xs={6}>
-                          <Item>{ generateInvoice.grand_total }</Item>
-              </Grid>
-              <Grid item xs={6}>
-                <Item2>Amount Paid</Item2>
-              </Grid>
-              <Grid item xs={6}>
-                <Item>{ generateInvoice.total_paid }</Item>
-              </Grid>
-              <Grid item xs={6}>
-                <Item2>Balance Due</Item2>
-              </Grid>
-              <Grid item xs={6}>
-                <Item>{ generateInvoice.total_due}</Item>
-              </Grid>
-            </Grid>
-          </Box>
-        </div>  
+      <div className="btn no-print ">
+        <Button variant="contained" onClick={handlePrint}>
+          Print
+        </Button>
+      </div>
     </>
   );
 };
 
-export default invoice;
+export default Invoice;

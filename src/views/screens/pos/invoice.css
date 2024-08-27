@@ -1,0 +1,22 @@
+@media print {
+    /* Hide elements you don't want to appear in print */
+    .no-print {
+      display: none;
+    }
+  
+    /* Style adjustments for print */
+    /* body {
+      font-size: 12pt;
+    } */
+  
+    /* Ensure layout fits well on paper */
+    /* .printable-content {
+      width: 100%;
+      margin: 0;
+    } */
+  }
+
+  .btn{
+    display: flex;
+    justify-content: center;
+  }
