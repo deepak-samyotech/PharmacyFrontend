@@ -55,7 +55,7 @@ const TotalGrowthBarChart = () => {
   }
 
   const handleButtonClick2 = () => {
-    navigate('/medicine/manage-medicine');
+    navigate('/medicine/add-medicine');
   };
 
   const handleButtonClick3 = () => {
@@ -75,7 +75,7 @@ const TotalGrowthBarChart = () => {
   };
 
   const handleButtonClick7 = () => {
-    navigate('/purchase/add-purchase');
+    navigate('/report/purchase-report');
   };
 
   const handleButtonClick8 = () => {

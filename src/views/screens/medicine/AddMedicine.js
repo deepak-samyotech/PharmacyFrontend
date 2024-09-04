@@ -91,7 +91,7 @@ const AddMedicine = () => {
   
   const handleBoxPriceCalculation = () => {
     // Calculate box price based on MRP and box size
-    const calculatedBoxPrice = parseFloat(mrp) * parseInt(boxSize);
+    const calculatedBoxPrice = parseFloat(mrp || 0) * parseInt(boxSize || 0);
     setBoxPrices(calculatedBoxPrice.toFixed(2)); // Set the box price
   };
 

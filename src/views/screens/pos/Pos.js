@@ -53,6 +53,8 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { toast } from "react-toastify";
 import context from "react-bootstrap/esm/AccordionContext";
+import { customerLedgerPost, fetchMedicine, invoiceDataPost, searchCustomer, searchMedicines, updateProductQuantity } from "utils/api";
+import { HttpStatusCodes } from "utils/statusCodes";
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -107,77 +109,61 @@ const Pos = () => {
 
   console.log("newquantity==========================>>>>>>>", newQuantity)
 
+  const fetchMedicineData = async () => {
+    const response = await fetchMedicine();
+
+    console.log("response --------------------------------------> : ", response);
+
+    if (response?.status === HttpStatusCodes.OK) {
+      const transformedData = response?.data?.data?.map((item) => ({
+        id: item.id,
+        medicineName: item.product_name || 0,
+        genericName: item.generic_name || 0,
+        company: item.supplier_name || 0,
+        strength: item.strength || 0,
+        QtyAvailable: item.instock || 0,
+        expDate: item.expire_date || 0,
+        image: item.image || "",
+      }));
+
+      //3.) top sale
+      // Sort data based on sale count
+      transformedData.sort((a, b) => b.saleCount - a.saleCount);
+
+      // Select top 10 medicines based on sale count
+      const top10Medicines = transformedData.slice(0, 10);
+
+      setData3(top10Medicines);
+    }
+  };
+
+  const searchMedicinesData = async () => {
+    const medicineResponse = await searchMedicines(posValue, searchTerm)
+
+    if (medicineResponse?.status === HttpStatusCodes.OK) {
+      setMedicines(medicineResponse?.data?.medicines);
+
+      setProduct_id(medicineResponse?.data?.medicines?.product_id);
+    }
+  };
+
+  const searchCustomerData = async () => {
+    const customerResponse = await searchCustomer(cus_contact, searchTerms);
+    const customerData = customerResponse?.data?.customer;
+    const customerType = customerData.length > 0 ? customerData[0].c_type : "Walk_in";
+
+    setCustomer(customerData);
+    setCustomerType(customerType);
+    const disc = customerData.length > 0 ? customerData[0]?.regular_discount : 0;
+    setDiscount(disc);
+    console.log("discount : ", disc);
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("http://localhost:8080/medicine");
-
-        const transformedData = response.data?.data?.map((item) => ({
-          id: item.id,
-          medicineName: item.product_name || 0,
-          genericName: item.generic_name || 0,
-          company: item.supplier_name || 0,
-          strength: item.strength || 0,
-          QtyAvailable: item.instock || 0,
-          expDate: item.expire_date || 0,
-          image: item.image || "",
-        }));
-
-        //3.) top sale
-        // Sort data based on sale count
-        transformedData.sort((a, b) => b.saleCount - a.saleCount);
-
-        // Select top 10 medicines based on sale count
-        const top10Medicines = transformedData.slice(0, 10);
-
-        setData3(top10Medicines);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    const searchMedicines = async () => {
-      try {
-        const medicineResponse = await axios.get(
-          `http://localhost:8080/medicine/search?product_id=${posValue}`,
-          {
-            params: { query: searchTerm },
-          }
-        );
-        setMedicines(medicineResponse.data.medicines);
-
-        //----
-        setProduct_id(medicineResponse.data.medicines.product_id);
-      } catch (error) {
-        console.error("Error searching for medicines:", error);
-      }
-    };
-
-    const searchCustomer = async () => {
-      try {
-        const customerResponse = await axios.get(
-          `http://localhost:8080/customer/search?cus_contact=${cus_contact}`,
-          {
-            params: { query: searchTerms },
-          }
-        );
-        const customerData = customerResponse.data.customer;
-        const customerType =
-          customerData.length > 0 ? customerData[0].c_type : "Walk_in";
-
-        setCustomer(customerData);
-        setCustomerType(customerType);
-        const disc = customerData.length > 0 ? customerData[0].regular_discount : 0;
-        setDiscount(disc);
-        console.log("discount : ", disc);
-      } catch (error) {
-        console.error("Error searching for customer:", error);
-      }
-    };
 
     if (searchTerm && posValue) {
       setTimeout(() => {
-        searchMedicines();
+        searchMedicinesData();
       }, 1000);
     } else {
       setMedicines([]);
@@ -185,13 +171,13 @@ const Pos = () => {
 
     if (searchTerms && cus_contact) {
       setTimeout(() => {
-        searchCustomer();
+        searchCustomerData();
       }, 1000);
     } else {
       setCustomer([]);
     }
 
-    fetchData();
+    fetchMedicineData();
   }, [searchTerm, posValue, searchTerms, cus_contact]);
 
   // console.error("setMedicines:", medicines);
@@ -279,7 +265,7 @@ const Pos = () => {
   };
 
   // post api for customer ledger & invoice
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     setIsLoading(true); // Disable the button
@@ -342,108 +328,39 @@ const Pos = () => {
     formDataManageInvoice.append("total_due", calculateDue());
 
     // Make the first API call
-    axios
-      .post(`http://localhost:8080/Customer_ledger`, formDataCustomerLedger, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((response) => {
-        // Handle success for Customer_ledger
-        if (response.status === 200) {
-          setCustomerLedger(response.data.newCustomer_ledger)
-        }
-        console.log("Customer ledger saved successfully", response);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        Swal.fire({
-          title: "Error!",
-          text: "Failed to save customer ledger.",
-          icon: "error",
-        });
-      })
-      .finally(() => {
-        // Make the second API call inside finally block of first one to chain the execution
-        axios
-          .post(`http://localhost:8080/manage_invoice`, formDataManageInvoice, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          })
-          .then((response) => {
-            if (response.status === 200) {
-              // Swal.fire({
-              //   title: "Data Saved Successfully!",
-              //   text: "Invoice generated successfully.",
-              //   icon: "success",
-              // });
-              console.log("response.data.newManage_Invoice : ", response.data.newManage_Invoice);
-         
-              setGeneratedInvoiceId(response?.data?.newManage_Invoice._id);
-              console.log("Invoice saved successfully", response);
-              setTableData([]); // Clear table data after successful save
-              setSearchTerms("");
-              setPaid("");
-              setCustomerType("Walk_in");
-            }
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-            Swal.fire({
-              title: "Error!",
-              text: "Failed to save invoice.",
-              icon: "error",
-            });
-          })
-          .finally(() => {
-            // setIsLoading(false); // Re-enable the button after all API calls
+    const customerLedgerResponse = await customerLedgerPost(formDataCustomerLedger);
 
-            console.log("Update quantity array : - ", updatedQuantity);
+    if (customerLedgerResponse?.status === HttpStatusCodes.OK) {
+      setCustomerLedger(customerLedgerResponse?.data?.newCustomer_ledger)
+      console.log("Customer ledger saved successfully", customerLedgerResponse);
+    }
 
-            // Make the third API call inside finally block of second one to chain the execution
-            axios
-              .put(`http://localhost:8080/medicine/updateQuantity`, updatedQuantity, {
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-              })
-              .then((response) => {
-                if (response.status === 200) {
-                  // Swal.fire({
-                  //   title: "Data Saved Successfully!",
-                  //   text: "Invoice generated successfully.",
-                  //   icon: "success",
-                  // });
-                  toast.success("Order Sold Successfully.");
-                  setOpen3(true);
-                  setUpdatedQuantity([]);
-                }
-              })
-              .catch((error) => {
-                console.error("Error:", error);
-                Swal.fire({
-                  title: "Error!",
-                  text: "Failed to update new Quantity.",
-                  icon: "error",
-                });
-              })
-              .finally(() => {
-                console.log("generateInvoice 1: ", generatedInvoiceId);
-                // navigate("/invoice/generate-invoice", {state: generateInvoice });
-                setIsLoading(false); // Re-enable the button after all API calls
-                
-              });
-          });
-      });
+    // Make the second API call inside finally block of first one to chain the execution
+    const invoiceResponse = await invoiceDataPost(formDataManageInvoice);
+
+    if (invoiceResponse.status === HttpStatusCodes.OK) {
+      console.log("response.data.newManage_Invoice : ", invoiceResponse?.data?.newManage_Invoice);
+
+      setGeneratedInvoiceId(invoiceResponse?.data?.newManage_Invoice._id);
+      setTableData([]); // Clear table data after successful save
+      setSearchTerms("");
+      setPaid("");
+      setCustomerType("Walk_in");
+    }
+
+
+    // Make the third API call inside finally block of second one to chain the execution
+    const updateProdQResponse = await updateProductQuantity(updatedQuantity);
+
+    if (updateProdQResponse.status === HttpStatusCodes.OK) {
+      toast.success("Order Sold Successfully.");
+      setOpen3(true);
+      setUpdatedQuantity([]);
+    }
+   
+    setIsLoading(false); // Re-enable the button after all API calls
+
   };
-
-  // useEffect(() => {
-  //   console.log("generateInvoice 2: ", generatedInvoiceId);
-  //   // if (isGenerateInvoice) {
-  //     navigate(`/invoice/generate-invoice/${generatedInvoiceId}`);
-  //   // }
-  // }, [generatedInvoiceId])
 
   // Function to calculate the total amount
   const calculateTotal = () => {
@@ -543,7 +460,7 @@ const Pos = () => {
   };
 
   const handleGenerateInvoice = () => {
-    
+
     navigate(`/manage_invoice/${generatedInvoiceId}`);
   };
 
@@ -571,7 +488,7 @@ const Pos = () => {
   const fetchPosData = async () => {
     const response2 = await axios.get("http://localhost:8080/pos");
 
-    await setPosConfigData(response2.data.filteredData);
+    setPosConfigData(response2.data.filteredData);
   }
 
   const fetchPosConfiguredData = async () => {
@@ -1363,8 +1280,8 @@ const Pos = () => {
                       </Grid>
                     </Grid>
                     <hr />
-                    <TableContainer component={Paper}>
-                      <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                    <TableContainer component={Paper} sx={{maxHeight:400}}>
+                      <Table sx={{ minWidth: 600}} stickyHeader aria-label="scrollable table">
                         <TableHead>
                           <TableRow>
                             <TableCell>Configured Product Name</TableCell>
@@ -1646,7 +1563,7 @@ const Pos = () => {
                   <div className="bg-light">
                     <Typography
                       variant="h3"
-                      sx={{textAlign:"center"}}
+                      sx={{ textAlign: "center" }}
                     >
                       Do you want to generate Invoice ?
                     </Typography>

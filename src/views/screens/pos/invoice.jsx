@@ -10,6 +10,7 @@ import Swal from 'sweetalert2';
 import { useReactToPrint } from 'react-to-print';
 import { getInvoiceData } from 'utils/api';
 import { toast } from 'react-toastify';
+import { HttpStatusCodes } from 'utils/statusCodes';
 
 const Invoice = () => {
   const [generateInvoiceData, setGenerateInvoiceData] = useState();
@@ -44,31 +45,14 @@ const Invoice = () => {
   }));
 
   const fetchInvoiceData = async () => {
-    axios
-      .get(window.location.href)
-      .then((response) => {
-        if (response?.status === 200) {
-          setGenerateInvoiceData(response?.data?.invoiceData);
-          setRows(response?.data?.invoiceData?.medicineData);
-        }
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-        Swal.fire({
-          title: 'Error!',
-          text: 'Failed to save customer ledger.',
-          icon: 'error'
-        });
-      });
+    const response = await getInvoiceData(window.location.href);
 
-    // const response = await getInvoiceData(window.location.href);
-
-    // if (response?.status === 200) {
-    //   setGenerateInvoiceData(response?.data?.invoiceData);
-    //   setRows(response?.data?.invoiceData?.medicineData);
-    // } else {
-    //   toast.error(response?.data?.error);
-    // }
+    if (response?.status === HttpStatusCodes.OK) {
+      setGenerateInvoiceData(response?.data?.invoiceData);
+      setRows(response?.data?.invoiceData?.medicineData);
+    } else {
+      toast.error(response?.data?.error);
+    }
   };
 
   useEffect(() => {
@@ -90,7 +74,7 @@ const Invoice = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
           <div>
             <Typography variant="body2" sx={{ marginTop: '20px', marginLeft: '20px' }}>
-              <p>Cusotmer Name : {generateInvoiceData?.customerName}</p>
+              <p>Cusotmer Name : {generateInvoiceData?.customerName || '-----------'}</p>
               <p>Customer Type : {generateInvoiceData?.customerType}</p>
               <p>Phone No. : {generateInvoiceData?.contact}</p>
             </Typography>
@@ -102,19 +86,19 @@ const Invoice = () => {
                   <Item2>Invoice Id</Item2>
                 </Grid>
                 <Grid item xs={6}>
-                  <Item>{generateInvoiceData?.invoiceId}</Item>
+                  <Item>{generateInvoiceData?.invoiceId || 'null'}</Item>
                 </Grid>
                 <Grid item xs={6}>
                   <Item2>Date</Item2>
                 </Grid>
                 <Grid item xs={6}>
-                  <Item>{generateInvoiceData?.createDate}</Item>
+                  <Item>{generateInvoiceData?.createDate || 'null'}</Item>
                 </Grid>
                 <Grid item xs={6}>
                   <Item2>Amount Due</Item2>
                 </Grid>
                 <Grid item xs={6}>
-                  <Item>{generateInvoiceData?.total_due || 0.0}</Item>
+                  <Item>{generateInvoiceData?.total_due || '0.00'}</Item>
                 </Grid>
               </Grid>
             </Box>
@@ -158,19 +142,19 @@ const Invoice = () => {
                 <Item2>Total</Item2>
               </Grid>
               <Grid item xs={6}>
-                <Item>{generateInvoiceData?.grand_total}</Item>
+                <Item>{generateInvoiceData?.grand_total || '0.00'}</Item>
               </Grid>
               <Grid item xs={6}>
                 <Item2>Amount Paid</Item2>
               </Grid>
               <Grid item xs={6}>
-                <Item>{generateInvoiceData?.total_paid}</Item>
+                <Item>{generateInvoiceData?.total_paid || '0.00'}</Item>
               </Grid>
               <Grid item xs={6}>
                 <Item2>Balance Due</Item2>
               </Grid>
               <Grid item xs={6}>
-                <Item>{generateInvoiceData?.total_due || 0.0}</Item>
+                <Item>{generateInvoiceData?.total_due || '0.00'}</Item>
               </Grid>
             </Grid>
           </Box>

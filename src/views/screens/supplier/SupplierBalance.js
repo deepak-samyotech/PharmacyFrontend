@@ -265,49 +265,52 @@ function SupplierBalance() {
     printWindow.print();
   };
 
+  const navigate = useNavigate();
   //add suppliers
   const handleAddSupplier = async () => {
-    try {
-      // Show form to add supplier
-      const supplierId = window.prompt("Enter Supplier ID:");
-      const supplierName = window.prompt("Enter Supplier Name:");
-      const totalAmount = parseFloat(window.prompt("Enter Total Amount:"));
-      const paidAmount = parseFloat(window.prompt("Enter Paid Amount:"));
-      const dueAmount = parseFloat(window.prompt("Enter Due Amount:"));
 
-      if (
-        supplierId &&
-        supplierName &&
-        !isNaN(totalAmount) &&
-        !isNaN(paidAmount) &&
-        !isNaN(dueAmount)
-      ) {
-        const newSupplier = {
-          supplier_id: supplierId,
-          supplier_name: supplierName,
-          total_amount: totalAmount,
-          total_paid: paidAmount,
-          total_due: dueAmount,
-        };
+    navigate("/supplier/add-supplier");
+    // try {
+    //   // Show form to add supplier
+    //   const supplierId = window.prompt("Enter Supplier ID:");
+    //   const supplierName = window.prompt("Enter Supplier Name:");
+    //   const totalAmount = parseFloat(window.prompt("Enter Total Amount:"));
+    //   const paidAmount = parseFloat(window.prompt("Enter Paid Amount:"));
+    //   const dueAmount = parseFloat(window.prompt("Enter Due Amount:"));
 
-        // Send request to add supplier
-        await axios.post("http://localhost:8080/supplier_ledger", newSupplier);
-        console.log("New supplier added:", newSupplier);
+    //   if (
+    //     supplierId &&
+    //     supplierName &&
+    //     !isNaN(totalAmount) &&
+    //     !isNaN(paidAmount) &&
+    //     !isNaN(dueAmount)
+    //   ) {
+    //     const newSupplier = {
+    //       supplier_id: supplierId,
+    //       supplier_name: supplierName,
+    //       total_amount: totalAmount,
+    //       total_paid: paidAmount,
+    //       total_due: dueAmount,
+    //     };
 
-        // Update state with the new supplier
-        setData((prevData) => [
-          ...prevData,
-          {
-            id: prevData.length + 1, // Assuming you generate IDs this way
-            ...newSupplier,
-          },
-        ]);
-      } else {
-        console.error("Invalid input for adding supplier.");
-      }
-    } catch (error) {
-      console.error("Error adding supplier:", error);
-    }
+    //     // Send request to add supplier
+    //     await axios.post("http://localhost:8080/supplier_ledger", newSupplier);
+    //     console.log("New supplier added:", newSupplier);
+
+    //     // Update state with the new supplier
+    //     setData((prevData) => [
+    //       ...prevData,
+    //       {
+    //         id: prevData.length + 1, // Assuming you generate IDs this way
+    //         ...newSupplier,
+    //       },
+    //     ]);
+    //   } else {
+    //     console.error("Invalid input for adding supplier.");
+    //   }
+    // } catch (error) {
+    //   console.error("Error adding supplier:", error);
+    // }
   };
 
   //edit suppliers
