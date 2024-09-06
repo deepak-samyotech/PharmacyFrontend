@@ -56,6 +56,7 @@ const AddMedicine = () => {
   const [discountType, setDiscountType] = useState('Yes'); // Add this line
   const [supplierList, setSupplierList] = useState([]); // State to store the list of suppliers
   const [selectedSupplier, setSelectedSupplier] = useState(''); // State to store the selected supplier
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -102,7 +103,9 @@ const AddMedicine = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const formData = new FormData();
+
+    if (validateForm()) {
+      const formData = new FormData();
     formData.append('supplier_id', selectedSupplier);
     formData.append('supplier_name', companyName);
     formData.append('generic_name', genericName);
@@ -156,7 +159,65 @@ const AddMedicine = () => {
           text: 'Error adding medicine. Please try again.'
         });
       });
+    } 
   };
+
+  const validateForm = () => {
+    const errors = {};
+
+    if (companyName.trim() === '') {
+      errors.companyName = 'Supplier is required';
+    }
+
+    if (genericName.trim() === '') {
+      errors.genericName = 'Generic name is required';
+    }
+
+    if (strength.trim() === '') {
+      errors.strength = 'Strength is required';
+    }
+
+    if (tradePrice.trim() === '') {
+      errors.tradePrice = 'tradePrice is required';
+    }
+
+    if (boxSize.trim() === '') {
+      errors.boxSize = 'boxSize is required';
+    }
+
+    if (expDate.trim() === '') {
+      errors.expDate = 'expDate is required';
+    }
+
+    if (productName.trim() === '') {
+      errors.productName = 'productName is required';
+    }
+
+    if (mrp.trim() === '') {
+      errors.mrp = 'mrp is required';
+    }
+
+    if (quantity.trim() === '') {
+      errors.quantity = 'quantity is required';
+    }
+
+    if (ShortQty.trim() === '') {
+      errors.ShortQty = 'ShortQty is required';
+    } 
+    
+    if (form.trim() === '') {
+      errors.form = 'form is required';
+    }
+
+    if (!selectedImage) {
+      errors.selectedImage = 'Image is required';
+      console.log("11");
+    }
+
+    setErrors(errors);
+
+    return Object.keys(errors).length === 0;
+  }
   // navigation
   const navigate = useNavigate();
   const handleButtonClick = () => {
@@ -295,6 +356,9 @@ const AddMedicine = () => {
                           onChange={handleSupplierChange}
                           label='Company Name'
                           placeholder='supplier Name'
+                          required
+                          error={!!errors.companyName}
+                          helperText={errors.companyName}
                         >
                           {supplierList.map((supplier) => (
                             <MenuItem key={supplier.supplier_id} value={supplier.supplier_id}>
@@ -312,6 +376,8 @@ const AddMedicine = () => {
                       label='Generic Name'
                       placeholder='Generic Name'
                       multiline
+                      error={!!errors.genericName}
+                      helperText={errors.genericName}
                     />
                     <TextField
                       size='small'
@@ -321,6 +387,8 @@ const AddMedicine = () => {
                       label='Strength'
                       placeholder='Strength'
                       multiline
+                      error={!!errors.strength}
+                      helperText={errors.strength}
                     />
                     <TextField
                       size='small'
@@ -332,6 +400,8 @@ const AddMedicine = () => {
                       value={tradePrice}
                       onChange={handleTradePrice}
                       fullWidth
+                      error={!!errors.tradePrice}
+                      helperText={errors.tradePrice}
                     />
                     <TextField
                       size='small'
@@ -343,14 +413,19 @@ const AddMedicine = () => {
                       value={boxSize}
                       onChange={handleBoxSize}
                       fullWidth
+                      error={!!errors.boxSize}
+                      helperText={errors.boxSize}
                     />
                     <TextField
                       size='small'
+                      required
                       id='expiry-date'
                       label='Expiry Date'
                       type='date'
                       onChange={(e) => setExpDate(e.target.value)}
                       InputLabelProps={{ shrink: true }}
+                      error={!!errors.expDate}
+                      helperText={errors.expDate}
                     />
                     <TextField
                       size='small'
@@ -367,12 +442,15 @@ const AddMedicine = () => {
                 <Grid item xs={12} md={6}>
                   <Box component='form' sx={{ '& .MuiTextField-root': { m: 1, width: '100%' } }} noValidate Validate autoComplete='off'>
                     <TextField
+                      required
                       size='small'
                       id='outlined-textarea'
                       label='Product Name'
                       placeholder='Product Name'
                       multiline
                       onChange={(e) => setProductName(e.target.value)}
+                      error={!!errors.productName}
+                      helperText={errors.productName}
                     />
                     <TextField
                       size='small'
@@ -396,6 +474,8 @@ const AddMedicine = () => {
                       onChange={handleMrp}
                       fullWidth
                       placeholder='M.R.P.'
+                      error={!!errors.mrp}
+                      helperText={errors.mrp}
                     />
                     <TextField
                       label='Box Pirce'
@@ -418,6 +498,8 @@ const AddMedicine = () => {
                       onChange={(e) => setQuantity(e.target.value)}
                       fullWidth
                       placeholder='Short Quantity'
+                      error={!!errors.quantity}
+                      helperText={errors.quantity}
                     />
                     <TextField
                       size='small'
@@ -429,16 +511,21 @@ const AddMedicine = () => {
                       onChange={handleShortQty}
                       fullWidth
                       placeholder='Short Quantity'
+                      error={!!errors.ShortQty}
+                      helperText={errors.ShortQty}
                     />
                     <Grid item>
                       <FormControl size='small' fullWidth>
                         <InputLabel id='demo-simple-select-label'>Form</InputLabel>
                         <Select
+                          required
                           labelId='demo-simple-select-label'
                           id='demo-simple-select'
                           value={formValue}
                           onChange={handleChange} // Update onChange event to handleChange
                           label='formValue'
+                          error={!!errors.form}
+                          helperText={errors.form}
                         >
                           <MenuItem value={'tablet'}>Tablet</MenuItem>
                           <MenuItem value={'capsule'}>Capsule</MenuItem>
@@ -471,6 +558,7 @@ const AddMedicine = () => {
                       }}
                     >
                       <input type='file' onChange={handleImageChange} required accept='image/*' style={{ width: '100%' }} />
+                      {errors.selectedImage && <div style={{ color: 'red' }}>{errors.selectedImage}</div>}
                       {selectedImage && (
                         <div style={{ display: 'flex', justifyContent: 'end' }}>
                           <img src={URL.createObjectURL(selectedImage)} alt='Selected' style={{ maxWidth: '100%', maxHeight: '30px' }} />

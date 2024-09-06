@@ -40,6 +40,7 @@ const AddSupplier = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [address, setAddress] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
+  const [errors, setErrors] = useState({});
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -50,42 +51,76 @@ const AddSupplier = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append('s_name', supplierName);
-    formData.append('s_email', email);
-    formData.append('s_note', note);
-    formData.append('status', status);
-    formData.append('s_phone', phoneNumber);
-    formData.append('s_address', address);
-    formData.append('image', selectedImage);
+    if (validateForm()) {
+      const formData = new FormData();
+      formData.append('s_name', supplierName);
+      formData.append('s_email', email);
+      formData.append('s_note', note);
+      formData.append('status', status);
+      formData.append('s_phone', phoneNumber);
+      formData.append('s_address', address);
+      formData.append('image', selectedImage);
 
-    axios
-      .post(`http://localhost:8080/supplier`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
-      .then((response) => {
-        if (response.status === 200) {
+      axios
+        .post(`http://localhost:8080/supplier`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+        .then((response) => {
+          if (response.status === 200) {
+            Swal.fire({
+              title: 'Supplier Add Successfully !',
+              text: 'You clicked the button!',
+              icon: 'success'
+            });
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          }
+        })
+        .catch((error) => {
+          console.error('Error:', error);
           Swal.fire({
-            title: 'Supplier Add Successfully !',
+            title: 'Error !',
             text: 'You clicked the button!',
-            icon: 'success'
+            icon: 'error'
           });
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
-        }
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-        Swal.fire({
-          title: 'Error !',
-          text: 'You clicked the button!',
-          icon: 'error'
         });
-      });
+    }
   };
+
+  const validateForm = () => {
+    const errors = {};
+
+    if (supplierName.trim() === '') {
+      errors.supplierName = 'Supplier is required';
+    }
+
+    if (email.trim() === '') {
+      errors.email = 'email is required';
+    }
+
+    if (note.trim() === '') {
+      errors.note = 'note is required';
+    }
+
+    if (status.trim() === '') {
+      errors.status = 'status is required';
+    }
+
+    if (phoneNumber.trim() === '') {
+      errors.phoneNumber = 'phoneNumber is required';
+    }
+
+    if (address.trim() === '') {
+      errors.address = 'address is required';
+    }
+
+    setErrors(errors);
+
+    return Object.keys(errors).length === 0;
+  }
 
   //for age
 
@@ -171,6 +206,8 @@ const AddSupplier = () => {
                       size='small'
                       required
                       onChange={(e) => setSupplierName(e.target.value)}
+                      error={!!errors.supplierName}
+                      helperText={errors.supplierName}
                     />
                     <TextField
                       label='Phone Number'
@@ -180,6 +217,9 @@ const AddSupplier = () => {
                       id='s_phone'
                       onChange={handlephoneNum}
                       fullWidth
+                      required
+                      error={!!errors.phoneNumber}
+                      helperText={errors.phoneNumber}
                     />
                     <TextField
                       id='s_email'
@@ -189,6 +229,8 @@ const AddSupplier = () => {
                       size='small'
                       required
                       onChange={(e) => setEmail(e.target.value)}
+                      error={!!errors.email}
+                      helperText={errors.email}
                     />
 
                     <TextField
@@ -199,6 +241,8 @@ const AddSupplier = () => {
                       size='small'
                       required
                       onChange={(e) => setNote(e.target.value)}
+                      error={!!errors.note}
+                      helperText={errors.note}
                     />
                   </Box>
                 </Grid>
@@ -214,6 +258,8 @@ const AddSupplier = () => {
                       size='small'
                       onChange={(e) => setAddress(e.target.value)}
                       required
+                      error={!!errors.address}
+                      helperText={errors.address}
                     />
 
                     <div
@@ -245,6 +291,9 @@ const AddSupplier = () => {
                           value={status}
                           label='Status'
                           onChange={handleChange}
+                          required
+                          error={!!errors.status}
+                          helperText={errors.status}
                         >
                           <MenuItem value={'Active'}>Active</MenuItem>
                           <MenuItem value={'Inactive'}>Inactive</MenuItem>

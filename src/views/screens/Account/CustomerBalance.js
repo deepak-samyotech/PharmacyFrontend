@@ -29,6 +29,9 @@ import Modal from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import axios from 'axios';
+import { putCustomerLedgerData } from 'utils/api';
+import { HttpStatusCodes } from 'utils/statusCodes';
+import { toast } from 'react-toastify';
 
 
 const style = {
@@ -70,6 +73,15 @@ function CustomerBalance() {
   const [order, setOrder] = useState('asc');
   const [editedRowData, setEditedRowData] = useState(null);
   const [id, setId] = useState([]);
+  const [trade, setTrade] = useState('');
+  const [boxSize, setBoxSize] = useState('');
+  const [mrp, setMrp] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [cusName, setCusName] = useState('');
+  const [dueAmount, setDueAmmount] = useState(0);
+  const [paidAmount, setPaidAmmount] = useState();
+  const [ledgerId, setLedgerId] = useState();
+  const [isCalling, setIsCalling] = useState(false);
 
   const columns = [
     { id: 'id', label: 'ID', align: 'center', minWidth: 70 },
@@ -81,27 +93,27 @@ function CustomerBalance() {
     { id: 'actions', label: 'Actions', align: 'center', minWidth: 170 }
   ];
 
+  const fetchData = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/customer_ledger');
+
+      const transformedData = response.data?.data?.map((item) => ({
+        id: item.id,
+        customerID: item.customer_id || '--------',
+        customerName: item.customer_name || '--------',
+        totalAmount: item.total_balance || 0,
+        paidAmount: item.total_paid || 0,
+        dueAmount: item.total_due || '0.00',
+      }));
+      setData(transformedData);
+      const ids = transformedData.map((item) => item.id);
+      setId(ids);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/customer_ledger');
-
-        const transformedData = response.data?.data?.map((item) => ({
-          id: item.id,
-          customerID: item.customer_id || 0,
-          customerName: item.customer_name || 0,
-          totalAmount: item.total_balance || 0,
-          paidAmount: item.total_paid || 0,
-          dueAmount: item.total_due || 0,
-        }));
-        setData(transformedData);
-        const ids = transformedData.map((item) => item.id);
-        setId(ids);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
 
     fetchData();
   }, []);
@@ -122,17 +134,17 @@ function CustomerBalance() {
     setAge(event.target.value);
   };
   // number input id
-  const [trade, setTrade] = useState('');
+  
   const handleNumberChange1 = (event) => {
     const inputValue = event.target.value.replace(/[^0-9]/g, '');
     setTrade(inputValue);
   };
-  const [boxSize, setBoxSize] = useState('');
+  
   const handleNumberChange2 = (event) => {
     const inputValue = event.target.value.replace(/[^0-9]/g, '');
     setBoxSize(inputValue);
   };
-  const [mrp, setMrp] = useState('');
+ 
   const handleNumberChange3 = (event) => {
     const inputValue = event.target.value.replace(/[^0-9]/g, '');
     setMrp(inputValue);
@@ -154,12 +166,21 @@ function CustomerBalance() {
     displayImage(file);
   };
 
-  const [copied, setCopied] = useState(false);
+  
 
  
   //models
   const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
+  const handleOpen = (row) => {
+    console.log("row ====== > ", row);
+    setLedgerId(row?.id);
+    setCusName(row?.customerName);
+    setTrade(row?.totalAmount);
+    setDueAmmount(row?.dueAmount);
+    setPaidAmmount(row?.paidAmount);
+    setOpen(true);
+
+  };
   const handleClose = () => setOpen(false);
 
   const navigate = useNavigate();
@@ -311,6 +332,28 @@ function stableSort(array, comparator) {
   });
   return stabilizedThis.map((el) => el[0]);
 }
+  
+  const handleModalSubmit = async(e) => {
+    e.preventDefault();
+
+    setIsCalling(true);
+
+    const formData = new FormData();
+
+    formData.append("customer_name", cusName);
+    formData.append("total_balance", trade);
+    formData.append("total_paid", paidAmount);
+    formData.append("total_due", dueAmount);
+
+    const response = await putCustomerLedgerData(ledgerId, formData);
+    if (response?.status === HttpStatusCodes.OK) {
+      toast.success("Data updated Successfully.");
+      fetchData();
+      setOpen(false);
+    }
+
+    setIsCalling(false);
+  }
 
   return (
     <>
@@ -494,7 +537,15 @@ function stableSort(array, comparator) {
                       {/* First Column */}
                       <Grid item xs={12} md={6}>
                         <Box component='form' sx={{ '& .MuiTextField-root': { m: 1, width: '100%' } }} noValidate autoComplete='off'>
-                          <TextField size='small' id='outlined-textarea' label='Customer Name' placeholder='Supplier Name' multiline />
+                          <TextField
+                            size='small'
+                            id='outlined-textarea'
+                            label='Customer Name'
+                            placeholder='Supplier Name'
+                            multiline
+                            value={cusName}
+                            onChange={(e) => setCusName(e.target.value)}
+                          />
                           <TextField
                             size='small'
                             label='Total Amount'
@@ -503,14 +554,14 @@ function stableSort(array, comparator) {
                             onChange={handleNumberChange1}
                             fullWidth
                           />
-                          <TextField
+                          {/* <TextField
                             size='small'
                             label='Pay Amount'
                             type='number'
                             value={quantity}
                             onChange={handleNumberChange5}
                             fullWidth
-                          />
+                          /> */}
                         </Box>
                       </Grid>
                       {/* Second Column */}
@@ -520,16 +571,16 @@ function stableSort(array, comparator) {
                             size='small'
                             label='Due Amount'
                             type='number'
-                            value={boxPrice}
-                            onChange={handleNumberChange4}
+                            value={dueAmount}
+                            onChange={(e) => setDueAmmount(e.target.value)}
                             fullWidth
                           />
                           <TextField
                             size='small'
                             label='Paid Amount'
                             type='number'
-                            value={boxSize}
-                            onChange={handleNumberChange2}
+                            value={paidAmount}
+                            onChange={(e) => setPaidAmmount(e.target.value)}
                             fullWidth
                           />
                         </Box>
@@ -539,7 +590,13 @@ function stableSort(array, comparator) {
                   {/* <hr /> */}
                   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <Stack spacing={2} direction='row'>
-                      <Button variant='contained'>Submit</Button>
+                      <Button
+                        variant='contained'
+                        onClick={handleModalSubmit}
+                        disabled={isCalling}
+                      >
+                        Submit
+                      </Button>
                       <Button onClick={handleClose} variant='outlined'>
                         Cancel
                       </Button>

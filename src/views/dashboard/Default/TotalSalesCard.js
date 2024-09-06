@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // material-ui
 import { styled, useTheme } from '@mui/material/styles';
@@ -19,6 +19,8 @@ import FileCopyTwoToneIcon from '@mui/icons-material/FileCopyOutlined';
 import PictureAsPdfTwoToneIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import ArchiveTwoToneIcon from '@mui/icons-material/ArchiveOutlined';
 import EarningCard from './EarningCard';
+import { todaySales } from 'utils/api';
+import { HttpStatusCodes } from 'utils/statusCodes';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     backgroundColor: theme.palette.secondary.dark,
@@ -61,6 +63,8 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 const TotalSalesCard = ({ isLoading }) => {
     const theme = useTheme();
 
+    const [count, setCount] = useState(0);
+
     const [anchorEl, setAnchorEl] = useState(null);
 
     const handleClick = (event) => {
@@ -70,6 +74,18 @@ const TotalSalesCard = ({ isLoading }) => {
     const handleClose = () => {
         setAnchorEl(null);
     };
+
+    const fetchTodaySale = async() => {
+        const response = await todaySales();
+
+        if (response.status === HttpStatusCodes.OK) {
+            setCount(response?.data?.data?.length);
+        }
+    }
+
+    useEffect(() => {
+        fetchTodaySale();
+    }, [])
 
     return (
         <>
@@ -94,7 +110,7 @@ const TotalSalesCard = ({ isLoading }) => {
 
                             <div style={{ display: 'flex', alignItems: 'center', marginTop: 10, padding: '5px', margin: '5px' }}>
                                 <Typography variant="body1" style={{ marginLeft: 10, zIndex: 10, fontSize: '20px' }}>
-                                    22
+                                   {count }
                                 </Typography>
                                 {/* <Typography variant="body1" style={{ marginLeft: 'auto', zIndex: 10 }}>
                 2

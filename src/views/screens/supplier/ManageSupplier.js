@@ -169,7 +169,6 @@ function ManageSupplier() {
     formData.append("status", status);
     formData.append("image", selectedImage);
 
-    console.log("suplier data : ", formData);
 
     axios
       .put(`http://localhost:8080/supplier/${editedRowData.id}`, formData, {

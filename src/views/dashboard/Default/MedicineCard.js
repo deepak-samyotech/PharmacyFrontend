@@ -33,23 +33,16 @@ const MedicineCard = () => {
             image: item.image || "",
           }))
           //1.) short quantity
-          .filter((item) => item.QtyAvailable < 100); 
+          .filter((item) => item.QtyAvailable < 100);
         setData(transformedData);
 
         //2.)soon expire
         const currentDate = new Date();
-        const cutoffDate = new Date(
-          currentDate.getTime() + 15 * 24 * 60 * 60 * 1000
-        ); // 15 days from now
+        const cutoffDate = new Date(currentDate.getTime() + 15 * 24 * 60 * 60 * 1000); // 15 days from now
 
         const filteredData = transformedData.filter((item) => {
           const expirationDate = new Date(item.expDate);
-          if (expirationDate <= cutoffDate) {
-            if (currentDate < expirationDate) {
-              return true;  
-            }
-          }
-          return false;  
+          return expirationDate > currentDate && expirationDate <= cutoffDate;
         });
 
         setData2(filteredData);
@@ -113,7 +106,7 @@ const MedicineCard = () => {
                                   component="span"
                                   variant="body2"
                                   color="textSecondary"
-                                  //   style={{ marginLeft: "10px" }}
+                                //   style={{ marginLeft: "10px" }}
                                 >
                                   Generic Name : {item.genericName}
                                 </Typography>
@@ -181,7 +174,7 @@ const MedicineCard = () => {
                                   component="span"
                                   variant="body2"
                                   color="textSecondary"
-                                  //   style={{ marginLeft: "10px" }}
+                                //   style={{ marginLeft: "10px" }}
                                 >
                                   Generic Name : {item.genericName}
                                 </Typography>
@@ -247,7 +240,7 @@ const MedicineCard = () => {
                                   component="span"
                                   variant="body2"
                                   color="textSecondary"
-                                  //   style={{ marginLeft: "10px" }}
+                                //   style={{ marginLeft: "10px" }}
                                 >
                                   Generic Name : {item.genericName}
                                 </Typography>

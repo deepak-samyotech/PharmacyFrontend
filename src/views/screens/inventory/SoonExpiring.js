@@ -110,8 +110,13 @@ function SoonExpiring() {
   
         // Filter out the items whose expiry date is within the next 15 days
         const currentDate = new Date();
-        const cutoffDate = new Date(currentDate.getTime() + (15 * 24 * 60 * 60 * 1000)); // 15 days from now
-        const filteredData = transformedData.filter(item => new Date(item.expDate) <= cutoffDate);
+        const cutoffDate = new Date(currentDate.getTime() + 15 * 24 * 60 * 60 * 1000); // 15 days from now
+
+        const filteredData = transformedData.filter((item) => {
+          const expirationDate = new Date(item.expDate);
+          return expirationDate > currentDate && expirationDate <= cutoffDate;
+        });
+
   
         setData(filteredData);
         const ids = filteredData.map((item) => item.id);

@@ -31,6 +31,7 @@ import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
 import CloseIcon from "@mui/icons-material/Close";
 import AssignmentReturnIcon from "@mui/icons-material/AssignmentReturn";
+import { toast } from "react-toastify";
 
 const styles = {
   smallTypography: {
@@ -124,14 +125,16 @@ function SaleReturn() {
   const [rtnQty, setRtnQty] = useState([]);
   const [deduction, setDeduction] = useState("");
   const [total, setTotal] = useState("");
+  const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     customerName: "",
     invoiceNumber: "",
-    sale_id:"",
+    sale_id: "",
     invoiceDate: "",
     type: "",
     medicineData: [
       {
+        medicine_id: "",
         medicine: "",
         generic: "",
         saleQty: "",
@@ -146,9 +149,18 @@ function SaleReturn() {
     totalReturn: 0,
   });
 
-  
+
   const handleReturnSubmit = async (formData) => {
     try {
+
+      const isValid = formData.medicineData.some(medicine => medicine.returnQty && medicine.returnQty > 0);
+      if (!isValid) {
+        toast.error("Please fill in the Return Qty for at least one medicine with a value greater than 0.");
+        return;
+      }
+
+      console.log("FormData : ", formData);
+
       // Create a modified version of formData to include missing fields
       const modifiedFormData = {
         ...formData,
@@ -161,22 +173,25 @@ function SaleReturn() {
           salePrice: medicine.medMrp, // Assuming medicine has medMrp
         })),
       };
-  
+
+      console.log("Modified form data : ", modifiedFormData);
+
       // Make a POST request to your API endpoint
       const response = await axios.post(
         "http://localhost:8080/sale_return",
         modifiedFormData // Send the modified formData state as the request body
       );
-  
+
       // Optionally, you can reset the form data after successful submission
       setFormData({
         customerName: "",
         invoiceNumber: "",
-        sale_id:"",
+        sale_id: "",
         invoiceDate: "",
         type: "",
         medicineData: [
           {
+            medicine_id: "",
             medicine: "",
             generic: "",
             saleQty: "",
@@ -191,12 +206,16 @@ function SaleReturn() {
         totalReturn: 0,
       });
       // Optionally, you can display a success message or handle navigation
+
+      toast.success("Order Successfully returned!");
+      fetchData();
+      handleCloseModal();
     } catch (error) {
       console.error("Error posting data:", error);
       // Optionally, you can display an error message to the user
     }
   };
-  
+
   const calculateTotalDeduction = (qty, mrp, deduction) => {
     const deductionAmount = (qty * mrp * deduction) / 100;
     return deductionAmount.toFixed(2);
@@ -272,6 +291,20 @@ function SaleReturn() {
   const handleSetData = (event, index) => {
     const { name, value } = event.target;
     const updatedMedicineData = [...formData.medicineData];
+
+    // Validate returnQty
+    if (name === "returnQty") {
+      const enteredQty = parseFloat(value);
+
+      // Ensure returnQty is not less than 0 and not more than medicineItem.qty
+      if (enteredQty < 0 || enteredQty > updatedMedicineData[index].qty) {
+        toast.error(`Return Qty must be between 0 and ${updatedMedicineData[index].qty}`);
+        return; // Stop the function from updating data if validation fails
+      }
+    }
+
+
+
     updatedMedicineData[index][name] = value;
 
     // Calculate total and deduction for the current row
@@ -304,32 +337,45 @@ function SaleReturn() {
     }
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:8080/manage_invoice"
-        );
-        const transformedData = response.data?.data?.map((item) => ({
-          id: item.id,
-          createDate: item.createDate,
-          invoiceNumber: item.invoiceId,
-          sale_id: item.sale_id,
-          customerName: item.customerName,
-          totalAmount: item.grand_total,
-          customerType: item.customerType,
-          medicineData: item.medicineData,
-        }));
-        setData(transformedData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
+  function updateQuantityAccordingToPreviousReturn(medicineData) {
+    medicineData.forEach(medicine => {
+      const qty = parseInt(medicine.qty) || 0;
+      const returnQty = parseInt(medicine.prevReturnQty) || 0;
+      medicine.qty = Math.max(qty - returnQty, 0).toString();
+    });
+    return medicineData;
+  }
 
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8080/manage_invoice"
+      );
+      const transformedData = response.data?.data?.map((item) => ({
+        id: item.id,
+        createDate: item.createDate,
+        invoiceNumber: item.invoiceId,
+        sale_id: item.sale_id,
+        customerName: item.customerName,
+        totalAmount: item.grand_total,
+        customerType: item.customerType,
+        medicineData: updateQuantityAccordingToPreviousReturn(item.medicineData),
+      }));
+      setData(transformedData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
 
+
+
+
   const handleViewInvoice = (row) => {
+
     setSelectedInvoice(row);
     setFormData(row);
     setOpenModal(true);
@@ -774,6 +820,17 @@ function SaleReturn() {
                                               onChange={(e) =>
                                                 handleSetData(e, index)
                                               }
+                                              required
+                                              error={medicineItem.returnQty === '' || medicineItem.returnQty < 0 || medicineItem.returnQty > medicineItem.qty} // Validation error
+                                              helperText={
+                                                medicineItem.returnQty === ''
+                                                  ? 'Return Qty is required'
+                                                  : medicineItem.returnQty < 0
+                                                    ? 'Return Qty cannot be less than 0'
+                                                    : medicineItem.returnQty > medicineItem.qty
+                                                      ? `Return Qty cannot exceed ${medicineItem.qty}`
+                                                      : ''
+                                              }
                                             />
                                           </TableCell>
                                           <TableCell className="text-center">
@@ -788,6 +845,11 @@ function SaleReturn() {
                                               value={medicineItem.deduction}
                                               onChange={(e) =>
                                                 handleSetData(e, index)
+                                              }
+                                              error={medicineItem.deduction < 0 || medicineItem.deduction > 100}
+                                              helperText={
+                                                medicineItem.deduction < 0 ? 'Deduction ammount should be greater than 0' :
+                                                  medicineItem.deduction > 100 ? 'Deduction ammount should be less than 100' : ''
                                               }
                                             />
                                           </TableCell>

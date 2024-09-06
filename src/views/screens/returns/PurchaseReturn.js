@@ -18,6 +18,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import Alert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
+import { toast } from "react-toastify";
 
 const PurchaseReturn = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -31,8 +32,8 @@ const PurchaseReturn = () => {
   const [inDate, setInDate] = useState("");
   const [note, setNote] = useState("");
   const [td, setTd] = useState("");
-  const [rQty, setRQty] = useState("");
-  const [total, setTotal] = useState("");
+  const [rQty, setRQty] = useState('');
+  const [total, setTotal] = useState('');
   const [mrp, setMrp] = useState(0);
   const [medicine, setMedicine] = useState([]);
   const [purchaseQty, setPurchaseQty] = useState([]);
@@ -40,6 +41,8 @@ const PurchaseReturn = () => {
   const [form, setForm] = useState("");
   const [trade_price, setTrade_pricel] = useState("");
   const [barcode, setBarcode] = useState("");
+  const [errors, setErrors] = useState({});
+
 
   const handleSubmit = async () => {
     try {
@@ -78,7 +81,7 @@ const PurchaseReturn = () => {
     // Calculate box price based on MRP and box size
     const calculatedBoxPrice =
       parseFloat(mrp) * parseInt(rQty) -
-      (parseFloat(mrp) * parseInt(rQty) * parseFloat(td)) / 100;
+      (parseFloat(mrp) * parseInt(rQty) * parseFloat(td || 0)) / 100;
     setTotal(calculatedBoxPrice.toFixed(2)); // Set the box price
   };
 
@@ -88,6 +91,16 @@ const PurchaseReturn = () => {
 
   const handleReturnSubmit = (e) => {
     e.preventDefault();
+
+    const newErrors = {};
+    if (!rQty) newErrors.rQty = 'Return Quantity is required';
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      // setIsCalling(false);
+      return;
+    }
+
     const formData = new FormData();
     formData.append("sid", supplierId);
     formData.append("supplier_name", companyName);
@@ -137,6 +150,34 @@ const PurchaseReturn = () => {
       });
   };
 
+  const handleReturnQuantity = (e) => {
+    const value = parseInt(e.target.value, 10);
+
+    if (value >= 1 && value <= purchaseQty) {
+      setRQty(value);
+    } else if (value < 1) {
+      toast.error("Return quantinty should be grater than 1.")
+      setRQty('');
+    } else if (value > purchaseQty) {
+      toast.error("Return quantity should be less than equal to purchase quantity.")
+      setRQty('');
+    }
+  }
+
+  const handleTdChange = (e) => {
+    const value = parseInt(e.target.value, 10);
+
+    if (value >= 1 && value <= 100) {
+      setTd(value);
+    } else if (value < 1) {
+      toast.error("TD should be grater than 0.")
+      setTd('');
+    } else if (value > 100) {
+      toast.error("TD should be less than equal to 100.")
+      setTd('');
+    }
+  }
+
   return (
     <div style={{ margin: "10px" }}>
       <Card style={{ backgroundColor: "#ffffff" }}>
@@ -185,7 +226,7 @@ const PurchaseReturn = () => {
                       label="Company Name "
                       variant="outlined"
                       value={companyName}
-                      onChange={(e) => setCompanyName(e.target.value)}
+                      // onChange={(e) => setCompanyName(e.target.value)}
                       fullWidth
                     />
                   </Grid>
@@ -194,7 +235,7 @@ const PurchaseReturn = () => {
                       label="Invoice No"
                       variant="outlined"
                       value={invoice}
-                      onChange={(e) => setInvoice(e.target.value)}
+                      // onChange={(e) => setInvoice(e.target.value)}
                       fullWidth
                     />
                   </Grid>
@@ -203,7 +244,7 @@ const PurchaseReturn = () => {
                       label="Invoice Date"
                       variant="outlined"
                       value={inDate}
-                      onChange={(e) => setInDate(e.target.value)}
+                      // onChange={(e) => setInDate(e.target.value)}
                       fullWidth
                     />
                   </Grid>
@@ -212,7 +253,7 @@ const PurchaseReturn = () => {
                       label="Note"
                       variant="outlined"
                       value={note}
-                      onChange={(e) => setNote(e.target.value)}
+                      // onChange={(e) => setNote(e.target.value)}
                       fullWidth
                     />
                   </Grid>
@@ -227,7 +268,7 @@ const PurchaseReturn = () => {
                           <TableCell>MRP</TableCell>
                           <TableCell>Purchase Qty</TableCell>
                           <TableCell>Return Qty</TableCell>
-                          <TableCell>TD</TableCell>
+                          <TableCell>TD(%)</TableCell>
                           <TableCell>Total</TableCell>
                         </TableRow>
                       </TableHead>
@@ -241,10 +282,16 @@ const PurchaseReturn = () => {
                               id="outlined-number"
                               type="number"
                               value={rQty}
-                              onChange={(e) => setRQty(e.target.value)}
+                              onChange={(e) => handleReturnQuantity(e)}
                               InputLabelProps={{
                                 shrink: true,
                               }}
+                              // inputProps={{
+                              //   min: 1,
+                              //   max: purchaseQty,
+                              // }}
+                              error={!!errors.rQty}
+                              helperText={errors.rQty}
                             />
                           </TableCell>
                           <TableCell>
@@ -252,9 +299,13 @@ const PurchaseReturn = () => {
                               id="outlined-number"
                               type="number"
                               value={td}
-                              onChange={(e) => setTd(e.target.value)}
+                              onChange={(e) => handleTdChange(e)}
                               InputLabelProps={{
                                 shrink: true,
+                              }}
+                              inputProps={{
+                                min: 1,
+                                max: 100,
                               }}
                             />
                           </TableCell>

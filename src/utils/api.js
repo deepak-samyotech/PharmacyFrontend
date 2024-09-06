@@ -120,3 +120,27 @@ export async function updateProductQuantity(updatedQuantity) {
   }
 }
 
+export async function todaySales() {
+  try {
+
+    return await axios.get(`${baseurl}/manage_invoice/todaySale`);
+    
+  } catch (error) {
+    console.log("Error : ", error);
+    toast.error("Something went wrong while fetching todaysale");
+  }
+}
+
+export async function putCustomerLedgerData(ledger_id, formData) {
+  try {
+    return await axios.put(`${baseurl}/customer_ledger/${ledger_id}`, formData,  {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  } catch (error) {
+    console.log("Error : ", error);
+    toast.error("Something went wrong while changing customer ledger");
+  }
+}
+

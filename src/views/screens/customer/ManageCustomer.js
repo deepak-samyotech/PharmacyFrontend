@@ -658,7 +658,7 @@ function ManageCustomer() {
                                         "no image"
                                       )
                                     ) : (
-                                      row[column.id]
+                                      row[column.id] || '----------'
                                     )}
                                     {column.id === "actions" ? (
                                       <div

@@ -112,7 +112,6 @@ const Pos = () => {
   const fetchMedicineData = async () => {
     const response = await fetchMedicine();
 
-    console.log("response --------------------------------------> : ", response);
 
     if (response?.status === HttpStatusCodes.OK) {
       const transformedData = response?.data?.data?.map((item) => ({
@@ -308,6 +307,7 @@ const Pos = () => {
 
     // Map tableData to construct medicineData array
     const medicineData = tableData.map((item) => ({
+      medicine_id: item.p_id,
       medicine: item.productName,
       qty: item.quantity,
       product_total: item.total,

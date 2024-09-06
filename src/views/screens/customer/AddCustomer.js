@@ -53,8 +53,6 @@ const AddCustomer = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    console.log("In if wholesale submit outside");
-
     console.log(validateForm());
     
     if (validateForm()) {
@@ -107,7 +105,7 @@ const AddCustomer = () => {
   const validateForm = () => {
 
     console.log("customerType : ",customerType);
-    console.log("In validate form start");
+
     const errors = {};
     if (customerName.trim() === '') {
       errors.customerName = 'Customer name is required';
@@ -166,8 +164,6 @@ const AddCustomer = () => {
 
     }
     setErrors(errors);
-    console.log("In validate form end");
-    console.log("12");
 
     return Object.keys(errors).length === 0;
   };

@@ -44,6 +44,10 @@ const Closing = () => {
   const [closeBalance, setCloseBalance] = useState(null);
   const [adjustment, setAdjustment] = useState('');
 
+  const [errors, setErrors] = useState({});
+
+  const [isCalling, setIsCalling] = useState(false);
+
   function setAllValueEmpty() {
     setOpenBalance('');
     setCashIn('');
@@ -55,6 +59,23 @@ const Closing = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    setIsCalling(true);
+
+    const newErrors = {};
+    if (!date) newErrors.date = 'Date is required';
+    if (!openBalance) newErrors.openBalance = 'Opening Balance is required';
+    if (!cashIn) newErrors.cashIn = 'Cash In is required';
+    if (!cashOut) newErrors.cashOut = 'Cash Out is required';
+    if (!cashInHand) newErrors.cashInHand = 'Cash In Hand is required';
+    if (!closeBalance) newErrors.closeBalance = 'Closing Balance is required';
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setIsCalling(false);
+      return;
+    }
+
     const formData = new FormData();
 
     formData.append('date', date);
@@ -80,6 +101,8 @@ const Closing = () => {
       })
       .catch((error) => {
         console.error('Error:', error);
+      }).finally(() => {
+          setIsCalling(false);
       });
   };
 
@@ -151,6 +174,8 @@ const Closing = () => {
                       InputLabelProps={{
                         shrink: true,
                       }}
+                      error={!!errors.date}
+                      helperText={errors.date}
                     />
                     <TextField
                       label='Opening Balance'
@@ -160,6 +185,8 @@ const Closing = () => {
                       onChange={handleOpenBalance}
                       fullWidth
                       size='small'
+                      error={!!errors.openBalance}
+                      helperText={errors.openBalance}
                     />
                     <TextField
                       label='Cash In'
@@ -169,6 +196,8 @@ const Closing = () => {
                       onChange={handleCashIn}
                       fullWidth
                       size='small'
+                      error={!!errors.cashIn}
+                      helperText={errors.cashIn}
                     />
                     <TextField
                       label='Cash Out'
@@ -178,6 +207,8 @@ const Closing = () => {
                       onChange={handleCashOut}
                       fullWidth
                       size='small'
+                      error={!!errors.cashOut}
+                      helperText={errors.cashOut}
                     />
                     <TextField
                       label='Cash In Hand'
@@ -187,6 +218,8 @@ const Closing = () => {
                       onChange={handleCashInHand}
                       fullWidth
                       size='small'
+                      error={!!errors.cashInHand}
+                      helperText={errors.cashInHand}
                     />
                     <TextField
                       label='Closing Balance'
@@ -196,6 +229,8 @@ const Closing = () => {
                       onChange={handleCloseBalance}
                       fullWidth
                       size='small'
+                      error={!!errors.closeBalance}
+                      helperText={errors.closeBalance}
                     />
                     <TextField
                       id='outlined-textarea'
@@ -220,7 +255,12 @@ const Closing = () => {
               }}
             >
               <Stack spacing={2} direction='row'>
-              <Button variant='contained' onClick={handleSubmit}>Submit</Button>
+                <Button
+                  variant='contained'
+                  onClick={handleSubmit}
+                  disabled={isCalling}
+                >
+                  Submit</Button>
               <Button variant='outlined'>Cancel</Button>
               </Stack>
             </div>
