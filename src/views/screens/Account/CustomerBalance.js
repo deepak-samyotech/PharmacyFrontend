@@ -32,6 +32,7 @@ import axios from 'axios';
 import { putCustomerLedgerData } from 'utils/api';
 import { HttpStatusCodes } from 'utils/statusCodes';
 import { toast } from 'react-toastify';
+import Loading from "ui-component/Loading";
 
 
 const style = {
@@ -64,7 +65,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 function CustomerBalance() {
- 
+
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(0);
@@ -82,6 +83,8 @@ function CustomerBalance() {
   const [paidAmount, setPaidAmmount] = useState();
   const [ledgerId, setLedgerId] = useState();
   const [isCalling, setIsCalling] = useState(false);
+  const [loading, setLoading] = useState(true);
+
 
   const columns = [
     { id: 'id', label: 'ID', align: 'center', minWidth: 70 },
@@ -106,6 +109,7 @@ function CustomerBalance() {
         dueAmount: item.total_due || '0.00',
       }));
       setData(transformedData);
+      setLoading(false);
       const ids = transformedData.map((item) => item.id);
       setId(ids);
     } catch (error) {
@@ -134,17 +138,17 @@ function CustomerBalance() {
     setAge(event.target.value);
   };
   // number input id
-  
+
   const handleNumberChange1 = (event) => {
     const inputValue = event.target.value.replace(/[^0-9]/g, '');
     setTrade(inputValue);
   };
-  
+
   const handleNumberChange2 = (event) => {
     const inputValue = event.target.value.replace(/[^0-9]/g, '');
     setBoxSize(inputValue);
   };
- 
+
   const handleNumberChange3 = (event) => {
     const inputValue = event.target.value.replace(/[^0-9]/g, '');
     setMrp(inputValue);
@@ -166,9 +170,9 @@ function CustomerBalance() {
     displayImage(file);
   };
 
-  
 
- 
+
+
   //models
   const [open, setOpen] = React.useState(false);
   const handleOpen = (row) => {
@@ -194,146 +198,146 @@ function CustomerBalance() {
     navigate('/inventory/out-of-stock');
   };
 
- const handlePrint = () => {
-  const printWindow = window.open("", "_blank");
-  printWindow.document.write(
-    "<html><head><title>Customer Balance Data</title></head><body>"
-  );
-  printWindow.document.write("<h1>Customer Balance Data</h1>");
-  printWindow.document.write('<table border="1">');
-  printWindow.document.write("<thead><tr>");
-  columns.forEach((column) => {
-    printWindow.document.write(`<th>${column.label}</th>`);
-  });
-  printWindow.document.write("</tr></thead>");
-  printWindow.document.write("<tbody>");
-  sortedRows.forEach((row) => {
-    printWindow.document.write("<tr>");
+  const handlePrint = () => {
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(
+      "<html><head><title>Customer Balance Data</title></head><body>"
+    );
+    printWindow.document.write("<h1>Customer Balance Data</h1>");
+    printWindow.document.write('<table border="1">');
+    printWindow.document.write("<thead><tr>");
     columns.forEach((column) => {
-      printWindow.document.write(`<td>${row[column.id]}</td>`);
+      printWindow.document.write(`<th>${column.label}</th>`);
     });
-    printWindow.document.write("</tr>");
-  });
-  printWindow.document.write("</tbody>");
-  printWindow.document.write("</table>");
-  printWindow.document.write("</body></html>");
-  printWindow.document.close();
-  printWindow.print();
-};
+    printWindow.document.write("</tr></thead>");
+    printWindow.document.write("<tbody>");
+    sortedRows.forEach((row) => {
+      printWindow.document.write("<tr>");
+      columns.forEach((column) => {
+        printWindow.document.write(`<td>${row[column.id]}</td>`);
+      });
+      printWindow.document.write("</tr>");
+    });
+    printWindow.document.write("</tbody>");
+    printWindow.document.write("</table>");
+    printWindow.document.write("</body></html>");
+    printWindow.document.close();
+    printWindow.print();
+  };
 
-//   buttons-------------------------->
+  //   buttons-------------------------->
 
-const handleCopy = () => {
-  const tableData = sortedRows
-    .map((row) => Object.values(row).join(","))
-    .join("\n");
-  navigator.clipboard
-    .writeText(tableData)
-    .then(() => setCopied(true))
-    .catch((error) => console.error("Error copying table data: ", error));
-};
+  const handleCopy = () => {
+    const tableData = sortedRows
+      .map((row) => Object.values(row).join(","))
+      .join("\n");
+    navigator.clipboard
+      .writeText(tableData)
+      .then(() => setCopied(true))
+      .catch((error) => console.error("Error copying table data: ", error));
+  };
 
-const handleExportCSV = () => {
-  const csvData = [
-    columns.map((column) => column.label),
-    ...sortedRows.map((row) => columns.map((column) => row[column.id])),
-  ];
-  const csvFile = new Blob([csvData.map((row) => row.join(",")).join("\n")], {
-    type: "text/csv",
-  });
-  const csvUrl = URL.createObjectURL(csvFile);
-  const link = document.createElement("a");
-  link.href = csvUrl;
-  link.setAttribute("download", "customer_balance_data.csv");
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
+  const handleExportCSV = () => {
+    const csvData = [
+      columns.map((column) => column.label),
+      ...sortedRows.map((row) => columns.map((column) => row[column.id])),
+    ];
+    const csvFile = new Blob([csvData.map((row) => row.join(",")).join("\n")], {
+      type: "text/csv",
+    });
+    const csvUrl = URL.createObjectURL(csvFile);
+    const link = document.createElement("a");
+    link.href = csvUrl;
+    link.setAttribute("download", "customer_balance_data.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
-const handleExportExcel = () => {
-  const workbook = XLSX.utils.book_new();
-  const worksheet = XLSX.utils.json_to_sheet(sortedRows);
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Customer Balance Data");
-  XLSX.writeFile(workbook, "customer_balance_data.xlsx");
-};
+  const handleExportExcel = () => {
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(sortedRows);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Customer Balance Data");
+    XLSX.writeFile(workbook, "customer_balance_data.xlsx");
+  };
 
-// Function to export data to PDF
-const handleExportPDF = () => {
-  const doc = new jsPDF();
-  const columns = [
-    { header: "Customer ID", dataKey: "customerID" },
-    { header: "Customer Name", dataKey: "customerName" },
-    { header: "Total Amount", dataKey: "totalAmount" },
-    { header: "Paid Amount", dataKey: "paidAmount" },
-    { header: "Due Amount", dataKey: "dueAmount" },
-  ];
-  const rows = sortedRows.map((row) => ({
-    customerID: row.customerID,
-    customerName: row.customerName,
-    totalAmount: row.totalAmount,
-    paidAmount: row.paidAmount,
-    dueAmount: row.dueAmount,
-  }));
+  // Function to export data to PDF
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    const columns = [
+      { header: "Customer ID", dataKey: "customerID" },
+      { header: "Customer Name", dataKey: "customerName" },
+      { header: "Total Amount", dataKey: "totalAmount" },
+      { header: "Paid Amount", dataKey: "paidAmount" },
+      { header: "Due Amount", dataKey: "dueAmount" },
+    ];
+    const rows = sortedRows.map((row) => ({
+      customerID: row.customerID,
+      customerName: row.customerName,
+      totalAmount: row.totalAmount,
+      paidAmount: row.paidAmount,
+      dueAmount: row.dueAmount,
+    }));
 
-  doc.text("Customer Balance Data", 10, 10);
-  doc.autoTable({
-    columns: columns,
-    body: rows,
-    startY: 20,
-    theme: "grid",
-    headStyles: {
-      fillColor: [33, 150, 243],
-    },
-  });
-  doc.save("customer_balance_data.pdf");
-};
+    doc.text("Customer Balance Data", 10, 10);
+    doc.autoTable({
+      columns: columns,
+      body: rows,
+      startY: 20,
+      theme: "grid",
+      headStyles: {
+        fillColor: [33, 150, 243],
+      },
+    });
+    doc.save("customer_balance_data.pdf");
+  };
 
-// Function to filter rows based on search term
-const filteredRows = rows.filter((row) =>
-  Object.values(row).some(
-    (value) =>
-      typeof value === "string" &&
-      value.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-);
+  // Function to filter rows based on search term
+  const filteredRows = rows.filter((row) =>
+    Object.values(row).some(
+      (value) =>
+        typeof value === "string" &&
+        value.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
 
-const handleSort = (property) => {
-  const isAscending = orderBy === property && order === "asc";
-  setOrder(isAscending ? "desc" : "asc");
-  setOrderBy(property);
-};
-const sortedRows = stableSort(filteredRows, getComparator(order, orderBy));
+  const handleSort = (property) => {
+    const isAscending = orderBy === property && order === "asc";
+    setOrder(isAscending ? "desc" : "asc");
+    setOrderBy(property);
+  };
+  const sortedRows = stableSort(filteredRows, getComparator(order, orderBy));
 
-const emptyRows =
-  rowsPerPage - Math.min(rowsPerPage, sortedRows.length - page * rowsPerPage);
+  const emptyRows =
+    rowsPerPage - Math.min(rowsPerPage, sortedRows.length - page * rowsPerPage);
 
-function descendingComparator(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
+  function descendingComparator(a, b, orderBy) {
+    if (b[orderBy] < a[orderBy]) {
+      return -1;
+    }
+    if (b[orderBy] > a[orderBy]) {
+      return 1;
+    }
+    return 0;
   }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
+
+  function getComparator(order, orderBy) {
+    return order === "desc"
+      ? (a, b) => descendingComparator(a, b, orderBy)
+      : (a, b) => -descendingComparator(a, b, orderBy);
   }
-  return 0;
-}
 
-function getComparator(order, orderBy) {
-  return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
+  function stableSort(array, comparator) {
+    const stabilizedThis = array.map((el, index) => [el, index]);
+    stabilizedThis.sort((a, b) => {
+      const order = comparator(a[0], b[0]);
+      if (order !== 0) return order;
+      return a[1] - b[1];
+    });
+    return stabilizedThis.map((el) => el[0]);
+  }
 
-function stableSort(array, comparator) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
-  
-  const handleModalSubmit = async(e) => {
+  const handleModalSubmit = async (e) => {
     e.preventDefault();
 
     setIsCalling(true);
@@ -393,59 +397,59 @@ function stableSort(array, comparator) {
                 </Grid>
               </Grid>
               <Divider sx={{ borderColor: "blue", marginBottom: "5px" }} />
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={6} md={8}>
-                <Button
-                  variant="outlined"
-                  onClick={handleCopy}
-                  style={{ margin: "3px", padding: "3px" }}
-                >
-                  Copy
-                </Button>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={6} md={8}>
+                  <Button
+                    variant="outlined"
+                    onClick={handleCopy}
+                    style={{ margin: "3px", padding: "3px" }}
+                  >
+                    Copy
+                  </Button>
 
-                <Button
-                  variant="outlined"
-                  onClick={handleExportCSV}
-                  style={{ margin: "3px", padding: "3px" }}
-                >
-                  CSV
-                </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={handleExportCSV}
+                    style={{ margin: "3px", padding: "3px" }}
+                  >
+                    CSV
+                  </Button>
 
-                <Button
-                  variant="outlined"
-                  onClick={handleExportExcel}
-                  style={{ margin: "3px", padding: "3px" }}
-                >
-                  Excel
-                </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={handleExportExcel}
+                    style={{ margin: "3px", padding: "3px" }}
+                  >
+                    Excel
+                  </Button>
 
-                <Button
-                  variant="outlined"
-                  onClick={handleExportPDF}
-                  style={{ margin: "3px", padding: "3px" }}
-                >
-                  PDF
-                </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={handleExportPDF}
+                    style={{ margin: "3px", padding: "3px" }}
+                  >
+                    PDF
+                  </Button>
 
-                <Button
-                  variant="outlined"
-                  onClick={handlePrint}
-                  style={{ margin: "3px", padding: "3px" }}
-                >
-                  Print
-                </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={handlePrint}
+                    style={{ margin: "3px", padding: "3px" }}
+                  >
+                    Print
+                  </Button>
+                </Grid>
+                <Grid item xs={6} md={4}>
+                  <Input
+                    placeholder="Search"
+                    fullWidth
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </Grid>
               </Grid>
-              <Grid item xs={6} md={4}>
-                <Input
-                  placeholder="Search"
-                  fullWidth
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </Grid>
-            </Grid>
               <div>
-              <Paper sx={{ width: 'auto', marginTop: '10px' }}>
+                <Paper sx={{ width: 'auto', marginTop: '10px' }}>
                   <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 'auto' }} aria-label='customized table'>
                       <TableHead>
@@ -459,45 +463,58 @@ function stableSort(array, comparator) {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
-                          return (
-                            <StyledTableRow key={row.id}>
-                              {columns.slice(1).map(
-                                (
-                                  column // Exclude the first column (ID)
-                                ) => (
-                                  <StyledTableCell key={column.id} align={column.align}>
-                                    {column.id === 'imageUrl' ? (
-                                      row[column.id] ? (
-                                        <img
-                                          src={row[column.id]}
-                                          alt='img'
-                                          style={{ maxWidth: '50px', maxHeight: '50px', borderRadius: '50%' }} // Fixed typo: '50spx' to '50px'
-                                        />
-                                      ) : (
-                                        'no image'
-                                      )
-                                    ) : (
-                                      row[column.id]
-                                    )}
-                                    {column.id === 'actions' ? (
-                                      <div style={{ display: 'flex', justifyContent: 'center', width: '100px', alignItems: 'center' }}>
-                                        <IconButton onClick={() => handleOpen(row)}>
-                                          <EditIcon />
-                                        </IconButton>
-                                        <IconButton onClick={() => handlePrint(row.id)}>
-                                          <PrintIcon />
-                                        </IconButton>
-                                      </div>
-                                    ) : (
-                                      ''
-                                    )}
-                                  </StyledTableCell>
-                                )
-                              )}
+                        {loading ?
+                          (
+                            <StyledTableRow>
+                              <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                                <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                  <Loading /> {/* Render loading spinner */}
+                                </Box>
+                              </StyledTableCell>
                             </StyledTableRow>
-                          );
-                        })}
+                          ) :
+
+                          (sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
+                            return (
+                              <StyledTableRow key={row.id}>
+                                {columns.slice(1).map(
+                                  (
+                                    column // Exclude the first column (ID)
+                                  ) => (
+                                    <StyledTableCell key={column.id} align={column.align}>
+                                      {column.id === 'imageUrl' ? (
+                                        row[column.id] ? (
+                                          <img
+                                            src={row[column.id]}
+                                            alt='img'
+                                            style={{ maxWidth: '50px', maxHeight: '50px', borderRadius: '50%' }} // Fixed typo: '50spx' to '50px'
+                                          />
+                                        ) : (
+                                          'no image'
+                                        )
+                                      ) : (
+                                        row[column.id]
+                                      )}
+                                      {column.id === 'actions' ? (
+                                        <div style={{ display: 'flex', justifyContent: 'center', width: '100px', alignItems: 'center' }}>
+                                          <IconButton onClick={() => handleOpen(row)}>
+                                            <EditIcon />
+                                          </IconButton>
+                                          <IconButton onClick={() => handlePrint(row.id)}>
+                                            <PrintIcon />
+                                          </IconButton>
+                                        </div>
+                                      ) : (
+                                        ''
+                                      )}
+                                    </StyledTableCell>
+                                  )
+                                )}
+                              </StyledTableRow>
+                            );
+                          })
+                          )
+                        }
                       </TableBody>
                     </Table>
                   </TableContainer>

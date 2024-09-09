@@ -30,6 +30,8 @@ import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
 import CloseIcon from "@mui/icons-material/Close";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
+import Loading from "ui-component/Loading";
+
 
 const style = {
   position: "absolute",
@@ -70,6 +72,8 @@ function SalesReport() {
   const [orderBy, setOrderBy] = useState("");
   const [order, setOrder] = useState("asc");
   const [editedRowData, setEditedRowData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -80,7 +84,7 @@ function SalesReport() {
     setPage(0);
   };
 
- 
+
   const columns = [
     { id: "id", label: "ID", align: "center", minWidth: 170 },
     { id: "createDate", label: "Create Date", align: "center", minWidth: 170 },
@@ -117,6 +121,7 @@ function SalesReport() {
         totalAmount: item.totalAmount,
       }));
       setApiData(transformedData);
+      setLoading(false);
       const ids = transformedData.map((item) => item.id);
       setData(transformedData);
       // setId(ids);
@@ -126,7 +131,7 @@ function SalesReport() {
   };
 
   useEffect(() => {
-    
+
 
     fetchSaleData();
   }, []);
@@ -135,12 +140,12 @@ function SalesReport() {
 
 
   const handleStartDateChange = (date) => {
-    console.log("start date : ",date);
+    console.log("start date : ", date);
     setStartDate(date);
   };
 
   const handleEndDateChange = (date) => {
-    console.log("end date : ",date);
+    console.log("end date : ", date);
     setEndDate(date);
   };
 
@@ -152,7 +157,7 @@ function SalesReport() {
     // Adjust endDate to include the entire day
     const adjustedEndDate = new Date(endDate);
     adjustedEndDate.setHours(23, 59, 59, 999); // Set time to 23:59:59.999
-    
+
     // Filter data based on selected date range
     const filteredData = apiData.filter((item) => {
       const itemDate = new Date(item.createDate);
@@ -168,7 +173,7 @@ function SalesReport() {
   };
 
 
- 
+
   //--------------------range date----------------------------
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -320,9 +325,9 @@ function SalesReport() {
       </Grid>
       {/* --------------------range date---------------------------- */}
       <Box style={{ justifyContent: "center" }}>
-      <Form
+        <Form
           onSubmit={handleFormSubmit}
-          
+
         >
           <Container>
             <Row>
@@ -369,7 +374,7 @@ function SalesReport() {
         <Card style={{ backgroundColor: "#ffffff" }}>
           <CardContent>
             <div className="bg-light">
-            <Divider sx={{ borderColor: "blue", marginBottom: "5px" }} />
+              <Divider sx={{ borderColor: "blue", marginBottom: "5px" }} />
               <Grid container spacing={2} alignItems="center">
                 <Grid item xs={6} md={8}>
                   <Button
@@ -437,63 +442,75 @@ function SalesReport() {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {sortedRows
-                          .slice(
-                            page * rowsPerPage,
-                            page * rowsPerPage + rowsPerPage
-                          )
-                          .map((row, index) => {
-                            return (
-                              <StyledTableRow key={row.id}>
-                                {columns.slice(1).map((
-                                  column // Exclude the first column (ID)
-                                ) => (
-                                  <StyledTableCell
-                                    key={column.id}
-                                    align={column.align}
-                                  >
-                                    {column.id === "imageUrl" ? (
-                                      row[column.id] ? (
-                                        <img
-                                          src={row[column.id]}
-                                          alt="img"
-                                          style={{
-                                            maxWidth: "50px",
-                                            maxHeight: "50px",
-                                            borderRadius: "50%",
-                                          }} // Fixed typo: '50spx' to '50px'
-                                        />
+                        {loading ?
+                          (
+                            <StyledTableRow>
+                              <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                                <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                  <Loading /> {/* Render loading spinner */}
+                                </Box>
+                              </StyledTableCell>
+                            </StyledTableRow>
+                          ) :
+                          (sortedRows
+                            .slice(
+                              page * rowsPerPage,
+                              page * rowsPerPage + rowsPerPage
+                            )
+                            .map((row, index) => {
+                              return (
+                                <StyledTableRow key={row.id}>
+                                  {columns.slice(1).map((
+                                    column // Exclude the first column (ID)
+                                  ) => (
+                                    <StyledTableCell
+                                      key={column.id}
+                                      align={column.align}
+                                    >
+                                      {column.id === "imageUrl" ? (
+                                        row[column.id] ? (
+                                          <img
+                                            src={row[column.id]}
+                                            alt="img"
+                                            style={{
+                                              maxWidth: "50px",
+                                              maxHeight: "50px",
+                                              borderRadius: "50%",
+                                            }} // Fixed typo: '50spx' to '50px'
+                                          />
+                                        ) : (
+                                          "no image"
+                                        )
                                       ) : (
-                                        "no image"
-                                      )
-                                    ) : (
-                                      row[column.id]
-                                    )}
-                                    {column.id === "actions" ? (
-                                      <div
-                                        style={{
-                                          display: "flex",
-                                          justifyContent: "center",
-                                          width: "100px",
-                                          alignItems: "center",
-                                        }}
-                                      >
-                                        <IconButton
-                                          color="gray"
-                                          aria-label="view"
-                                          onClick={() => handleViewInvoice(row)} // Pass 'row' instead of 'rows'
+                                        row[column.id]
+                                      )}
+                                      {column.id === "actions" ? (
+                                        <div
+                                          style={{
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            width: "100px",
+                                            alignItems: "center",
+                                          }}
                                         >
-                                          <RemoveRedEyeIcon />
-                                        </IconButton>
-                                      </div>
-                                    ) : (
-                                      ""
-                                    )}
-                                  </StyledTableCell>
-                                ))}
-                              </StyledTableRow>
-                            );
-                          })}
+                                          <IconButton
+                                            color="gray"
+                                            aria-label="view"
+                                            onClick={() => handleViewInvoice(row)} // Pass 'row' instead of 'rows'
+                                          >
+                                            <RemoveRedEyeIcon />
+                                          </IconButton>
+                                        </div>
+                                      ) : (
+                                        ""
+                                      )}
+                                    </StyledTableCell>
+                                  ))}
+                                </StyledTableRow>
+                              );
+                            })
+                          )
+                        }
                       </TableBody>
                     </Table>
                   </TableContainer>

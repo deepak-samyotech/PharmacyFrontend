@@ -29,6 +29,8 @@ import Modal from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import axios from 'axios';
+import Loading from "ui-component/Loading";
+
 
 const style = {
   position: 'absolute',
@@ -68,6 +70,8 @@ function ClosingReport() {
   const [order, setOrder] = useState('asc');
   const [editedRowData, setEditedRowData] = useState(null);
   const [id, setId] = useState([]);
+  const [loading, setLoading] = useState(true);
+
 
   const columns = [
     { id: 'id', label: 'ID', align: 'center', minWidth: 70 },
@@ -99,6 +103,7 @@ function ClosingReport() {
           adjustment: item.adjustment,
         }));
         setData(transformedData);
+        setLoading(false);
         console.log('response data----------->', transformedData);
         const ids = transformedData.map((item) => item.id);
         console.log('IDs:', ids);
@@ -363,7 +368,17 @@ function ClosingReport() {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
+                      {loading ?
+                            (
+                              <StyledTableRow>
+                                <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                                  <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                    <Loading /> {/* Render loading spinner */}
+                                  </Box>
+                                </StyledTableCell>
+                              </StyledTableRow>
+                            ) :
+                        (sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
                           return (
                             <StyledTableRow key={row.id}>
                               {columns.slice(1).map(
@@ -401,7 +416,9 @@ function ClosingReport() {
                               )}
                             </StyledTableRow>
                           );
-                        })}
+                        })
+                        )
+                      }
                       </TableBody>
                     </Table>
                   </TableContainer>

@@ -37,6 +37,8 @@ import TextField from "@mui/material/TextField";
 import { tableCellClasses } from "@mui/material/TableCell";
 import { styled } from "@mui/material/styles";
 import axios from "axios";
+import Loading from "ui-component/Loading";
+
 
 const style = {
   position: "absolute",
@@ -74,6 +76,8 @@ function ManageStock() {
   const [orderBy, setOrderBy] = useState("");
   const [order, setOrder] = useState("asc");
   const [editedRowData, setEditedRowData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
 
   const columns = [
     // { id: 'id', label: 'ID', align: 'start', minWidth: 70 },
@@ -122,6 +126,7 @@ function ManageStock() {
           supplierPrice: item.trade_price || 0,
         }));
         setData(transformedData);
+        setLoading(false);
         // const ids = transformedData.map((item) => item.id);
         // setId(ids);
       } catch (error) {
@@ -441,41 +446,53 @@ function ManageStock() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {sortedRows
-                        .slice(
-                          page * rowsPerPage,
-                          page * rowsPerPage + rowsPerPage
-                        )
-                        .map((row, index) => {
-                          return (
-                            <StyledTableRow key={row.id}>
-                              {columns.map((column) => (
-                                <StyledTableCell
-                                  key={column.id}
-                                  align={column.align}
-                                >
-                                  {column.id === "imageUrl" ? (
-                                    row[column.id] ? (
-                                      <img
-                                        src={row[column.id]}
-                                        alt="img"
-                                        style={{
-                                          maxWidth: "50px",
-                                          maxHeight: "50spx",
-                                          borderRadius: "50%",
-                                        }}
-                                      />
+                      {loading ?
+                        (
+                          <StyledTableRow>
+                            <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                              <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                <Loading /> {/* Render loading spinner */}
+                              </Box>
+                            </StyledTableCell>
+                          </StyledTableRow>
+                        ) :
+                        (sortedRows
+                          .slice(
+                            page * rowsPerPage,
+                            page * rowsPerPage + rowsPerPage
+                          )
+                          .map((row, index) => {
+                            return (
+                              <StyledTableRow key={row.id}>
+                                {columns.map((column) => (
+                                  <StyledTableCell
+                                    key={column.id}
+                                    align={column.align}
+                                  >
+                                    {column.id === "imageUrl" ? (
+                                      row[column.id] ? (
+                                        <img
+                                          src={row[column.id]}
+                                          alt="img"
+                                          style={{
+                                            maxWidth: "50px",
+                                            maxHeight: "50spx",
+                                            borderRadius: "50%",
+                                          }}
+                                        />
+                                      ) : (
+                                        "no image"
+                                      )
                                     ) : (
-                                      "no image"
-                                    )
-                                  ) : (
-                                    row[column.id]
-                                  )}
-                                </StyledTableCell>
-                              ))}
-                            </StyledTableRow>
-                          );
-                        })}
+                                      row[column.id]
+                                    )}
+                                  </StyledTableCell>
+                                ))}
+                              </StyledTableRow>
+                            );
+                          })
+                        )
+                      }
                     </TableBody>
                   </Table>
                 </TableContainer>

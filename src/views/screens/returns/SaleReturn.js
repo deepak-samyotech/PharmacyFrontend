@@ -32,6 +32,8 @@ import { tableCellClasses } from "@mui/material/TableCell";
 import CloseIcon from "@mui/icons-material/Close";
 import AssignmentReturnIcon from "@mui/icons-material/AssignmentReturn";
 import { toast } from "react-toastify";
+import Loading from "ui-component/Loading";
+
 
 const styles = {
   smallTypography: {
@@ -126,6 +128,8 @@ function SaleReturn() {
   const [deduction, setDeduction] = useState("");
   const [total, setTotal] = useState("");
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(true);
+
   const [formData, setFormData] = useState({
     customerName: "",
     invoiceNumber: "",
@@ -362,6 +366,7 @@ function SaleReturn() {
         medicineData: updateQuantityAccordingToPreviousReturn(item.medicineData),
       }));
       setData(transformedData);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -591,63 +596,75 @@ function SaleReturn() {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {sortedRows
-                          .slice(
-                            page * rowsPerPage,
-                            page * rowsPerPage + rowsPerPage
-                          )
-                          .map((row, index) => {
-                            return (
-                              <StyledTableRow key={row.id}>
-                                {columns.slice(1).map((
-                                  column // Exclude the first column (ID)
-                                ) => (
-                                  <StyledTableCell
-                                    key={column.id}
-                                    align={column.align}
-                                  >
-                                    {column.id === "imageUrl" ? (
-                                      row[column.id] ? (
-                                        <img
-                                          src={row[column.id]}
-                                          alt="img"
-                                          style={{
-                                            maxWidth: "50px",
-                                            maxHeight: "50px",
-                                            borderRadius: "50%",
-                                          }} // Fixed typo: '50spx' to '50px'
-                                        />
+                        {loading ?
+                          (
+                            <StyledTableRow>
+                              <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                                <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                  <Loading /> {/* Render loading spinner */}
+                                </Box>
+                              </StyledTableCell>
+                            </StyledTableRow>
+                          ) :
+                          (sortedRows
+                            .slice(
+                              page * rowsPerPage,
+                              page * rowsPerPage + rowsPerPage
+                            )
+                            .map((row, index) => {
+                              return (
+                                <StyledTableRow key={row.id}>
+                                  {columns.slice(1).map((
+                                    column // Exclude the first column (ID)
+                                  ) => (
+                                    <StyledTableCell
+                                      key={column.id}
+                                      align={column.align}
+                                    >
+                                      {column.id === "imageUrl" ? (
+                                        row[column.id] ? (
+                                          <img
+                                            src={row[column.id]}
+                                            alt="img"
+                                            style={{
+                                              maxWidth: "50px",
+                                              maxHeight: "50px",
+                                              borderRadius: "50%",
+                                            }} // Fixed typo: '50spx' to '50px'
+                                          />
+                                        ) : (
+                                          "no image"
+                                        )
                                       ) : (
-                                        "no image"
-                                      )
-                                    ) : (
-                                      row[column.id]
-                                    )}
-                                    {column.id === "actions" ? (
-                                      <div
-                                        style={{
-                                          display: "flex",
-                                          justifyContent: "center",
-                                          width: "100px",
-                                          alignItems: "center",
-                                        }}
-                                      >
-                                        <IconButton
-                                          color="gray"
-                                          aria-label="view"
-                                          onClick={() => handleViewInvoice(row)} // Pass 'row' instead of 'rows'
+                                        row[column.id]
+                                      )}
+                                      {column.id === "actions" ? (
+                                        <div
+                                          style={{
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            width: "100px",
+                                            alignItems: "center",
+                                          }}
                                         >
-                                          <AssignmentReturnIcon />
-                                        </IconButton>
-                                      </div>
-                                    ) : (
-                                      ""
-                                    )}
-                                  </StyledTableCell>
-                                ))}
-                              </StyledTableRow>
-                            );
-                          })}
+                                          <IconButton
+                                            color="gray"
+                                            aria-label="view"
+                                            onClick={() => handleViewInvoice(row)} // Pass 'row' instead of 'rows'
+                                          >
+                                            <AssignmentReturnIcon />
+                                          </IconButton>
+                                        </div>
+                                      ) : (
+                                        ""
+                                      )}
+                                    </StyledTableCell>
+                                  ))}
+                                </StyledTableRow>
+                              );
+                            })
+                          )
+                        }
                       </TableBody>
                     </Table>
                   </TableContainer>

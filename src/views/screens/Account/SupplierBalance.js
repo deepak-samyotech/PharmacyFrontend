@@ -24,6 +24,8 @@ import IconButton from '@mui/material/IconButton';
 import FormControl from '@mui/material/FormControl';
 import axios from 'axios';
 import NavigationIcon from '@mui/icons-material/Navigation';
+import Loading from "ui-component/Loading";
+
 
 const style = {
   position: 'absolute',
@@ -55,7 +57,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 function SupplierBalance() {
- 
+
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(0);
@@ -64,6 +66,8 @@ function SupplierBalance() {
   const [order, setOrder] = useState('asc');
   const [editedRowData, setEditedRowData] = useState(null);
   const [id, setId] = useState([]);
+  const [loading, setLoading] = useState(true);
+
 
   const columns = [
     { id: 'id', label: 'ID', align: 'center', minWidth: 70 },
@@ -90,6 +94,7 @@ function SupplierBalance() {
           dueAmount: item.total_paid || 0,
         }));
         setData(transformedData);
+        setLoading(false);
         const ids = transformedData.map((item) => item.id);
         setId(ids);
       } catch (error) {
@@ -149,9 +154,9 @@ function SupplierBalance() {
     printWindow.document.close();
     printWindow.print();
   };
-  
+
   //   buttons-------------------------->
-  
+
   const handleCopy = () => {
     const tableData = sortedRows
       .map((row) => Object.values(row).join(","))
@@ -161,7 +166,7 @@ function SupplierBalance() {
       .then(() => setCopied(true))
       .catch((error) => console.error("Error copying table data: ", error));
   };
-  
+
   const handleExportCSV = () => {
     const csvData = [
       columns.map((column) => column.label),
@@ -178,14 +183,14 @@ function SupplierBalance() {
     link.click();
     document.body.removeChild(link);
   };
-  
+
   const handleExportExcel = () => {
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(sortedRows);
     XLSX.utils.book_append_sheet(workbook, worksheet, "Supplier Balance Data");
     XLSX.writeFile(workbook, "supplier_balance_data.xlsx");
   };
-  
+
   // Function to export data to PDF
   const handleExportPDF = () => {
     const doc = new jsPDF();
@@ -203,7 +208,7 @@ function SupplierBalance() {
       paidAmount: row.paidAmount,
       dueAmount: row.dueAmount,
     }));
-  
+
     doc.text("Supplier Balance Data", 10, 10);
     doc.autoTable({
       columns: columns,
@@ -216,7 +221,7 @@ function SupplierBalance() {
     });
     doc.save("supplier_balance_data.pdf");
   };
-  
+
   // Function to filter rows based on search term
   const filteredRows = rows.filter((row) =>
     Object.values(row).some(
@@ -225,17 +230,17 @@ function SupplierBalance() {
         value.toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
-  
+
   const handleSort = (property) => {
     const isAscending = orderBy === property && order === "asc";
     setOrder(isAscending ? "desc" : "asc");
     setOrderBy(property);
   };
   const sortedRows = stableSort(filteredRows, getComparator(order, orderBy));
-  
+
   const emptyRows =
     rowsPerPage - Math.min(rowsPerPage, sortedRows.length - page * rowsPerPage);
-  
+
   function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
       return -1;
@@ -245,13 +250,13 @@ function SupplierBalance() {
     }
     return 0;
   }
-  
+
   function getComparator(order, orderBy) {
     return order === "desc"
       ? (a, b) => descendingComparator(a, b, orderBy)
       : (a, b) => -descendingComparator(a, b, orderBy);
   }
-  
+
   function stableSort(array, comparator) {
     const stabilizedThis = array.map((el, index) => [el, index]);
     stabilizedThis.sort((a, b) => {
@@ -261,7 +266,7 @@ function SupplierBalance() {
     });
     return stabilizedThis.map((el) => el[0]);
   }
-  
+
 
   return (
     <div style={{ margin: '10px' }}>
@@ -344,21 +349,31 @@ function SupplierBalance() {
               </Grid>
             </Grid>
             <div>
-            <Paper sx={{ width: 'auto', marginTop: '10px' }}>
-                  <TableContainer component={Paper}>
-                    <Table sx={{ minWidth: 'auto' }} aria-label='customized table'>
-                      <TableHead>
-                        <TableRow>
-                          <StyledTableCell align='center'>Supplier ID</StyledTableCell>
-                          <StyledTableCell align='center'>Supplier Name</StyledTableCell>
-                          <StyledTableCell align='center'>Total Amount</StyledTableCell>
-                          <StyledTableCell align='center'>Paid Amount</StyledTableCell>
-                          <StyledTableCell align='center'>Due Amount</StyledTableCell>
-                          <StyledTableCell align='center'>Actions</StyledTableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
+              <Paper sx={{ width: 'auto', marginTop: '10px' }}>
+                <TableContainer component={Paper}>
+                  <Table sx={{ minWidth: 'auto' }} aria-label='customized table'>
+                    <TableHead>
+                      <TableRow>
+                        <StyledTableCell align='center'>Supplier ID</StyledTableCell>
+                        <StyledTableCell align='center'>Supplier Name</StyledTableCell>
+                        <StyledTableCell align='center'>Total Amount</StyledTableCell>
+                        <StyledTableCell align='center'>Paid Amount</StyledTableCell>
+                        <StyledTableCell align='center'>Due Amount</StyledTableCell>
+                        <StyledTableCell align='center'>Actions</StyledTableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {loading ?
+                        (
+                          <StyledTableRow>
+                            <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                              <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                <Loading /> {/* Render loading spinner */}
+                              </Box>
+                            </StyledTableCell>
+                          </StyledTableRow>
+                        ) :
+                        (sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
                           return (
                             <StyledTableRow key={row.id}>
                               {columns.slice(1).map(
@@ -393,24 +408,26 @@ function SupplierBalance() {
                               )}
                             </StyledTableRow>
                           );
-                        })}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
+                        })
+                        )
+                      }
+                    </TableBody>
+                  </Table>
+                </TableContainer>
 
-                  <TablePagination
-                    rowsPerPageOptions={[10, 25, 100]}
-                    component='div'
-                    count={sortedRows.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={(e, newPage) => setPage(newPage)}
-                    onRowsPerPageChange={(e) => {
-                      setRowsPerPage(parseInt(e.target.value, 10));
-                      setPage(0);
-                    }}
-                  />
-                </Paper>
+                <TablePagination
+                  rowsPerPageOptions={[10, 25, 100]}
+                  component='div'
+                  count={sortedRows.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={(e, newPage) => setPage(newPage)}
+                  onRowsPerPageChange={(e) => {
+                    setRowsPerPage(parseInt(e.target.value, 10));
+                    setPage(0);
+                  }}
+                />
+              </Paper>
             </div>
           </div>
         </CardContent>

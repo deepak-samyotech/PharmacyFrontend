@@ -12,6 +12,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Box,
 } from "@mui/material";
 import Divider from "@mui/material/Divider";
 import CopyToClipboard from "react-copy-to-clipboard";
@@ -23,6 +24,7 @@ import jsPDF from "jspdf";
 import Input from "@mui/material/Input";
 import TablePagination from "@mui/material/TablePagination";
 import axios from "axios";
+import Loading from "ui-component/Loading";
 
 const style = {
   position: "absolute",
@@ -62,6 +64,7 @@ function PhoneBook() {
   const [order, setOrder] = useState("asc");
   const [editedRowData, setEditedRowData] = useState(null);
   const [id, setId] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const columns = [
     { id: "id", label: "ID", align: "center", minWidth: 70 },
@@ -83,6 +86,7 @@ function PhoneBook() {
           address: item.c_address,
         }));
         setData(transformedData);
+        setLoading(false);
         const ids = transformedData.map((item) => item.id);
         setId(ids);
       } catch (error) {
@@ -319,43 +323,55 @@ function PhoneBook() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {sortedRows
-                        .slice(
-                          page * rowsPerPage,
-                          page * rowsPerPage + rowsPerPage
-                        )
-                        .map((row, index) => {
-                          return (
-                            <StyledTableRow key={row.id}>
-                              {columns.slice(1).map((
-                                column // Exclude the first column (ID)
-                              ) => (
-                                <StyledTableCell
-                                  key={column.id}
-                                  align={column.align}
-                                >
-                                  {column.id === "imageUrl" ? (
-                                    row[column.id] ? (
-                                      <img
-                                        src={row[column.id]}
-                                        alt="img"
-                                        style={{
-                                          maxWidth: "50px",
-                                          maxHeight: "50px",
-                                          borderRadius: "50%",
-                                        }} // Fixed typo: '50spx' to '50px'
-                                      />
+                      {loading ?
+                        (
+                          <StyledTableRow>
+                            <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                              <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                <Loading /> {/* Render loading spinner */}
+                              </Box>
+                            </StyledTableCell>
+                          </StyledTableRow>
+                        ) :
+                        (sortedRows
+                          .slice(
+                            page * rowsPerPage,
+                            page * rowsPerPage + rowsPerPage
+                          )
+                          .map((row, index) => {
+                            return (
+                              <StyledTableRow key={row.id}>
+                                {columns.slice(1).map((
+                                  column // Exclude the first column (ID)
+                                ) => (
+                                  <StyledTableCell
+                                    key={column.id}
+                                    align={column.align}
+                                  >
+                                    {column.id === "imageUrl" ? (
+                                      row[column.id] ? (
+                                        <img
+                                          src={row[column.id]}
+                                          alt="img"
+                                          style={{
+                                            maxWidth: "50px",
+                                            maxHeight: "50px",
+                                            borderRadius: "50%",
+                                          }} // Fixed typo: '50spx' to '50px'
+                                        />
+                                      ) : (
+                                        "no image"
+                                      )
                                     ) : (
-                                      "no image"
-                                    )
-                                  ) : (
-                                    row[column.id]
-                                  )}
-                                </StyledTableCell>
-                              ))}
-                            </StyledTableRow>
-                          );
-                        })}
+                                      row[column.id]
+                                    )}
+                                  </StyledTableCell>
+                                ))}
+                              </StyledTableRow>
+                            );
+                          })
+                        )
+                      }
                     </TableBody>
                   </Table>
                 </TableContainer>

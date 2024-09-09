@@ -32,6 +32,8 @@ import { styled } from "@mui/material/styles";
 import axios from "axios";
 import { tableCellClasses } from "@mui/material/TableCell";
 import IconButton from "@mui/material/IconButton";
+import Loading from "ui-component/Loading";
+
 
 const style = {
   position: "absolute",
@@ -69,6 +71,8 @@ function PurchaseReturnReport() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [orderBy, setOrderBy] = useState("");
   const [order, setOrder] = useState("asc");
+  const [loading, setLoading] = useState(true);
+
 
   const columns = [
     { id: "invoiceNumber", label: "Invoice Number", align: "center", minWidth: 170 },
@@ -89,6 +93,7 @@ function PurchaseReturnReport() {
           totalAmount: item.total_amount,
         }));
         setData(transformedData);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -238,57 +243,57 @@ function PurchaseReturnReport() {
               </Grid>
             </Grid>
             <Divider sx={{ borderColor: "blue", marginBottom: "5px" }} />
-              <Grid container spacing={2} alignItems="center">
-                <Grid item xs={6} md={8}>
-                  <Button
-                    variant="outlined"
-                    onClick={handleCopy}
-                    style={{ margin: "3px", padding: "3px" }}
-                  >
-                    Copy
-                  </Button>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={6} md={8}>
+                <Button
+                  variant="outlined"
+                  onClick={handleCopy}
+                  style={{ margin: "3px", padding: "3px" }}
+                >
+                  Copy
+                </Button>
 
-                  <Button
-                    variant="outlined"
-                    onClick={handleExportCSV}
-                    style={{ margin: "3px", padding: "3px" }}
-                  >
-                    CSV
-                  </Button>
+                <Button
+                  variant="outlined"
+                  onClick={handleExportCSV}
+                  style={{ margin: "3px", padding: "3px" }}
+                >
+                  CSV
+                </Button>
 
-                  <Button
-                    variant="outlined"
-                    onClick={handleExportExcel}
-                    style={{ margin: "3px", padding: "3px" }}
-                  >
-                    Excel
-                  </Button>
+                <Button
+                  variant="outlined"
+                  onClick={handleExportExcel}
+                  style={{ margin: "3px", padding: "3px" }}
+                >
+                  Excel
+                </Button>
 
-                  <Button
-                    variant="outlined"
-                    onClick={handleExportPDF}
-                    style={{ margin: "3px", padding: "3px" }}
-                  >
-                    PDF
-                  </Button>
+                <Button
+                  variant="outlined"
+                  onClick={handleExportPDF}
+                  style={{ margin: "3px", padding: "3px" }}
+                >
+                  PDF
+                </Button>
 
-                  <Button
-                    variant="outlined"
-                    onClick={handlePrint}
-                    style={{ margin: "3px", padding: "3px" }}
-                  >
-                    Print
-                  </Button>
-                </Grid>
-                <Grid item xs={6} md={4}>
-                  <Input
-                    placeholder="Search"
-                    fullWidth
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </Grid>
+                <Button
+                  variant="outlined"
+                  onClick={handlePrint}
+                  style={{ margin: "3px", padding: "3px" }}
+                >
+                  Print
+                </Button>
               </Grid>
+              <Grid item xs={6} md={4}>
+                <Input
+                  placeholder="Search"
+                  fullWidth
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </Grid>
+            </Grid>
             <div>
               <Paper sx={{ width: "auto", marginTop: "10px" }}>
                 <TableContainer component={Paper}>
@@ -305,43 +310,55 @@ function PurchaseReturnReport() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {sortedRows
-                        .slice(
-                          page * rowsPerPage,
-                          page * rowsPerPage + rowsPerPage
-                        )
-                        .map((row, index) => {
-                          return (
-                            <StyledTableRow key={row.id}>
-                              {columns.map((column) => (
-                                <StyledTableCell
-                                  key={column.id}
-                                  align={column.align}
-                                >
-                                  {row[column.id]}
-                                  {column.id === "actions" ? (
-                                    <div
-                                      style={{
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        width: "100px",
-                                        alignItems: "center",
-                                      }}
-                                    >
-                                      <IconButton
-                                        onClick={() => handleOpen(row)}
+                      {loading ?
+                        (
+                          <StyledTableRow>
+                            <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                              <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                <Loading /> {/* Render loading spinner */}
+                              </Box>
+                            </StyledTableCell>
+                          </StyledTableRow>
+                        ) :
+                        (sortedRows
+                          .slice(
+                            page * rowsPerPage,
+                            page * rowsPerPage + rowsPerPage
+                          )
+                          .map((row, index) => {
+                            return (
+                              <StyledTableRow key={row.id}>
+                                {columns.map((column) => (
+                                  <StyledTableCell
+                                    key={column.id}
+                                    align={column.align}
+                                  >
+                                    {row[column.id]}
+                                    {column.id === "actions" ? (
+                                      <div
+                                        style={{
+                                          display: "flex",
+                                          justifyContent: "center",
+                                          width: "100px",
+                                          alignItems: "center",
+                                        }}
                                       >
-                                        <EditIcon />
-                                      </IconButton>
-                                    </div>
-                                  ) : (
-                                    ""
-                                  )}
-                                </StyledTableCell>
-                              ))}
-                            </StyledTableRow>
-                          );
-                        })}
+                                        <IconButton
+                                          onClick={() => handleOpen(row)}
+                                        >
+                                          <EditIcon />
+                                        </IconButton>
+                                      </div>
+                                    ) : (
+                                      ""
+                                    )}
+                                  </StyledTableCell>
+                                ))}
+                              </StyledTableRow>
+                            );
+                          })
+                        )
+                      }
                     </TableBody>
                   </Table>
                 </TableContainer>

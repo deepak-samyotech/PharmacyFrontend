@@ -20,6 +20,7 @@ import GetAppTwoToneIcon from '@mui/icons-material/GetAppOutlined';
 import FileCopyTwoToneIcon from '@mui/icons-material/FileCopyOutlined';
 import PictureAsPdfTwoToneIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import ArchiveTwoToneIcon from '@mui/icons-material/ArchiveOutlined';
+import { fetchMedicine } from "utils/api";
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
   backgroundColor: theme.palette.secondary.dark,
@@ -66,13 +67,9 @@ const EarningCard = ({ isLoading }) => {
 
 useEffect(() => {
   const fetchData = async () => {
-    try {
-      const responseCustomer = await axios.get("http://localhost:8080/medicine");
+      const responseCustomer = await fetchMedicine();
       const transformedData = responseCustomer.data
       setCountMed(transformedData);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
   };
   fetchData();
 }, []);

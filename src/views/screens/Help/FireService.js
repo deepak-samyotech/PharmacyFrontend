@@ -18,20 +18,22 @@ import {
 import Box from '@mui/material/Box';
 import PrintIcon from '@mui/icons-material/Print';
 import EditIcon from '@mui/icons-material/Edit';
-import Divider from '@mui/material/Divider'; 
-import * as XLSX from 'xlsx'; 
+import Divider from '@mui/material/Divider';
+import * as XLSX from 'xlsx';
 import TablePagination from '@mui/material/TablePagination';
-import Input from '@mui/material/Input'; 
+import Input from '@mui/material/Input';
 import IconButton from '@mui/material/IconButton';
 import Modal from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import { tableCellClasses } from '@mui/material/TableCell';
 import { styled } from '@mui/material/styles';
-import axios from 'axios'; 
+import axios from 'axios';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { toast } from 'react-toastify';
+import Loading from "ui-component/Loading";
+
 // import XLSX from 'xlsx';
 
 
@@ -79,6 +81,8 @@ function FireService() {
   const [email, setEmail] = useState('');
   const [contact, setContact] = useState('');
   const [address, setAddress] = useState('');
+  const [loading, setLoading] = useState(true);
+
 
   const columns = [
     { id: 'name', label: 'Name', align: 'center', minWidth: 170 },
@@ -99,6 +103,7 @@ function FireService() {
         address: item.address,
       }));
       setData(transformedData);
+      setLoading(false);
       const ids = transformedData.map((item) => item.id);
       setData(transformedData);
       setId(ids);
@@ -108,7 +113,7 @@ function FireService() {
   };
 
   useEffect(() => {
-    
+
     fetchData();
   }, []);
 
@@ -188,7 +193,7 @@ function FireService() {
   };
 
 
-  
+
   const handleCopy = () => {
     const tableData = sortedRows
       .map((row) => Object.values(row).join(","))
@@ -405,64 +410,76 @@ function FireService() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {sortedRows
-                        .slice(
-                          page * rowsPerPage,
-                          page * rowsPerPage + rowsPerPage
-                        )
-                        .map((row, index) => {
-                          return (
-                            <StyledTableRow key={row.id}>
-                              {columns.map((column) => (
-                                <StyledTableCell
-                                  key={column.id}
-                                  align={column.align}
-                                >
-                                  {column.id === 'imageUrl' ? (
-                                    row[column.id] ? (
-                                      <img
-                                        src={row[column.id]}
-                                        alt='img'
-                                        style={{
-                                          maxWidth: '50px',
-                                          maxHeight: '50spx',
-                                          borderRadius: '50%',
-                                        }}
-                                      />
+                      {loading ?
+                        (
+                          <StyledTableRow>
+                            <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                              <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                <Loading /> {/* Render loading spinner */}
+                              </Box>
+                            </StyledTableCell>
+                          </StyledTableRow>
+                        ) :
+                        (sortedRows
+                          .slice(
+                            page * rowsPerPage,
+                            page * rowsPerPage + rowsPerPage
+                          )
+                          .map((row, index) => {
+                            return (
+                              <StyledTableRow key={row.id}>
+                                {columns.map((column) => (
+                                  <StyledTableCell
+                                    key={column.id}
+                                    align={column.align}
+                                  >
+                                    {column.id === 'imageUrl' ? (
+                                      row[column.id] ? (
+                                        <img
+                                          src={row[column.id]}
+                                          alt='img'
+                                          style={{
+                                            maxWidth: '50px',
+                                            maxHeight: '50spx',
+                                            borderRadius: '50%',
+                                          }}
+                                        />
+                                      ) : (
+                                        'no image'
+                                      )
                                     ) : (
-                                      'no image'
-                                    )
-                                  ) : (
-                                    row[column.id]
-                                  )}
-                                  {column.id === 'actions' ? (
-                                    <div
-                                      style={{
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        width: '100px',
-                                        alignItems: 'center',
-                                      }}
-                                    >
-                                      <IconButton
-                                        onClick={() => handleOpen(row)}
+                                      row[column.id]
+                                    )}
+                                    {column.id === 'actions' ? (
+                                      <div
+                                        style={{
+                                          display: 'flex',
+                                          justifyContent: 'center',
+                                          width: '100px',
+                                          alignItems: 'center',
+                                        }}
                                       >
-                                        <EditIcon />
-                                      </IconButton>
-                                      <IconButton
-                                        onClick={() => handlePrint(row.id)}
-                                      >
-                                        <PrintIcon />
-                                      </IconButton>
-                                    </div>
-                                  ) : (
-                                    ''
-                                  )}
-                                </StyledTableCell>
-                              ))}
-                            </StyledTableRow>
-                          );
-                        })}
+                                        <IconButton
+                                          onClick={() => handleOpen(row)}
+                                        >
+                                          <EditIcon />
+                                        </IconButton>
+                                        <IconButton
+                                          onClick={() => handlePrint(row.id)}
+                                        >
+                                          <PrintIcon />
+                                        </IconButton>
+                                      </div>
+                                    ) : (
+                                      ''
+                                    )}
+                                  </StyledTableCell>
+                                ))}
+                              </StyledTableRow>
+                            );
+                          })
+                        )
+                      }
                     </TableBody>
                   </Table>
                 </TableContainer>

@@ -37,6 +37,8 @@ import axios from "axios";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { toast } from "react-toastify";
+import Loading from "ui-component/Loading";
+
 
 const style = {
   position: "absolute",
@@ -75,6 +77,8 @@ function SupplierBalance() {
   const [order, setOrder] = useState("asc");
   const [editedRowData, setEditedRowData] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(true);
+
 
   //models
   const [open, setOpen] = React.useState(false);
@@ -115,6 +119,7 @@ function SupplierBalance() {
           dueAmount: item.total_paid,
         }));
         setData(transformedData);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -403,51 +408,63 @@ function SupplierBalance() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {sortedRows.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} align="center">
-                      No Data Found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  sortedRows
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((row) => (
-                      <StyledTableRow key={row.id}>
-                        {columns.map((column) => {
-                          if (column.id === "actions") {
+                {loading ?
+                  (
+                    <StyledTableRow>
+                      <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                          <Loading /> {/* Render loading spinner */}
+                        </Box>
+                      </StyledTableCell>
+                    </StyledTableRow>
+                  ) :
+
+                  (sortedRows.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={columns.length} align="center">
+                        No Data Found
+                      </TableCell>
+                    </TableRow>
+                   ) : (
+                    sortedRows
+                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                      .map((row) => (
+                        <StyledTableRow key={row.id}>
+                          {columns.map((column) => {
+                            if (column.id === "actions") {
+                              return (
+                                <TableCell key={column.id} align={column.align}>
+                                  <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => handleEditSupplier(row)}
+                                    style={{ marginRight: "5px" }}
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    variant="contained"
+                                    color="secondary"
+                                    onClick={() => handleDeleteSupplier(row.id)}
+                                  >
+                                    Delete
+                                  </Button>
+                                </TableCell>
+                              );
+                            }
                             return (
-                              <TableCell key={column.id} align={column.align}>
-                                <Button
-                                  variant="contained"
-                                  color="primary"
-                                  onClick={() => handleEditSupplier(row)}
-                                  style={{ marginRight: "5px" }}
-                                >
-                                  Edit
-                                </Button>
-                                <Button
-                                  variant="contained"
-                                  color="secondary"
-                                  onClick={() => handleDeleteSupplier(row.id)}
-                                >
-                                  Delete
-                                </Button>
-                              </TableCell>
+                              <StyledTableCell
+                                key={column.id}
+                                align={column.align}
+                              >
+                                {row[column.id]}
+                              </StyledTableCell>
                             );
-                          }
-                          return (
-                            <StyledTableCell
-                              key={column.id}
-                              align={column.align}
-                            >
-                              {row[column.id]}
-                            </StyledTableCell>
-                          );
-                        })}
-                      </StyledTableRow>
-                    ))
-                )}
+                          })}
+                        </StyledTableRow>
+                      ))
+                  ))
+                }
                 {emptyRows > 0 && (
                   <TableRow style={{ height: 53 * emptyRows }}>
                     <TableCell colSpan={6} />
@@ -539,7 +556,7 @@ function SupplierBalance() {
                             margin="normal"
                           />
 
-                          
+
                         </Box>
                       </Grid>
                       {/* Second Column */}

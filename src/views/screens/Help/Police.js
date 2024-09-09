@@ -32,6 +32,8 @@ import axios from 'axios';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { toast } from 'react-toastify';
+import Loading from "ui-component/Loading";
+
 
 const style = {
   position: 'absolute',
@@ -77,6 +79,8 @@ function Police() {
   const [email, setEmail] = useState('');
   const [contact, setContact] = useState('');
   const [address, setAddress] = useState('');
+  const [loading, setLoading] = useState(true);
+
 
   const columns = [
     { id: 'name', label: 'Name', align: 'center', minWidth: 170 },
@@ -97,6 +101,7 @@ function Police() {
         address: item.address,
       }));
       setData(transformedData);
+      setLoading(false);
       const ids = transformedData.map((item) => item.id);
       setData(transformedData);
       // setId(ids);
@@ -106,7 +111,7 @@ function Police() {
   };
 
   useEffect(() => {
-  
+
     fetchData();
   }, []);
 
@@ -157,17 +162,17 @@ function Police() {
   };
 
 
-    //models-->
-    const [open, setOpen] = useState(false);
-    const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
-    const [formData, setFormData] = useState({
-      name: '',
-      phone: '',
-      email: '',
-      address: '',
-    });
- 
+  //models-->
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    address: '',
+  });
+
   const handleCopy = () => {
     const tableData = sortedRows
       .map((row) => Object.values(row).join(","))
@@ -384,64 +389,76 @@ function Police() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {sortedRows
-                        .slice(
-                          page * rowsPerPage,
-                          page * rowsPerPage + rowsPerPage
-                        )
-                        .map((row, index) => {
-                          return (
-                            <StyledTableRow key={row.id}>
-                              {columns.map((column) => (
-                                <StyledTableCell
-                                  key={column.id}
-                                  align={column.align}
-                                >
-                                  {column.id === 'imageUrl' ? (
-                                    row[column.id] ? (
-                                      <img
-                                        src={row[column.id]}
-                                        alt='img'
-                                        style={{
-                                          maxWidth: '50px',
-                                          maxHeight: '50spx',
-                                          borderRadius: '50%',
-                                        }}
-                                      />
+                      {loading ?
+                        (
+                          <StyledTableRow>
+                            <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                              <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                <Loading /> {/* Render loading spinner */}
+                              </Box>
+                            </StyledTableCell>
+                          </StyledTableRow>
+                        ) :
+                        (sortedRows
+                          .slice(
+                            page * rowsPerPage,
+                            page * rowsPerPage + rowsPerPage
+                          )
+                          .map((row, index) => {
+                            return (
+                              <StyledTableRow key={row.id}>
+                                {columns.map((column) => (
+                                  <StyledTableCell
+                                    key={column.id}
+                                    align={column.align}
+                                  >
+                                    {column.id === 'imageUrl' ? (
+                                      row[column.id] ? (
+                                        <img
+                                          src={row[column.id]}
+                                          alt='img'
+                                          style={{
+                                            maxWidth: '50px',
+                                            maxHeight: '50spx',
+                                            borderRadius: '50%',
+                                          }}
+                                        />
+                                      ) : (
+                                        'no image'
+                                      )
                                     ) : (
-                                      'no image'
-                                    )
-                                  ) : (
-                                    row[column.id]
-                                  )}
-                                  {column.id === 'actions' ? (
-                                    <div
-                                      style={{
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        width: '100px',
-                                        alignItems: 'center',
-                                      }}
-                                    >
-                                      <IconButton
-                                        onClick={() => handleOpen(row)}
+                                      row[column.id]
+                                    )}
+                                    {column.id === 'actions' ? (
+                                      <div
+                                        style={{
+                                          display: 'flex',
+                                          justifyContent: 'center',
+                                          width: '100px',
+                                          alignItems: 'center',
+                                        }}
                                       >
-                                        <EditIcon />
-                                      </IconButton>
-                                      <IconButton
-                                        onClick={() => handlePrint(row.id)}
-                                      >
-                                        <PrintIcon />
-                                      </IconButton>
-                                    </div>
-                                  ) : (
-                                    ''
-                                  )}
-                                </StyledTableCell>
-                              ))}
-                            </StyledTableRow>
-                          );
-                        })}
+                                        <IconButton
+                                          onClick={() => handleOpen(row)}
+                                        >
+                                          <EditIcon />
+                                        </IconButton>
+                                        <IconButton
+                                          onClick={() => handlePrint(row.id)}
+                                        >
+                                          <PrintIcon />
+                                        </IconButton>
+                                      </div>
+                                    ) : (
+                                      ''
+                                    )}
+                                  </StyledTableCell>
+                                ))}
+                              </StyledTableRow>
+                            );
+                          })
+                        )
+                      }
                     </TableBody>
                   </Table>
                 </TableContainer>

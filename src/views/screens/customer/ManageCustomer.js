@@ -37,6 +37,8 @@ import Modal from "@mui/material/Modal";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import axios from "axios";
+import Loading from "ui-component/Loading";
+
 
 import { toast } from "react-toastify";
 
@@ -77,6 +79,8 @@ function ManageCustomer() {
   const [order, setOrder] = useState("asc");
   const [editedRowData, setEditedRowData] = useState(null);
   const [id, setId] = useState([]);
+  const [loading, setLoading] = useState(true);
+
 
   const columns = [
     { id: "id", label: "ID", align: "center", minWidth: 70 },
@@ -122,6 +126,7 @@ function ManageCustomer() {
       setData(transformedData);
       const ids = transformedData.map((item) => item.id);
       setId(ids);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -628,66 +633,79 @@ function ManageCustomer() {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {sortedRows
-                          .slice(
-                            page * rowsPerPage,
-                            page * rowsPerPage + rowsPerPage
-                          )
-                          .map((row, index) => {
-                            return (
-                              <StyledTableRow key={row.id}>
-                                {columns.slice(1).map((
-                                  column // Exclude the first column (ID)
-                                ) => (
-                                  <StyledTableCell
-                                    key={column.id}
-                                    align={column.align}
-                                  >
-                                    {column.id === "imageUrl" ? (
-                                      row[column.id] ? (
-                                        <img
-                                          src={row[column.id]}
-                                          alt="img"
-                                          style={{
-                                            maxWidth: "50px",
-                                            maxHeight: "50px",
-                                            borderRadius: "50%",
-                                          }} // Fixed typo: '50spx' to '50px'
-                                        />
+                        {loading ?
+                          (
+                            <StyledTableRow>
+                              <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                                <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                  <Loading /> {/* Render loading spinner */}
+                                </Box>
+                              </StyledTableCell>
+                            </StyledTableRow>
+                          ) :
+
+                          (sortedRows
+                            .slice(
+                              page * rowsPerPage,
+                              page * rowsPerPage + rowsPerPage
+                            )
+                            .map((row, index) => {
+                              return (
+                                <StyledTableRow key={row.id}>
+                                  {columns.slice(1).map((
+                                    column // Exclude the first column (ID)
+                                  ) => (
+                                    <StyledTableCell
+                                      key={column.id}
+                                      align={column.align}
+                                    >
+                                      {column.id === "imageUrl" ? (
+                                        row[column.id] ? (
+                                          <img
+                                            src={row[column.id]}
+                                            alt="img"
+                                            style={{
+                                              maxWidth: "50px",
+                                              maxHeight: "50px",
+                                              borderRadius: "50%",
+                                            }} // Fixed typo: '50spx' to '50px'
+                                          />
+                                        ) : (
+                                          "no image"
+                                        )
                                       ) : (
-                                        "no image"
-                                      )
-                                    ) : (
-                                      row[column.id] || '----------'
-                                    )}
-                                    {column.id === "actions" ? (
-                                      <div
+                                        row[column.id] || '----------'
+                                      )}
+                                      {column.id === "actions" ? (
+                                        <div
                                         // style={{
                                         //   display: "flex",
                                         //   justifyContent: "center",
                                         //   width: "100px",
                                         //   alignItems: "center",
                                         // }}
-                                      >
-                                        <IconButton
-                                          onClick={() => handleOpen(row)}
                                         >
-                                          <EditIcon />
-                                        </IconButton>
-                                        <IconButton
-                                          onClick={() => handlePrint(row.id)}
-                                        >
-                                          <PrintIcon />
-                                        </IconButton>
-                                      </div>
-                                    ) : (
-                                      ""
-                                    )}
-                                  </StyledTableCell>
-                                ))}
-                              </StyledTableRow>
-                            );
-                          })}
+                                          <IconButton
+                                            onClick={() => handleOpen(row)}
+                                          >
+                                            <EditIcon />
+                                          </IconButton>
+                                          <IconButton
+                                            onClick={() => handlePrint(row.id)}
+                                          >
+                                            <PrintIcon />
+                                          </IconButton>
+                                        </div>
+                                      ) : (
+                                        ""
+                                      )}
+                                    </StyledTableCell>
+                                  ))}
+                                </StyledTableRow>
+                              );
+                            })
+                          )
+                        }
                       </TableBody>
                     </Table>
                   </TableContainer>
@@ -866,7 +884,7 @@ function ManageCustomer() {
                               >
                                 <img
                                   src={selectedImage}
-                            // value={imageUrl}
+                                  // value={imageUrl}
                                   alt="Selected"
                                   style={{
                                     maxWidth: "100%",

@@ -5,7 +5,7 @@ import Grid from '@mui/material/Unstable_Grid2';
 import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
 import Stack from '@mui/material/Stack';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box } from '@mui/material';
 import Divider from '@mui/material/Divider';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import CSVDownload from 'react-csv';
@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router';
 import { tableCellClasses } from '@mui/material/TableCell';
 import { styled } from '@mui/material/styles';
 import axios from 'axios';
+import Loading from "ui-component/Loading";
 
 
 const style = {
@@ -52,7 +53,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 
 function OutOfStock() {
- 
+
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(0);
@@ -60,6 +61,8 @@ function OutOfStock() {
   const [orderBy, setOrderBy] = useState('');
   const [order, setOrder] = useState('asc');
   const [editedRowData, setEditedRowData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
 
   const navigate = useNavigate();
   const handleButtonClick = () => {
@@ -92,36 +95,37 @@ function OutOfStock() {
     { id: 'QtyAvailable', label: 'Quantity Available', align: 'center', minWidth: 70 },
     { id: 'expDate', label: 'Expiry Date', align: 'center', minWidth: 170 }
   ];
- 
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get('http://localhost:8080/medicine');
-  
+
         const transformedData = response.data?.data?.map((item) => ({
           id: item.id,
-        medicineName: item.product_name || 0,
-        genericName: item.generic_name || 0, 
-        company: item.supplier_name || 0, 
-        strength: item.strength || 0, 
-        QtyAvailable: item.instock || 0, 
-        expDate: item.expire_date || 0,
+          medicineName: item.product_name || 0,
+          genericName: item.generic_name || 0,
+          company: item.supplier_name || 0,
+          strength: item.strength || 0,
+          QtyAvailable: item.instock || 0,
+          expDate: item.expire_date || 0,
         }));
-  
+
         // Filter out the items where the quantity available is zero
         const filteredData = transformedData.filter(item => item.QtyAvailable === 0);
-  
+
         setData(filteredData);
+        setLoading(false);
         const ids = filteredData.map((item) => item.id);
         setId(ids);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
-  
+
     fetchData();
   }, []);
-  
+
   const rows = data;
 
   const [copied, setCopied] = useState(false);
@@ -358,62 +362,74 @@ function OutOfStock() {
               </Grid>
             </Grid>
             <div>
-            <Paper sx={{ width: 'auto', marginTop: '10px' }}>
-                    <TableContainer component={Paper}>
-                      <Table sx={{ minWidth: 'auto' }} aria-label='customized table'>
-                        <TableHead>
-                          <TableRow>
-                            {/* <StyledTableCell align='center'>ID</StyledTableCell> */}
-                            <StyledTableCell align='center'>Medicine Name</StyledTableCell>
-                            <StyledTableCell align='center'>Generic Name</StyledTableCell>
-                            <StyledTableCell align='center'>Company</StyledTableCell>
-                            <StyledTableCell align='center'>Strength</StyledTableCell>
-                            <StyledTableCell align='center'>Quantity Available</StyledTableCell>
-                            <StyledTableCell align='center'>Expiry Date</StyledTableCell>
-                            {/* <StyledTableCell align='center'>Actions</StyledTableCell> */}
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
-                            return (
-                              <StyledTableRow key={row.id}>
-                                {columns.map((column) => (
-                                  <StyledTableCell key={column.id} align={column.align}>
-                                    {column.id === 'imageUrl' ? (
-                                      row[column.id] ? (
-                                        <img
-                                          src={row[column.id]}
-                                          alt='img'
-                                          style={{ maxWidth: '50px', maxHeight: '50spx', borderRadius: '50%' }}
-                                        />
-                                      ) : (
-                                        'no image'
-                                      )
+              <Paper sx={{ width: 'auto', marginTop: '10px' }}>
+                <TableContainer component={Paper}>
+                  <Table sx={{ minWidth: 'auto' }} aria-label='customized table'>
+                    <TableHead>
+                      <TableRow>
+                        {/* <StyledTableCell align='center'>ID</StyledTableCell> */}
+                        <StyledTableCell align='center'>Medicine Name</StyledTableCell>
+                        <StyledTableCell align='center'>Generic Name</StyledTableCell>
+                        <StyledTableCell align='center'>Company</StyledTableCell>
+                        <StyledTableCell align='center'>Strength</StyledTableCell>
+                        <StyledTableCell align='center'>Quantity Available</StyledTableCell>
+                        <StyledTableCell align='center'>Expiry Date</StyledTableCell>
+                        {/* <StyledTableCell align='center'>Actions</StyledTableCell> */}
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {loading ?
+                        (
+                          <StyledTableRow>
+                            <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                              <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                <Loading /> {/* Render loading spinner */}
+                              </Box>
+                            </StyledTableCell>
+                          </StyledTableRow>
+                        ) :
+                        (sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
+                          return (
+                            <StyledTableRow key={row.id}>
+                              {columns.map((column) => (
+                                <StyledTableCell key={column.id} align={column.align}>
+                                  {column.id === 'imageUrl' ? (
+                                    row[column.id] ? (
+                                      <img
+                                        src={row[column.id]}
+                                        alt='img'
+                                        style={{ maxWidth: '50px', maxHeight: '50spx', borderRadius: '50%' }}
+                                      />
                                     ) : (
-                                      row[column.id]
-                                    )} 
-                                  </StyledTableCell>
-                                ))}
-                              </StyledTableRow>
-                            );
-                          })}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
+                                      'no image'
+                                    )
+                                  ) : (
+                                    row[column.id]
+                                  )}
+                                </StyledTableCell>
+                              ))}
+                            </StyledTableRow>
+                          );
+                        })
+                        )
+                      }
+                    </TableBody>
+                  </Table>
+                </TableContainer>
 
-                    <TablePagination
-                      rowsPerPageOptions={[10, 25, 100]}
-                      component='div'
-                      count={sortedRows.length}
-                      rowsPerPage={rowsPerPage}
-                      page={page}
-                      onPageChange={(e, newPage) => setPage(newPage)}
-                      onRowsPerPageChange={(e) => {
-                        setRowsPerPage(parseInt(e.target.value, 10));
-                        setPage(0);
-                      }}
-                    />
-                  </Paper>
+                <TablePagination
+                  rowsPerPageOptions={[10, 25, 100]}
+                  component='div'
+                  count={sortedRows.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={(e, newPage) => setPage(newPage)}
+                  onRowsPerPageChange={(e) => {
+                    setRowsPerPage(parseInt(e.target.value, 10));
+                    setPage(0);
+                  }}
+                />
+              </Paper>
             </div>
           </div>
         </CardContent>

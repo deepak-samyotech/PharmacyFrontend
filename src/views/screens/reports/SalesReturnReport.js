@@ -45,49 +45,51 @@ import MenuItem from "@mui/material/MenuItem";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import Loading from "ui-component/Loading";
 
 
 const style = {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: "auto",
-    bgcolor: "background.paper",
-    boxShadow: 24,
-  };
-  const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    [`&.${tableCellClasses.head}`]: {
-      backgroundColor: "#808080",
-      color: theme.palette.common.white,
-    },
-    [`&.${tableCellClasses.body}`]: {
-      fontSize: 14,
-    },
-  }));
-  
-  const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    "&:nth-of-type(odd)": {
-      backgroundColor: theme.palette.action.hover,
-    },
-    // hide last border
-    "&:last-child td, &:last-child th": {
-      border: 0,
-    },
-  }));
-  
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "auto",
+  bgcolor: "background.paper",
+  boxShadow: 24,
+};
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  [`&.${tableCellClasses.head}`]: {
+    backgroundColor: "#808080",
+    color: theme.palette.common.white,
+  },
+  [`&.${tableCellClasses.body}`]: {
+    fontSize: 14,
+  },
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  "&:nth-of-type(odd)": {
+    backgroundColor: theme.palette.action.hover,
+  },
+  // hide last border
+  "&:last-child td, &:last-child th": {
+    border: 0,
+  },
+}));
+
 
 function SalesReturnReport() {
 
-    const [data, setData] = useState([]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [orderBy, setOrderBy] = useState("");
-    const [order, setOrder] = useState("asc");
-    const [editedRowData, setEditedRowData] = useState(null);
+  const [data, setData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [orderBy, setOrderBy] = useState("");
+  const [order, setOrder] = useState("asc");
+  const [editedRowData, setEditedRowData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    
+
   const columns = [
     {
       id: "invoiceNumber",
@@ -114,23 +116,23 @@ function SalesReturnReport() {
       minWidth: 170,
     },
     {
-        id: "grandTotal",
-        label: "Total Amount",
-        align: "center",
-        minWidth: 170,
-      },
-      {
-        id: "grandDeduction",
-        label: "Total Deducation",
-        align: "center",
-        minWidth: 170,
-      },
-      {
-        id: "entryName",
-        label: "Entry Name",
-        align: "center",
-        minWidth: 170,
-      },
+      id: "grandTotal",
+      label: "Total Amount",
+      align: "center",
+      minWidth: 170,
+    },
+    {
+      id: "grandDeduction",
+      label: "Total Deducation",
+      align: "center",
+      minWidth: 170,
+    },
+    {
+      id: "entryName",
+      label: "Entry Name",
+      align: "center",
+      minWidth: 170,
+    },
   ];
 
 
@@ -150,7 +152,8 @@ function SalesReturnReport() {
           grandDeduction: item.grandDeduction,
           entryName: item.entryName,
         }));
-        setData(transformedData); 
+        setData(transformedData);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -161,7 +164,7 @@ function SalesReturnReport() {
 
   const rows = data;
 
- 
+
   const handleCopy = () => {
     const tableData = sortedRows.map((row) => Object.values(row).join(",")).join("\n");
     navigator.clipboard.writeText(tableData)
@@ -194,7 +197,7 @@ function SalesReturnReport() {
   };
 
   const handleExportPDF = () => {
-    const columns = ["Invoice Number","Sale ID", "Customer Name","Return Date", "Total Amount", "Total Deduction", "Entry Name"];
+    const columns = ["Invoice Number", "Sale ID", "Customer Name", "Return Date", "Total Amount", "Total Deduction", "Entry Name"];
     const rows = sortedRows.map((row) => [
       row.invoiceNumber,
       row.sale_id,
@@ -289,71 +292,71 @@ function SalesReturnReport() {
 
 
 
-    return (
-        <div style={{ margin: '10px' }}>
+  return (
+    <div style={{ margin: '10px' }}>
 
-            <Card style={{ backgroundColor: '#ffffff' }}>
-                <CardContent>
-                    <div className='bg-light'>
-                        <Grid container spacing={2}>
-                            <Grid xs={6} md={10} lg={10}>
-                                <h3>Sales Return Report</h3> {/* // -----------------------------name----------------- */}
-                            </Grid>
-                        </Grid>
-                        <Divider sx={{ borderColor: "blue", marginBottom: "5px" }} />
-              <Grid container spacing={2} alignItems="center">
-                <Grid item xs={6} md={8}>
-                  <Button
-                    variant="outlined"
-                    onClick={handleCopy}
-                    style={{ margin: "3px", padding: "3px" }}
-                  >
-                    Copy
-                  </Button>
-
-                  <Button
-                    variant="outlined"
-                    onClick={handleExportCSV}
-                    style={{ margin: "3px", padding: "3px" }}
-                  >
-                    CSV
-                  </Button>
-
-                  <Button
-                    variant="outlined"
-                    onClick={handleExportExcel}
-                    style={{ margin: "3px", padding: "3px" }}
-                  >
-                    Excel
-                  </Button>
-
-                  <Button
-                    variant="outlined"
-                    onClick={handleExportPDF}
-                    style={{ margin: "3px", padding: "3px" }}
-                  >
-                    PDF
-                  </Button>
-
-                  <Button
-                    variant="outlined"
-                    onClick={handlePrint}
-                    style={{ margin: "3px", padding: "3px" }}
-                  >
-                    Print
-                  </Button>
-                </Grid>
-                <Grid item xs={6} md={4}>
-                  <Input
-                    placeholder="Search"
-                    fullWidth
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </Grid>
+      <Card style={{ backgroundColor: '#ffffff' }}>
+        <CardContent>
+          <div className='bg-light'>
+            <Grid container spacing={2}>
+              <Grid xs={6} md={10} lg={10}>
+                <h3>Sales Return Report</h3> {/* // -----------------------------name----------------- */}
               </Grid>
-                        <div>
-                        <Paper sx={{ width: "auto", marginTop: "10px" }}>
+            </Grid>
+            <Divider sx={{ borderColor: "blue", marginBottom: "5px" }} />
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={6} md={8}>
+                <Button
+                  variant="outlined"
+                  onClick={handleCopy}
+                  style={{ margin: "3px", padding: "3px" }}
+                >
+                  Copy
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  onClick={handleExportCSV}
+                  style={{ margin: "3px", padding: "3px" }}
+                >
+                  CSV
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  onClick={handleExportExcel}
+                  style={{ margin: "3px", padding: "3px" }}
+                >
+                  Excel
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  onClick={handleExportPDF}
+                  style={{ margin: "3px", padding: "3px" }}
+                >
+                  PDF
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  onClick={handlePrint}
+                  style={{ margin: "3px", padding: "3px" }}
+                >
+                  Print
+                </Button>
+              </Grid>
+              <Grid item xs={6} md={4}>
+                <Input
+                  placeholder="Search"
+                  fullWidth
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </Grid>
+            </Grid>
+            <div>
+              <Paper sx={{ width: "auto", marginTop: "10px" }}>
                 <TableContainer component={Paper}>
                   <Table
                     sx={{ minWidth: "auto" }}
@@ -371,43 +374,55 @@ function SalesReturnReport() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {sortedRows
-                        .slice(
-                          page * rowsPerPage,
-                          page * rowsPerPage + rowsPerPage
-                        )
-                        .map((row, index) => {
-                          return (
-                            <StyledTableRow key={row.id}>
-                              {columns.map((column) => (
-                                <StyledTableCell
-                                  key={column.id}
-                                  align={column.align}
-                                >
-                                  {row[column.id]}
-                                  {column.id === "actions" ? (
-                                    <div
-                                      style={{
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        width: "100px",
-                                        alignItems: "center",
-                                      }}
-                                    >
-                                      <IconButton
-                                        onClick={() => handleOpen(row)}
+                      {loading ?
+                        (
+                          <StyledTableRow>
+                            <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                              <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                <Loading /> {/* Render loading spinner */}
+                              </Box>
+                            </StyledTableCell>
+                          </StyledTableRow>
+                        ) :
+                        (sortedRows
+                          .slice(
+                            page * rowsPerPage,
+                            page * rowsPerPage + rowsPerPage
+                          )
+                          .map((row, index) => {
+                            return (
+                              <StyledTableRow key={row.id}>
+                                {columns.map((column) => (
+                                  <StyledTableCell
+                                    key={column.id}
+                                    align={column.align}
+                                  >
+                                    {row[column.id]}
+                                    {column.id === "actions" ? (
+                                      <div
+                                        style={{
+                                          display: "flex",
+                                          justifyContent: "center",
+                                          width: "100px",
+                                          alignItems: "center",
+                                        }}
                                       >
-                                        <EditIcon />
-                                      </IconButton>
-                                    </div>
-                                  ) : (
-                                    ""
-                                  )}
-                                </StyledTableCell>
-                              ))}
-                            </StyledTableRow>
-                          );
-                        })}
+                                        <IconButton
+                                          onClick={() => handleOpen(row)}
+                                        >
+                                          <EditIcon />
+                                        </IconButton>
+                                      </div>
+                                    ) : (
+                                      ""
+                                    )}
+                                  </StyledTableCell>
+                                ))}
+                              </StyledTableRow>
+                            );
+                          })
+                        )
+                      }
                     </TableBody>
                   </Table>
                 </TableContainer>
@@ -424,12 +439,12 @@ function SalesReturnReport() {
                   }}
                 />
               </Paper>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-    );
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
 
 

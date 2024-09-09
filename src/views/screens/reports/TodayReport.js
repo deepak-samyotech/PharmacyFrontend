@@ -12,6 +12,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Box,
 } from "@mui/material";
 import Divider from "@mui/material/Divider";
 import axios from "axios";
@@ -26,6 +27,8 @@ import { IconButton } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
 import CloseIcon from "@mui/icons-material/Close";
+import Loading from "ui-component/Loading";
+
 
 const style = {
   position: "absolute",
@@ -65,6 +68,8 @@ const TodayReport = () => {
   const [orderBy, setOrderBy] = useState("");
   const [order, setOrder] = useState("asc");
   const [editedRowData, setEditedRowData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -73,7 +78,7 @@ const TodayReport = () => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
- 
+
   const columns = [
     { id: "id", label: "ID", align: "center", minWidth: 170 },
     { id: "createDate", label: "Create Date", align: "center", minWidth: 170 },
@@ -111,6 +116,7 @@ const TodayReport = () => {
           totalAmount: item.grand_total,
         }));
         setData(transformedData);
+        setLoading(false);
         const ids = transformedData.map((item) => item.id);
         setData(transformedData);
         // setId(ids);
@@ -221,76 +227,76 @@ const TodayReport = () => {
         value.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
-// ===============
-const handleExportCSV2 = () => {
-  const csvData = [
-    columns.map((column) => column.label),
-    ...sortedRows.map((row) => columns.map((column) => row[column.id])),
-  ];
-  const csvFile = new Blob([csvData.map((row) => row.join(",")).join("\n")], {
-    type: "text/csv",
-  });
-  const csvUrl = URL.createObjectURL(csvFile);
-  const link = document.createElement("a");
-  link.href = csvUrl;
-  link.setAttribute("download", "TodaySalesReport.csv");
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
-
-const handleExportExcel2 = () => {
-  const workbook = XLSX.utils.book_new();
-  const worksheet = XLSX.utils.json_to_sheet(sortedRows);
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Today Sales Report");
-  XLSX.writeFile(workbook, "TodaySalesReport.xlsx");
-};
-
-const handleExportPDF2 = () => {
-  const columns = ["Purchase Date", "Invoice Number", "Supplier Name", "Total Amount"];
-  const rows = sortedRows.map((row) => [
-    row.returnDate,
-    row.invoiceNumber,
-    row.supplierName,
-    row.totalAmount,
-  ]);
-
-  const doc = new jsPDF();
-  doc.text("Today Sales Report", 10, 10);
-  doc.autoTable({
-    head: [columns],
-    body: rows,
-  });
-  doc.save("TodaySalesReport.pdf");
-};
-
-const handlePrint2 = () => {
-  const printWindow = window.open("", "_blank");
-  printWindow.document.write(
-    "<html><head><title>Today Sales Report</title></head><body>"
-  );
-  printWindow.document.write("<h1>Today Sales Report</h1>");
-  printWindow.document.write('<table border="1">');
-  printWindow.document.write("<thead><tr>");
-  columns.forEach((column) => {
-    printWindow.document.write(`<th>${column.label}</th>`);
-  });
-  printWindow.document.write("</tr></thead>");
-  printWindow.document.write("<tbody>");
-  sortedRows.forEach((row) => {
-    printWindow.document.write("<tr>");
-    columns.forEach((column) => {
-      printWindow.document.write(`<td>${row[column.id]}</td>`);
+  // ===============
+  const handleExportCSV2 = () => {
+    const csvData = [
+      columns.map((column) => column.label),
+      ...sortedRows.map((row) => columns.map((column) => row[column.id])),
+    ];
+    const csvFile = new Blob([csvData.map((row) => row.join(",")).join("\n")], {
+      type: "text/csv",
     });
-    printWindow.document.write("</tr>");
-  });
-  printWindow.document.write("</tbody>");
-  printWindow.document.write("</table>");
-  printWindow.document.write("</body></html>");
-  printWindow.document.close();
-  printWindow.print();
-};
- 
+    const csvUrl = URL.createObjectURL(csvFile);
+    const link = document.createElement("a");
+    link.href = csvUrl;
+    link.setAttribute("download", "TodaySalesReport.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleExportExcel2 = () => {
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(sortedRows);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Today Sales Report");
+    XLSX.writeFile(workbook, "TodaySalesReport.xlsx");
+  };
+
+  const handleExportPDF2 = () => {
+    const columns = ["Purchase Date", "Invoice Number", "Supplier Name", "Total Amount"];
+    const rows = sortedRows.map((row) => [
+      row.returnDate,
+      row.invoiceNumber,
+      row.supplierName,
+      row.totalAmount,
+    ]);
+
+    const doc = new jsPDF();
+    doc.text("Today Sales Report", 10, 10);
+    doc.autoTable({
+      head: [columns],
+      body: rows,
+    });
+    doc.save("TodaySalesReport.pdf");
+  };
+
+  const handlePrint2 = () => {
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(
+      "<html><head><title>Today Sales Report</title></head><body>"
+    );
+    printWindow.document.write("<h1>Today Sales Report</h1>");
+    printWindow.document.write('<table border="1">');
+    printWindow.document.write("<thead><tr>");
+    columns.forEach((column) => {
+      printWindow.document.write(`<th>${column.label}</th>`);
+    });
+    printWindow.document.write("</tr></thead>");
+    printWindow.document.write("<tbody>");
+    sortedRows.forEach((row) => {
+      printWindow.document.write("<tr>");
+      columns.forEach((column) => {
+        printWindow.document.write(`<td>${row[column.id]}</td>`);
+      });
+      printWindow.document.write("</tr>");
+    });
+    printWindow.document.write("</tbody>");
+    printWindow.document.write("</table>");
+    printWindow.document.write("</body></html>");
+    printWindow.document.close();
+    printWindow.print();
+  };
+
 
   const handleSort = (property) => {
     const isAscending = orderBy === property && order === "asc";
@@ -443,65 +449,77 @@ const handlePrint2 = () => {
                               </TableRow>
                             </TableHead>
                             <TableBody>
-                              {sortedRows
-                                .slice(
-                                  page * rowsPerPage,
-                                  page * rowsPerPage + rowsPerPage
-                                )
-                                .map((row, index) => {
-                                  return (
-                                    <StyledTableRow key={row.id}>
-                                      {columns.slice(1).map((
-                                        column // Exclude the first column (ID)
-                                      ) => (
-                                        <StyledTableCell
-                                          key={column.id}
-                                          align={column.align}
-                                        >
-                                          {column.id === "imageUrl" ? (
-                                            row[column.id] ? (
-                                              <img
-                                                src={row[column.id]}
-                                                alt="img"
-                                                style={{
-                                                  maxWidth: "50px",
-                                                  maxHeight: "50px",
-                                                  borderRadius: "50%",
-                                                }} // Fixed typo: '50spx' to '50px'
-                                              />
+                              {loading ?
+                                (
+                                  <StyledTableRow>
+                                    <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                                      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                        <Loading /> {/* Render loading spinner */}
+                                      </Box>
+                                    </StyledTableCell>
+                                  </StyledTableRow>
+                                ) :
+                                (sortedRows
+                                  .slice(
+                                    page * rowsPerPage,
+                                    page * rowsPerPage + rowsPerPage
+                                  )
+                                  .map((row, index) => {
+                                    return (
+                                      <StyledTableRow key={row.id}>
+                                        {columns.slice(1).map((
+                                          column // Exclude the first column (ID)
+                                        ) => (
+                                          <StyledTableCell
+                                            key={column.id}
+                                            align={column.align}
+                                          >
+                                            {column.id === "imageUrl" ? (
+                                              row[column.id] ? (
+                                                <img
+                                                  src={row[column.id]}
+                                                  alt="img"
+                                                  style={{
+                                                    maxWidth: "50px",
+                                                    maxHeight: "50px",
+                                                    borderRadius: "50%",
+                                                  }} // Fixed typo: '50spx' to '50px'
+                                                />
+                                              ) : (
+                                                "no image"
+                                              )
                                             ) : (
-                                              "no image"
-                                            )
-                                          ) : (
-                                            row[column.id]
-                                          )}
-                                          {column.id === "actions" ? (
-                                            <div
-                                              style={{
-                                                display: "flex",
-                                                justifyContent: "center",
-                                                width: "100px",
-                                                alignItems: "center",
-                                              }}
-                                            >
-                                              <IconButton
-                                                color="gray"
-                                                aria-label="view"
-                                                onClick={() =>
-                                                  handleViewInvoice(row)
-                                                } // Pass 'row' instead of 'rows'
+                                              row[column.id]
+                                            )}
+                                            {column.id === "actions" ? (
+                                              <div
+                                                style={{
+                                                  display: "flex",
+                                                  justifyContent: "center",
+                                                  width: "100px",
+                                                  alignItems: "center",
+                                                }}
                                               >
-                                                <RemoveRedEyeIcon />
-                                              </IconButton>
-                                            </div>
-                                          ) : (
-                                            ""
-                                          )}
-                                        </StyledTableCell>
-                                      ))}
-                                    </StyledTableRow>
-                                  );
-                                })}
+                                                <IconButton
+                                                  color="gray"
+                                                  aria-label="view"
+                                                  onClick={() =>
+                                                    handleViewInvoice(row)
+                                                  } // Pass 'row' instead of 'rows'
+                                                >
+                                                  <RemoveRedEyeIcon />
+                                                </IconButton>
+                                              </div>
+                                            ) : (
+                                              ""
+                                            )}
+                                          </StyledTableCell>
+                                        ))}
+                                      </StyledTableRow>
+                                    );
+                                  })
+                                )
+                              }
                             </TableBody>
                           </Table>
                         </TableContainer>

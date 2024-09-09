@@ -37,6 +37,8 @@ import Modal from "@mui/material/Modal";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import axios from "axios";
+import Loading from "ui-component/Loading";
+
 
 const style = {
   position: "absolute",
@@ -73,6 +75,8 @@ function WholesaleCustomer() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [orderBy, setOrderBy] = useState("");
   const [order, setOrder] = useState("asc");
+  const [loading, setLoading] = useState(true);
+
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -124,6 +128,7 @@ function WholesaleCustomer() {
         );
 
         setData(wholesaleCustomers);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -146,14 +151,14 @@ function WholesaleCustomer() {
     navigate("/customer/regular-customer");
   };
 
-   // Function to filter rows based on search term
-   const filteredRows = rows.filter((row) =>
-   Object.values(row).some(
-     (value) =>
-       typeof value === "string" &&
-       value.toLowerCase().includes(searchTerm.toLowerCase())
-   )
- );
+  // Function to filter rows based on search term
+  const filteredRows = rows.filter((row) =>
+    Object.values(row).some(
+      (value) =>
+        typeof value === "string" &&
+        value.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
 
   const handleSort = (property) => {
     const isAscending = orderBy === property && order === "asc";
@@ -405,59 +410,71 @@ function WholesaleCustomer() {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {sortedRows
-                          .slice(
-                            page * rowsPerPage,
-                            page * rowsPerPage + rowsPerPage
-                          )
-                          .map((row, index) => {
-                            return (
-                              <StyledTableRow key={row.id}>
-                                {columns.map((column) => (
-                                  <StyledTableCell
-                                    key={column.id}
-                                    align={column.align}
-                                  >
-                                    {column.id === "imageUrl" ? (
-                                      row[column.id] ? (
-                                        <img
-                                          src={`data:image/jpeg;${
-                                            row[column.id].data
-                                          }`}
-                                          alt="img"
-                                        />
+                        {loading ?
+                          (
+                            <StyledTableRow>
+                              <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                                <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                  <Loading /> {/* Render loading spinner */}
+                                </Box>
+                              </StyledTableCell>
+                            </StyledTableRow>
+                          ) :
+
+                          (sortedRows
+                            .slice(
+                              page * rowsPerPage,
+                              page * rowsPerPage + rowsPerPage
+                            )
+                            .map((row, index) => {
+                              return (
+                                <StyledTableRow key={row.id}>
+                                  {columns.map((column) => (
+                                    <StyledTableCell
+                                      key={column.id}
+                                      align={column.align}
+                                    >
+                                      {column.id === "imageUrl" ? (
+                                        row[column.id] ? (
+                                          <img
+                                            src={`data:image/jpeg;${row[column.id].data
+                                              }`}
+                                            alt="img"
+                                          />
+                                        ) : (
+                                          "no image"
+                                        )
                                       ) : (
-                                        "no image"
-                                      )
-                                    ) : (
-                                      row[column.id]
-                                    )}
-                                    {column.id === "actions" ? (
-                                      <div
+                                        row[column.id]
+                                      )}
+                                      {column.id === "actions" ? (
+                                        <div
                                         // style={{
                                         //   display: "flex",
                                         //   justifyContent: "end",
                                         //   width: "100px",
                                         //   alignItems: "end",
                                         // }}
-                                      >
-                                        {/* <IconButton onClick={handleOpen}>
+                                        >
+                                          {/* <IconButton onClick={handleOpen}>
                                           <EditIcon />
                                         </IconButton> */}
-                                        <IconButton
-                                          onClick={() => handlePrint(row.id)}
-                                        >
-                                          <PrintIcon />
-                                        </IconButton>
-                                      </div>
-                                    ) : (
-                                      ""
-                                    )}
-                                  </StyledTableCell>
-                                ))}
-                              </StyledTableRow>
-                            );
-                          })}
+                                          <IconButton
+                                            onClick={() => handlePrint(row.id)}
+                                          >
+                                            <PrintIcon />
+                                          </IconButton>
+                                        </div>
+                                      ) : (
+                                        ""
+                                      )}
+                                    </StyledTableCell>
+                                  ))}
+                                </StyledTableRow>
+                              );
+                            })
+                          )
+                        }
                       </TableBody>
                     </Table>
                   </TableContainer>

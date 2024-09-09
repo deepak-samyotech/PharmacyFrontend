@@ -32,6 +32,9 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 import Logo from "ui-component/Logo";
 import "./style.css";
 import logoing from "../../../assets/images/logo.svg";
+import Loading from "ui-component/Loading";
+
+
 const tableContainer = {
   border: "1px solid #e0e0e0",
   borderRadius: "0px",
@@ -84,6 +87,8 @@ function ManagePurchase() {
   const [order, setOrder] = useState("asc");
 
   const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(true);
+
 
   //models
   const [open, setOpen] = useState(false);
@@ -150,6 +155,7 @@ function ManagePurchase() {
           payment_date: item.payment_date,
         }));
         setData(transformedData);
+        setLoading(false);
         const ids = transformedData.map((item) => item.id);
         setId(ids);
       } catch (error) {
@@ -262,7 +268,7 @@ function ManagePurchase() {
     const logoImage = document.getElementById("logoImage");
 
     // Set the logo image source
-    logoImage.src = "path/to/your/logo.png"; 
+    logoImage.src = "path/to/your/logo.png";
 
     // Clear previous content
     printContent.innerHTML = "";
@@ -492,54 +498,66 @@ function ManagePurchase() {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {sortedRows
-                          .slice(
-                            page * rowsPerPage,
-                            page * rowsPerPage + rowsPerPage
-                          )
-                          .map((row, index) => {
-                            return (
-                              <StyledTableRow key={row.id}>
-                                {columns.slice(1).map((
-                                  column // Exclude the first column (ID)
-                                ) => (
-                                  <StyledTableCell
-                                    key={column.id}
-                                    align={column.align}
-                                  >
-                                    {column.id === "imageUrl" ? (
-                                      row[column.id] ? (
-                                        <img
-                                          src={row[column.id]}
-                                          alt="img"
-                                          style={{
-                                            maxWidth: "50px",
-                                            maxHeight: "50px",
-                                            borderRadius: "50%",
-                                          }} // Fixed typo: '50spx' to '50px'
-                                        />
+                        {loading ?
+                          (
+                            <StyledTableRow>
+                              <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                                <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                  <Loading /> {/* Render loading spinner */}
+                                </Box>
+                              </StyledTableCell>
+                            </StyledTableRow>
+                          ) :
+                          (sortedRows
+                            .slice(
+                              page * rowsPerPage,
+                              page * rowsPerPage + rowsPerPage
+                            )
+                            .map((row, index) => {
+                              return (
+                                <StyledTableRow key={row.id}>
+                                  {columns.slice(1).map((
+                                    column // Exclude the first column (ID)
+                                  ) => (
+                                    <StyledTableCell
+                                      key={column.id}
+                                      align={column.align}
+                                    >
+                                      {column.id === "imageUrl" ? (
+                                        row[column.id] ? (
+                                          <img
+                                            src={row[column.id]}
+                                            alt="img"
+                                            style={{
+                                              maxWidth: "50px",
+                                              maxHeight: "50px",
+                                              borderRadius: "50%",
+                                            }} // Fixed typo: '50spx' to '50px'
+                                          />
+                                        ) : (
+                                          "no image"
+                                        )
                                       ) : (
-                                        "no image"
-                                      )
-                                    ) : (
-                                      row[column.id]
-                                    )}
-                                    {column.id === "actions" ? (
-                                      <div>
-                                        <IconButton
-                                          onClick={() => handleOpen(row)}
-                                        >
-                                          <ReceiptIcon />
-                                        </IconButton>
-                                      </div>
-                                    ) : (
-                                      ""
-                                    )}
-                                  </StyledTableCell>
-                                ))}
-                              </StyledTableRow>
-                            );
-                          })}
+                                        row[column.id]
+                                      )}
+                                      {column.id === "actions" ? (
+                                        <div>
+                                          <IconButton
+                                            onClick={() => handleOpen(row)}
+                                          >
+                                            <ReceiptIcon />
+                                          </IconButton>
+                                        </div>
+                                      ) : (
+                                        ""
+                                      )}
+                                    </StyledTableCell>
+                                  ))}
+                                </StyledTableRow>
+                              );
+                            })
+                          )
+                        }
                       </TableBody>
                     </Table>
                   </TableContainer>

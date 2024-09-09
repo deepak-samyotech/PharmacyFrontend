@@ -46,6 +46,8 @@ import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import { baseurl } from "utils/constants";
+import Loading from "ui-component/Loading";
+
 
 const style = {
   position: "absolute",
@@ -84,6 +86,8 @@ function PurchaseReport() {
   const [orderBy, setOrderBy] = useState("");
   const [order, setOrder] = useState("asc");
   const [editedRowData, setEditedRowData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
 
   const columns = [
     {
@@ -126,6 +130,7 @@ function PurchaseReport() {
           totalAmount: item.total_amount,
         }));
         setData(transformedData);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -352,43 +357,55 @@ function PurchaseReport() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {sortedRows
-                        .slice(
-                          page * rowsPerPage,
-                          page * rowsPerPage + rowsPerPage
-                        )
-                        .map((row, index) => {
-                          return (
-                            <StyledTableRow key={row.id}>
-                              {columns.map((column) => (
-                                <StyledTableCell
-                                  key={column.id}
-                                  align={column.align}
-                                >
-                                  {row[column.id]}
-                                  {column.id === "actions" ? (
-                                    <div
-                                      style={{
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        width: "100px",
-                                        alignItems: "center",
-                                      }}
-                                    >
-                                      <IconButton
-                                        onClick={() => handleOpen(row)}
+                      {loading ?
+                        (
+                          <StyledTableRow>
+                            <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                              <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                <Loading /> {/* Render loading spinner */}
+                              </Box>
+                            </StyledTableCell>
+                          </StyledTableRow>
+                        ) :
+                        (sortedRows
+                          .slice(
+                            page * rowsPerPage,
+                            page * rowsPerPage + rowsPerPage
+                          )
+                          .map((row, index) => {
+                            return (
+                              <StyledTableRow key={row.id}>
+                                {columns.map((column) => (
+                                  <StyledTableCell
+                                    key={column.id}
+                                    align={column.align}
+                                  >
+                                    {row[column.id]}
+                                    {column.id === "actions" ? (
+                                      <div
+                                        style={{
+                                          display: "flex",
+                                          justifyContent: "center",
+                                          width: "100px",
+                                          alignItems: "center",
+                                        }}
                                       >
-                                        <EditIcon />
-                                      </IconButton>
-                                    </div>
-                                  ) : (
-                                    ""
-                                  )}
-                                </StyledTableCell>
-                              ))}
-                            </StyledTableRow>
-                          );
-                        })}
+                                        <IconButton
+                                          onClick={() => handleOpen(row)}
+                                        >
+                                          <EditIcon />
+                                        </IconButton>
+                                      </div>
+                                    ) : (
+                                      ""
+                                    )}
+                                  </StyledTableCell>
+                                ))}
+                              </StyledTableRow>
+                            );
+                          })
+                        )
+                      }
                     </TableBody>
                   </Table>
                 </TableContainer>

@@ -35,6 +35,8 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import { styled } from "@mui/material/styles";
 import "jspdf-autotable";
+import Loading from "ui-component/Loading";
+
 
 const style = {
   position: "absolute",
@@ -71,6 +73,8 @@ function RegularCustomer() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [orderBy, setOrderBy] = useState("");
   const [order, setOrder] = useState("asc");
+  const [loading, setLoading] = useState(true);
+
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -126,6 +130,7 @@ function RegularCustomer() {
         );
 
         setData(regularCustomers);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -437,46 +442,59 @@ function RegularCustomer() {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {sortedRows
-                          .slice(
-                            page * rowsPerPage,
-                            page * rowsPerPage + rowsPerPage
-                          )
-                          .map((row, index) => {
-                            return (
-                              <StyledTableRow key={row.id}>
-                                {columns.map((column) => (
-                                  <StyledTableCell
-                                    key={column.id}
-                                    align={column.align}
-                                  >
-                                    {row[column.id]}
-                                    {column.id === "actions" ? (
-                                      <div
+                        {loading ?
+                          (
+                            <StyledTableRow>
+                              <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                                <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                  <Loading /> {/* Render loading spinner */}
+                                </Box>
+                              </StyledTableCell>
+                            </StyledTableRow>
+                          ) :
+
+                          (sortedRows
+                            .slice(
+                              page * rowsPerPage,
+                              page * rowsPerPage + rowsPerPage
+                            )
+                            .map((row, index) => {
+                              return (
+                                <StyledTableRow key={row.id}>
+                                  {columns.map((column) => (
+                                    <StyledTableCell
+                                      key={column.id}
+                                      align={column.align}
+                                    >
+                                      {row[column.id]}
+                                      {column.id === "actions" ? (
+                                        <div
                                         // style={{
                                         //   display: "flex",
                                         //   justifyContent: "center",
                                         //   width: "100px",
                                         //   alignItems: "center",
                                         // }}
-                                      >
-                                        {/* <IconButton onClick={handleOpen}>
+                                        >
+                                          {/* <IconButton onClick={handleOpen}>
                                           <EditIcon />
                                         </IconButton> */}
-                                        <IconButton
-                                          onClick={() => handlePrint(row.id)}
-                                        >
-                                          <PrintIcon />
-                                        </IconButton>
-                                      </div>
-                                    ) : (
-                                      ""
-                                    )}
-                                  </StyledTableCell>
-                                ))}
-                              </StyledTableRow>
-                            );
-                          })}
+                                          <IconButton
+                                            onClick={() => handlePrint(row.id)}
+                                          >
+                                            <PrintIcon />
+                                          </IconButton>
+                                        </div>
+                                      ) : (
+                                        ""
+                                      )}
+                                    </StyledTableCell>
+                                  ))}
+                                </StyledTableRow>
+                              );
+                            })
+                          )
+                        }
                       </TableBody>
                     </Table>
                   </TableContainer>

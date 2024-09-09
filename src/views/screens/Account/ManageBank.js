@@ -39,6 +39,8 @@ import { styled } from "@mui/material/styles";
 import Alert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
 import Swal from "sweetalert2";
+import Loading from "ui-component/Loading";
+
 
 const style = {
   position: "absolute",
@@ -87,6 +89,8 @@ function ManageBank() {
   const [accountNumber, SetAccountNumber] = useState("");
   const [branch, setBranch] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
+  const [loading, setLoading] = useState(true);
+
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -133,6 +137,7 @@ function ManageBank() {
         } else {
           console.error("Data is not in the expected format:", transformedData);
         }
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -437,37 +442,47 @@ function ManageBank() {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {sortedRows
-                          .slice(
-                            page * rowsPerPage,
-                            page * rowsPerPage + rowsPerPage
-                          )
-                          .map((row, index) => {
-                            return (
-                              <StyledTableRow key={row.id}>
-                                {columns.map((column) => (
-                                  <StyledTableCell
-                                    key={column.id}
-                                    align={column.align}
-                                  >
-                                    {column.id === "imageUrl" ? (
-                                      row[column.id] ? (
-                                        <img
-                                          src={row[column.id]}
-                                          alt="img"
-                                          style={{
-                                            maxWidth: "50px",
-                                            maxHeight: "50spx",
-                                            borderRadius: "50%",
-                                          }}
-                                        />
+                        {loading ?
+                          (
+                            <StyledTableRow>
+                              <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                                <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                  <Loading /> {/* Render loading spinner */}
+                                </Box>
+                              </StyledTableCell>
+                            </StyledTableRow>
+                          ) :
+                          (sortedRows
+                            .slice(
+                              page * rowsPerPage,
+                              page * rowsPerPage + rowsPerPage
+                            )
+                            .map((row, index) => {
+                              return (
+                                <StyledTableRow key={row.id}>
+                                  {columns.map((column) => (
+                                    <StyledTableCell
+                                      key={column.id}
+                                      align={column.align}
+                                    >
+                                      {column.id === "imageUrl" ? (
+                                        row[column.id] ? (
+                                          <img
+                                            src={row[column.id]}
+                                            alt="img"
+                                            style={{
+                                              maxWidth: "50px",
+                                              maxHeight: "50spx",
+                                              borderRadius: "50%",
+                                            }}
+                                          />
+                                        ) : (
+                                          "no image"
+                                        )
                                       ) : (
-                                        "no image"
-                                      )
-                                    ) : (
-                                      row[column.id]
-                                    )}
-                                    {/* {column.id === "actions" ? (
+                                        row[column.id]
+                                      )}
+                                      {/* {column.id === "actions" ? (
                                         <div
                                           style={{
                                             display: "flex",
@@ -490,11 +505,13 @@ function ManageBank() {
                                       ) : (
                                         ""
                                       )} */}
-                                  </StyledTableCell>
-                                ))}
-                              </StyledTableRow>
-                            );
-                          })}
+                                    </StyledTableCell>
+                                  ))}
+                                </StyledTableRow>
+                              );
+                            })
+                          )
+                        }
                       </TableBody>
                     </Table>
                   </TableContainer>
@@ -552,7 +569,7 @@ function ManageBank() {
                             id="outlined-textarea"
                             label="Bank Name"
                             placeholder="Bank Name"
-                            onChange={(e)=>setBankName(e.target.value)}
+                            onChange={(e) => setBankName(e.target.value)}
                             multiline
                           />
                           <TextField
@@ -560,7 +577,7 @@ function ManageBank() {
                             label="Account Name"
                             placeholder="Account Name"
                             type="text"
-                            onChange={(e)=>SetAccountName(e.target.value)}
+                            onChange={(e) => SetAccountName(e.target.value)}
                             fullWidth
                           />
                           <TextField
@@ -568,7 +585,7 @@ function ManageBank() {
                             label="Account Number"
                             placeholder="Account Number"
                             type="text"
-                            onChange={(e)=>SetAccountNumber(e.target.value)}
+                            onChange={(e) => SetAccountNumber(e.target.value)}
                             fullWidth
                           />
                           <TextField
@@ -576,7 +593,7 @@ function ManageBank() {
                             label="Branch"
                             placeholder="Branch"
                             type="text"
-                            onChange={(e)=>setBranch(e.target.value)}
+                            onChange={(e) => setBranch(e.target.value)}
                             fullWidth
                           />
                           <div

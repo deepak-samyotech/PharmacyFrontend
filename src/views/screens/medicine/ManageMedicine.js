@@ -42,6 +42,7 @@ import AlertTitle from "@mui/material/AlertTitle";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import * as XLSX from "xlsx";
+import Loading from "ui-component/Loading";
 
 import { ToastContainer, toast } from 'react-toastify';
 
@@ -85,6 +86,7 @@ function ManageMedicine() {
   const [successMessage, setSuccessMessage] = useState("");
   const [failureMessage, setFailureMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const columns = [
     // { id: 'id', label: 'ID', align: 'start', minWidth: 70 },
@@ -119,16 +121,15 @@ function ManageMedicine() {
   const [ShortQty, setShortQty] = useState("");
   const [form, setForm] = useState("");
   const [selectedOption, setSelectedOption] = useState("Yes");
-  const [discountType, setDiscountType] = useState("Yes"); // Add this line
-  const [supplierList, setSupplierList] = useState([]); // State to store the list of suppliers
-  const [selectedSupplier, setSelectedSupplier] = useState(""); // State to store the selected supplier
+  const [discountType, setDiscountType] = useState("Yes");
+  const [supplierList, setSupplierList] = useState([]);
+  const [selectedSupplier, setSelectedSupplier] = useState("");
   const [errors, setErrors] = useState({});
   const [id, setId] = useState([]);
 
   const handleBoxPriceCalculation = () => {
-    // Calculate box price based on MRP and box size
     const calculatedBoxPrice = parseFloat(mrp) * parseInt(boxSize);
-    setBoxPrices(calculatedBoxPrice.toFixed(2)); // Set the box price
+    setBoxPrices(calculatedBoxPrice.toFixed(2));
   };
 
 
@@ -193,6 +194,8 @@ function ManageMedicine() {
           transformedSupplierData
         );
       }
+
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -313,7 +316,7 @@ function ManageMedicine() {
     setEditedRowData(row);
     setOpen(true);
 
-    console.log("Row : ", row );
+    console.log("Row : ", row);
     // Populate the modal fields with the data of the selected row
     setGenericName(row.genericName);
     setStrength(row.strength);
@@ -365,7 +368,7 @@ function ManageMedicine() {
         },
       })
       .then((response) => {
-        console.log("Look at data = ",response);
+        console.log("Look at data = ", response);
         if (response.status === 200) {
           console.log("I am here");
           fetchData();
@@ -649,64 +652,77 @@ function ManageMedicine() {
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {sortedRows
-                            .slice(
-                              page * rowsPerPage,
-                              page * rowsPerPage + rowsPerPage
-                            )
-                            .map((row, index) => {
-                              return (
-                                <StyledTableRow key={row.id}>
-                                  {columns.map((column) => (
-                                    <StyledTableCell
-                                      key={column.id}
-                                      align={column.align}
-                                    >
-                                      {column.id === "imageUrl" ? (
-                                        row[column.id] ? (
-                                          <img
-                                            src={row[column.id]}
-                                            alt="img"
-                                            style={{
-                                              maxWidth: "50px",
-                                              maxHeight: "50spx",
-                                              borderRadius: "50%",
-                                            }}
-                                          />
-                                        ) : (
-                                          "no image"
-                                        )
-                                      ) : (
-                                        row[column.id]
-                                      )}
-                                      {column.id === "actions" ? (
-                                        <div
-                                          style={{
-                                            display: "flex",
-                                            justifyContent: "center",
-                                            width: "100px",
-                                            alignItems: "center",
-                                          }}
+                          {loading ?
+                            (
+                              <StyledTableRow>
+                                <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                                  <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                    <Loading /> {/* Render loading spinner */}
+                                  </Box>
+                                </StyledTableCell>
+                              </StyledTableRow>
+                            ) :
+                            (
+                              sortedRows.slice(
+                                page * rowsPerPage,
+                                page * rowsPerPage + rowsPerPage
+                              )
+                                .map((row, index) => {
+                                  return (
+                                    <StyledTableRow key={row.id}>
+                                      {columns.map((column) => (
+                                        <StyledTableCell
+                                          key={column.id}
+                                          align={column.align}
                                         >
-                                          <IconButton
-                                            onClick={() => handleOpen(row)}
-                                          >
-                                            <EditIcon />
-                                          </IconButton>
-                                          <IconButton
-                                            onClick={() => handlePrint(row.id)}
-                                          >
-                                            <PrintIcon />
-                                          </IconButton>
-                                        </div>
-                                      ) : (
-                                        ""
-                                      )}
-                                    </StyledTableCell>
-                                  ))}
-                                </StyledTableRow>
-                              );
-                            })}
+                                          {column.id === "imageUrl" ? (
+                                            row[column.id] ? (
+                                              <img
+                                                src={row[column.id]}
+                                                alt="img"
+                                                style={{
+                                                  maxWidth: "50px",
+                                                  maxHeight: "50spx",
+                                                  borderRadius: "50%",
+                                                }}
+                                              />
+                                            ) : (
+                                              "no image"
+                                            )
+                                          ) : (
+                                            row[column.id]
+                                          )}
+                                          {column.id === "actions" ? (
+                                            <div
+                                              style={{
+                                                display: "flex",
+                                                justifyContent: "center",
+                                                width: "100px",
+                                                alignItems: "center",
+                                              }}
+                                            >
+                                              <IconButton
+                                                onClick={() => handleOpen(row)}
+                                              >
+                                                <EditIcon />
+                                              </IconButton>
+                                              <IconButton
+                                                onClick={() => handlePrint(row.id)}
+                                              >
+                                                <PrintIcon />
+                                              </IconButton>
+                                            </div>
+                                          ) : (
+                                            ""
+                                          )}
+                                        </StyledTableCell>
+                                      ))}
+                                    </StyledTableRow>
+                                  );
+                                })
+                            )
+                          }
+
                         </TableBody>
                       </Table>
                     </TableContainer>
@@ -986,7 +1002,7 @@ function ManageMedicine() {
                               required
                               accept="image/*"
                               style={{ width: "100%" }}
-                              // value={selectedImage}
+                            // value={selectedImage}
                             />
                             {errors.selectedImage && (
                               <div style={{ color: "red" }}>

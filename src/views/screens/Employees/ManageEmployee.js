@@ -48,6 +48,8 @@ import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import { updateEmployeeData } from "utils/api";
 import { toast } from "react-toastify";
+import Loading from "ui-component/Loading";
+
 
 const style = {
   position: "absolute",
@@ -86,6 +88,8 @@ function ManageEmployee() {
   const [orderBy, setOrderBy] = useState("");
   const [order, setOrder] = useState("asc");
   const [editedRowData, setEditedRowData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -132,6 +136,7 @@ function ManageEmployee() {
 
       console.log("Transformed data : ", transformedData);
       setData(transformedData);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -220,7 +225,7 @@ function ManageEmployee() {
 
 
     const response = await updateEmployeeData(formData, editedRowData.id);
-    
+
     console.log("response", response);
     if (response) {
       setOpen(false);
@@ -491,50 +496,62 @@ function ManageEmployee() {
                     </TableHead>
                     <TableBody>
 
-                      {sortedRows
-                        .slice(
-                          page * rowsPerPage,
-                          page * rowsPerPage + rowsPerPage
-                        )
-                        .map((row, index) => {
-                          // console.log("row : ",row);
-                          return (
-                            <StyledTableRow key={row.id}>
-                              {columns.map((column) => {
-                                // console.log("colunm ", column);
-                                return (
+                      {loading ?
+                        (
+                          <StyledTableRow>
+                            <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                              <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                <Loading /> {/* Render loading spinner */}
+                              </Box>
+                            </StyledTableCell>
+                          </StyledTableRow>
+                        ) :
+                        (sortedRows
+                          .slice(
+                            page * rowsPerPage,
+                            page * rowsPerPage + rowsPerPage
+                          )
+                          .map((row, index) => {
+                            // console.log("row : ",row);
+                            return (
+                              <StyledTableRow key={row.id}>
+                                {columns.map((column) => {
+                                  // console.log("colunm ", column);
+                                  return (
 
-                                  <>
-                                    <StyledTableCell
-                                      key={column.id}
-                                      align={column.align}
-                                    >
-                                      {row[column.id]}
-                                      {column.id === "actions" ? (
-                                        <div
-                                          style={{
-                                            display: "flex",
-                                            justifyContent: "center",
-                                            width: "100px",
-                                            alignItems: "center",
-                                          }}
-                                        >
-                                          <IconButton
-                                            onClick={() => handleOpen(row)}
+                                    <>
+                                      <StyledTableCell
+                                        key={column.id}
+                                        align={column.align}
+                                      >
+                                        {row[column.id]}
+                                        {column.id === "actions" ? (
+                                          <div
+                                            style={{
+                                              display: "flex",
+                                              justifyContent: "center",
+                                              width: "100px",
+                                              alignItems: "center",
+                                            }}
                                           >
-                                            <EditIcon />
-                                          </IconButton>
-                                        </div>
-                                      ) : (
-                                        ""
-                                      )}
-                                    </StyledTableCell>
-                                  </>
-                                )
-                              })}
-                            </StyledTableRow>
-                          );
-                        })}
+                                            <IconButton
+                                              onClick={() => handleOpen(row)}
+                                            >
+                                              <EditIcon />
+                                            </IconButton>
+                                          </div>
+                                        ) : (
+                                          ""
+                                        )}
+                                      </StyledTableCell>
+                                    </>
+                                  )
+                                })}
+                              </StyledTableRow>
+                            );
+                          })
+                        )
+                      }
                     </TableBody>
                   </Table>
                 </TableContainer>
