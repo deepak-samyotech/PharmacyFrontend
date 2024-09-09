@@ -31,6 +31,8 @@ import { IconButton } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
 import CloseIcon from "@mui/icons-material/Close";
+import { fetchInvoices, handleRetry } from "utils/api";
+import InternalServerError from "ui-component/InternalServerError";
 
 const styles = {
   smallTypography: {
@@ -80,6 +82,7 @@ function ManageInvoice() {
   const [order, setOrder] = useState("asc");
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+  const [error, setError] = useState(false);
 
   const handleCloseModal = () => {
     setOpenModal(false);
@@ -119,11 +122,9 @@ function ManageInvoice() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:8080/manage_invoice"
-        );
+        const response = await fetchInvoices();
 
-        const transformedData = response.data?.data?.map((item) => ({
+        const transformedData = response?.data?.data?.map((item) => ({
           id: item.id,
           invoiceNumber: item.invoiceId,
           customerName: item.customerName,
@@ -136,9 +137,10 @@ function ManageInvoice() {
           medicineData: item.medicineData,
         }));
         setData(transformedData);
-        const ids = transformedData.map((item) => item.id);
+        // const ids = transformedData.map((item) => item.id);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setError(true);
       }
     };
 
@@ -272,6 +274,10 @@ function ManageInvoice() {
   const handleButtonClick3 = () => {
     navigate("/customer/wholesale-customer");
   };
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
+  }
 
   return (
     <>

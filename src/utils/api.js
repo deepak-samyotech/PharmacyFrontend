@@ -4,7 +4,52 @@ import { apiUrl, baseurl } from "./constants";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { HttpStatusCodes } from 'utils/statusCodes';
+import employee from "menu-items/employee";
 
+
+export function handleRetry() {
+  window.location.reload();
+};
+
+export async function fetchCustomer() {
+  try {
+    return await axios.get(`${baseurl}/customer`);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function fetchSupplier() {
+  try {
+    return await axios.get(`${baseurl}/supplier`);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function handleRegister(firstName, lastName, email, password) {
+  try {
+    await axios.post(`http://localhost:8080/register`, {
+      firstName,
+      lastName,
+      email,
+      password
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function handlelogin(values) {
+  try {
+    return await axios.post(`${baseurl}/login`, {
+      email: values.email,
+      password: values.password,
+    });
+  } catch (error) {
+    throw error;
+  }
+}
 
 export async function updateEmployeeData(formData, empId) {
   try {
@@ -38,7 +83,7 @@ export async function fetchMedicine() {
     return await axios.get(`${baseurl}/medicine`);
 
   } catch (error) {
-    console.error("Error fetching data:", error);
+    throw error;
   }
 }
 
@@ -144,3 +189,201 @@ export async function putCustomerLedgerData(ledger_id, formData) {
   }
 }
 
+// Account API
+export async function PostClosingData(formData) {
+  try {
+    return axios.post(`${baseurl}/closing`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function fetchClosingData() {
+  try {
+    return await axios.get(`${baseurl}/closing`);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function fetchCustomerLedger() {
+  try {
+    return await axios.get(`${baseurl}/customer_ledger`);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function fetchBankData() {
+  try {
+    return await axios.get("http://localhost:8080/bank");
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function postBankData(formData) {
+  try {
+    return await axios.post(`${baseurl}/bank`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+  } catch (error) {
+
+  }
+}
+
+export async function fetchSuplierLedger() {
+  try {
+    return await axios.get(`${baseurl}/supplier_ledger`);
+  } catch (error) {
+    throw error;
+  }
+}
+
+// Customer API's
+export async function postCustomerData(formData) {
+  try {
+    return axios.post(`${baseurl}/customer`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function handleEditCustomer(id,formData) {
+  try {
+    return await axios.put(`http://localhost:8080/customer/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+  } catch (error) {
+    throw error;
+  }
+}
+
+// Employee 
+export async function employeeRegister(){
+try {
+  return await axios.post(
+    `${baseurl}/employee-register`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+} catch (error) {
+  throw error;
+}
+}
+
+export async function fetchEmloyeeData() {
+  try {
+    return await axios.get(`${baseurl}/employee-register`);
+  } catch (error) {
+    throw error;
+  }
+}
+
+// Help section
+export async function fetchAmbulance() {
+  try {
+    return await axios.get(`${baseurl}/ambulance`);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function postAmbulanceData(formData) {
+  try {
+    return axios.post(`${baseurl}/ambulance`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function fetchDoctor() {
+  try {
+    return await axios.get(`${baseurl}/doctor`);
+  } catch (error) {
+    throw error;
+  }
+}
+
+
+export async function postDoctorData(formData) {
+  try {
+    return axios.post(`${baseurl}/doctor`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function fetchFireService() {
+  try {
+    return await axios.get(`${baseurl}/fireService`);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function postFireServiceData(formData) {
+  try {
+    return axios.post(`${baseurl}/fireService`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+  } catch (error) {
+    throw error;
+  }
+}
+
+
+export async function fetchHospital() {
+  try {
+    return await axios.get(`${baseurl}/hospital`);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function postHospitalData(formData) {
+  try {
+    return axios.post(`${baseurl}/hospital`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+  } catch (error) {
+    throw error;
+  }
+}
+
+// Invoice section
+export async function fetchInvoices() {
+  try {
+    return await axios.get(`${baseurl}/manage_invoice`);
+  } catch (error) {
+    throw error;
+  }
+}

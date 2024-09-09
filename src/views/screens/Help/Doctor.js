@@ -33,6 +33,8 @@ import "jspdf-autotable";
 import jsPDF from "jspdf";
 import { toast } from 'react-toastify';
 import Loading from "ui-component/Loading";
+import { fetchDoctor, handleRetry, postDoctorData } from 'utils/api';
+import InternalServerError from 'ui-component/InternalServerError';
 
 
 const style = {
@@ -80,6 +82,7 @@ function Doctor() {
   const [contact, setContact] = useState('');
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
 
   const columns = [
@@ -92,8 +95,8 @@ function Doctor() {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/doctor');
-      const transformedData = response.data?.data?.map((item) => ({
+      const response = await fetchDoctor();
+      const transformedData = response?.data?.data?.map((item) => ({
         id: item.id,
         name: item.name,
         email: item.email,
@@ -107,6 +110,7 @@ function Doctor() {
       // setId(ids);
     } catch (error) {
       console.error('Error fetching data:', error);
+      setError(true);
     }
   };
 
@@ -119,37 +123,34 @@ function Doctor() {
 
   // POST API call
   //phone number
-  const handlephoneNum = (e) => {
+  const handlephoneNum =  (e) => {
     const input = e.target.value;
     const numericInput = input.replace(/\D/g, '');
     setContact(numericInput);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append('name', Name);
-    formData.append('email', email);
-    formData.append('contact', contact);
-    formData.append('address', address);
+  const handleSubmit = async (e) => {
+    try {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('name', Name);
+      formData.append('email', email);
+      formData.append('contact', contact);
+      formData.append('address', address);
 
-    axios
-      .post(`http://localhost:8080/doctor`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
-      .then((response) => {
-        if (response.status === 200) {
-          // setSuccessAlert(true);
-          setOpen(false);
-          fetchData();
-          toast.success("Data added Successfully.")
-        }
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
+      const response = await postDoctorData(formData);
+
+      if (response.status === 200) {
+        // setSuccessAlert(true);
+        setOpen(false);
+        fetchData();
+        toast.success("Data added Successfully.")
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setError(true);
+    }
+
   };
 
   const handleChangePage = (event, newPage) => {
@@ -312,6 +313,10 @@ function Doctor() {
       return a[1] - b[1];
     });
     return stabilizedThis.map((el) => el[0]);
+  }
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
   }
 
 

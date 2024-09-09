@@ -9,6 +9,8 @@ import { styled, useTheme } from '@mui/material/styles';
 import GroupIcon from '@mui/icons-material/Group';
 import { PiUsersThreeFill } from "react-icons/pi";
 import axios from "axios";
+import { fetchCustomer, handleRetry } from 'utils/api';
+import InternalServerError from 'ui-component/InternalServerError';
 // import { useState } from 'react';
 
 
@@ -51,23 +53,28 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 
 const TotalOrderLineChartCard = ({ isLoading }) => {
 
-const [count, setCount] = useState('');
+  const [count, setCount] = useState('');
+  const [error, setError] = useState(false); 
 
 
 useEffect(() => {
   const fetchData = async () => {
     try {
-      const responseCustomer = await axios.get("http://localhost:8080/customer");
-      const transformedData = responseCustomer.data
+      const responseCustomer = await fetchCustomer();
+      const transformedData = responseCustomer?.data
+      console.log("transformedData ========> ", transformedData);
       setCount(transformedData);
     } catch (error) {
       console.error("Error fetching data:", error);
+      setError(true);
     }
   };
   fetchData();
 }, []);
 
-
+if (error) {
+  return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
+}
 
   return (
     <>
@@ -84,7 +91,7 @@ useEffect(() => {
                   Wholesale Customer
                 </Typography>
                 <Typography variant="body1" style={{ marginLeft: 'auto', zIndex: 10 }}>
-                  {count.wholesaleCount}
+                  {count?.wholesaleCount}
                 </Typography>
               </div>
 
@@ -95,7 +102,7 @@ useEffect(() => {
                   Regular Customer
                 </Typography>
                 <Typography variant="body1" style={{ marginLeft: 'auto', zIndex: 10 }}>
-                  {count.regularCount}
+                  {count?.regularCount}
                 </Typography>
               </div>
             </Grid>

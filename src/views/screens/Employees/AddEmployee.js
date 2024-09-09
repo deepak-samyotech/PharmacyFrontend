@@ -39,6 +39,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 //api call
 import axios from "axios";
 import Swal from "sweetalert2";
+import { employeeRegister } from "utils/api";
 // ===========================|| FIREBASE - REGISTER ||=========================== //
 
 const AddEmployee = ({ ...others }) => {
@@ -102,17 +103,9 @@ const AddEmployee = ({ ...others }) => {
     formData.append("image", selectedImage);
 
     try {
-      const response = await axios.post(
-        `http://localhost:8080/employee-register`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await employeeRegister(formData);
 
-      if (response.status === 201) {
+      if (response?.status === 201) {
         Swal.fire({
           title: "Employee Created Successfully !",
           text: "You clicked the button!",

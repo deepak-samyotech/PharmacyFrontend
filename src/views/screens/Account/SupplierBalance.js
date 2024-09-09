@@ -25,6 +25,8 @@ import FormControl from '@mui/material/FormControl';
 import axios from 'axios';
 import NavigationIcon from '@mui/icons-material/Navigation';
 import Loading from "ui-component/Loading";
+import { fetchSuplierLedger, handleRetry } from 'utils/api';
+import InternalServerError from 'ui-component/InternalServerError';
 
 
 const style = {
@@ -67,6 +69,7 @@ function SupplierBalance() {
   const [editedRowData, setEditedRowData] = useState(null);
   const [id, setId] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
 
   const columns = [
@@ -83,7 +86,7 @@ function SupplierBalance() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/supplier_ledger');
+        const response = await fetchSuplierLedger();
 
         const transformedData = response.data?.data?.map((item) => ({
           id: item.id,
@@ -99,6 +102,7 @@ function SupplierBalance() {
         setId(ids);
       } catch (error) {
         console.error('Error fetching data:', error);
+        setError(true);
       }
     };
 
@@ -267,6 +271,9 @@ function SupplierBalance() {
     return stabilizedThis.map((el) => el[0]);
   }
 
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
+  }
 
   return (
     <div style={{ margin: '10px' }}>

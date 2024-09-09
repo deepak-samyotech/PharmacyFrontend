@@ -57,10 +57,8 @@ const FirebaseLogin = ({ ...others }) => {
 
   const handleSubmit = async (values, { setErrors, setStatus, setSubmitting }) => {
     try {
-      const response = await axios.post('http://localhost:8080/login', {
-        email: values.email,
-        password: values.password,
-      });
+      const response = await handlelogin(values)
+      
       if (response.status === 200) {
         Cookies.set('user_login', response.data.token, { expires: 1 });
         const userData = JSON.stringify(response.data);

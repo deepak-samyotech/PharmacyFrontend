@@ -10,59 +10,65 @@ import ListItemText from "@mui/material/ListItemText";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
 import ImageIcon from "@mui/icons-material/Image";
+import { fetchMedicine, handleRetry } from "utils/api";
+import InternalServerError from "ui-component/InternalServerError";
 
 const MedicineCard = () => {
   const [data, setData] = useState([]);
   const [data2, setData2] = useState([]);
   const [data3, setData3] = useState([]);
+  const [error, setError] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      const response = await fetchMedicine();
+
+    const transformedData = response?.data?.data
+      ?.map((item) => ({
+        id: item.id,
+        medicineName: item.product_name || 0,
+        genericName: item.generic_name || 0,
+        company: item.supplier_name || 0,
+        strength: item.strength || 0,
+        QtyAvailable: item.instock || 0,
+        expDate: item.expire_date || 0,
+        image: item.image || "",
+      }))
+      //1.) short quantity
+      .filter((item) => item.QtyAvailable < 100);
+    setData(transformedData);
+
+    //2.)soon expire
+    const currentDate = new Date();
+    const cutoffDate = new Date(currentDate.getTime() + 15 * 24 * 60 * 60 * 1000); // 15 days from now
+
+    const filteredData = transformedData.filter((item) => {
+      const expirationDate = new Date(item.expDate);
+      return expirationDate > currentDate && expirationDate <= cutoffDate;
+    });
+
+    setData2(filteredData);
+
+    //3.) top sale
+    transformedData.sort((a, b) => b.saleCount - a.saleCount);
+    const top10Medicines = transformedData.slice(0, 10);
+
+    setData3(top10Medicines);
+    } catch (error) {
+      console.log("Error : ", error);
+      setError(true);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("http://localhost:8080/medicine");
-
-        const transformedData = response.data?.data
-          ?.map((item) => ({
-            id: item.id,
-            medicineName: item.product_name || 0,
-            genericName: item.generic_name || 0,
-            company: item.supplier_name || 0,
-            strength: item.strength || 0,
-            QtyAvailable: item.instock || 0,
-            expDate: item.expire_date || 0,
-            image: item.image || "",
-          }))
-          //1.) short quantity
-          .filter((item) => item.QtyAvailable < 100);
-        setData(transformedData);
-
-        //2.)soon expire
-        const currentDate = new Date();
-        const cutoffDate = new Date(currentDate.getTime() + 15 * 24 * 60 * 60 * 1000); // 15 days from now
-
-        const filteredData = transformedData.filter((item) => {
-          const expirationDate = new Date(item.expDate);
-          return expirationDate > currentDate && expirationDate <= cutoffDate;
-        });
-
-        setData2(filteredData);
-
-        //3.) top sale
-        transformedData.sort((a, b) => b.saleCount - a.saleCount);
-        const top10Medicines = transformedData.slice(0, 10);
-
-        setData3(top10Medicines);
-
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
     fetchData();
   }, []);
 
-
   const rows = data;
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
+  }
 
   return (
     <>

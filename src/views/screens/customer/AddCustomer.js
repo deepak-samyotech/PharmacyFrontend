@@ -20,6 +20,7 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import moment from 'moment';
 import Swal from 'sweetalert2'
+import { postCustomerData } from 'utils/api';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -50,61 +51,56 @@ const AddCustomer = () => {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+    try {
+      e.preventDefault();
 
-    console.log(validateForm());
-    
-    if (validateForm()) {
-      const formData = new FormData();
+      console.log(validateForm());
 
-      console.log("In if wholesale submit");
-      console.log("formadata = ", formData);
+      if (validateForm()) {
+        const formData = new FormData();
 
-      formData.append('c_name', customerName);
-      formData.append('cus_contact', customerContact);
-      formData.append('c_email', customerEmail);
-      formData.append('c_address', customerAddress);
-      formData.append('c_type', customerType);
-      formData.append('target_amount', targetAmount);
-      formData.append('regular_discount', regularDiscount);
-      formData.append('target_discount', targetDiscount);
-      formData.append('pharmacy_name', pharmacyName);
-      formData.append('c_note', note);
-      formData.append('image', selectedImage);
+        console.log("In if wholesale submit");
+        console.log("formadata = ", formData);
 
-      axios
-        .post(`http://localhost:8080/customer`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        })
-        .then((response) => {
-          if (response.status === 200) {
-            Swal.fire({
-              title: 'Customer Add Successfully !',
-              text: 'You clicked the button!',
-              icon: 'success'
-            });
-            setTimeout(() => {
-              window.location.reload();
-            }, 1000);
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
+        formData.append('c_name', customerName);
+        formData.append('cus_contact', customerContact);
+        formData.append('c_email', customerEmail);
+        formData.append('c_address', customerAddress);
+        formData.append('c_type', customerType);
+        formData.append('target_amount', targetAmount);
+        formData.append('regular_discount', regularDiscount);
+        formData.append('target_discount', targetDiscount);
+        formData.append('pharmacy_name', pharmacyName);
+        formData.append('c_note', note);
+        formData.append('image', selectedImage);
+
+        const response = await postCustomerData(formData);
+
+        if (response?.status === 200) {
           Swal.fire({
-            title: 'Error !',
+            title: 'Customer Add Successfully !',
             text: 'You clicked the button!',
-            icon: 'error'
+            icon: 'success'
           });
-        });
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Swal.fire({
+        title: 'Error !',
+        text: 'You clicked the button!',
+        icon: 'error'
+      });
     }
   };
 
   const validateForm = () => {
 
-    console.log("customerType : ",customerType);
+    console.log("customerType : ", customerType);
 
     const errors = {};
     if (customerName.trim() === '') {
@@ -143,18 +139,18 @@ const AddCustomer = () => {
       }
       if (regularDiscount.trim() === '') {
         errors.regularDiscount = 'Regular discount is required';
-      console.log("8");
+        console.log("8");
 
       }
       if (targetDiscount.trim() === '') {
         errors.targetDiscount = 'Target discount is required';
-      console.log("9");
+        console.log("9");
 
       }
     } else {
       if (pharmacyName.trim() === '') {
         errors.pharmacyName = 'Pharmacy name is required';
-      console.log("10");
+        console.log("10");
 
       }
     }
@@ -175,7 +171,7 @@ const AddCustomer = () => {
     const emailRegex = /^[a-z0-9]+@[a-z]+\.[a-z]{2,3}$/;
     console.log("1");
     return emailRegex.test(email);
-    
+
 
   };
 
@@ -276,7 +272,7 @@ const AddCustomer = () => {
                 <h3>New Customer</h3>
               </Grid>
               <Grid xs={6} md={2} lg={2}>
-               {formattedDate}
+                {formattedDate}
               </Grid>
             </Grid>
             <hr />

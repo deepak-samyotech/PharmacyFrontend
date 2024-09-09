@@ -29,10 +29,11 @@ import Modal from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import axios from 'axios';
-import { putCustomerLedgerData } from 'utils/api';
+import { fetchCustomerLedger, handleRetry, putCustomerLedgerData } from 'utils/api';
 import { HttpStatusCodes } from 'utils/statusCodes';
 import { toast } from 'react-toastify';
 import Loading from "ui-component/Loading";
+import InternalServerError from 'ui-component/InternalServerError';
 
 
 const style = {
@@ -84,6 +85,7 @@ function CustomerBalance() {
   const [ledgerId, setLedgerId] = useState();
   const [isCalling, setIsCalling] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
 
   const columns = [
@@ -98,9 +100,9 @@ function CustomerBalance() {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/customer_ledger');
+      const response = await fetchCustomerLedger();
 
-      const transformedData = response.data?.data?.map((item) => ({
+      const transformedData = response?.data?.data?.map((item) => ({
         id: item.id,
         customerID: item.customer_id || '--------',
         customerName: item.customer_name || '--------',
@@ -114,6 +116,7 @@ function CustomerBalance() {
       setId(ids);
     } catch (error) {
       console.error('Error fetching data:', error);
+      setError(true);
     }
   };
 
@@ -357,6 +360,10 @@ function CustomerBalance() {
     }
 
     setIsCalling(false);
+  }
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
   }
 
   return (

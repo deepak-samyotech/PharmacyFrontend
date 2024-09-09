@@ -34,6 +34,8 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { toast } from "react-toastify";
 import Loading from "ui-component/Loading";
+import { fetchAmbulance, handleRetry, postAmbulanceData } from "utils/api";
+import InternalServerError from "ui-component/InternalServerError";
 
 
 const style = {
@@ -83,6 +85,7 @@ function Ambulance() {
   const [hospital_name, setHospital_name] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
 
   const columns = [
@@ -102,8 +105,8 @@ function Ambulance() {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/ambulance");
-      const transformedData = response.data?.data?.map((item) => ({
+      const response = await fetchAmbulance();
+      const transformedData = response?.data?.data?.map((item) => ({
         id: item.id,
         name: item.name,
         email: item.email,
@@ -119,6 +122,7 @@ function Ambulance() {
       // setId(ids);
     } catch (error) {
       console.error("Error fetching data:", error);
+      setError(true);
     }
   };
 
@@ -137,33 +141,29 @@ function Ambulance() {
     setContact(numericInput);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append("name", Name);
-    formData.append("email", email);
-    formData.append("contact", contact);
-    formData.append("address", address);
-    formData.append("hospital_name", hospital_name);
-    formData.append("notes", notes);
+  const handleSubmit = async (e) => {
+    try {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append("name", Name);
+      formData.append("email", email);
+      formData.append("contact", contact);
+      formData.append("address", address);
+      formData.append("hospital_name", hospital_name);
+      formData.append("notes", notes);
 
-    axios
-      .post(`http://localhost:8080/ambulance`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((response) => {
-        if (response.status === 200) {
-          // setSuccessAlert(true);
-          fetchData();
-          setOpen(false);
-          toast.success("Data added Successfully.");
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+
+      const response = await postAmbulanceData(formData)
+      if (response.status === 200) {
+        // setSuccessAlert(true);
+        fetchData();
+        setOpen(false);
+        toast.success("Data added Successfully.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      setError(true);
+    }
   };
 
   const handleChangePage = (event, newPage) => {
@@ -333,6 +333,10 @@ function Ambulance() {
       return a[1] - b[1];
     });
     return stabilizedThis.map((el) => el[0]);
+  }
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
   }
 
 

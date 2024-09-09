@@ -25,6 +25,8 @@ import Input from "@mui/material/Input";
 import TablePagination from "@mui/material/TablePagination";
 import axios from "axios";
 import Loading from "ui-component/Loading";
+import { fetchCustomer, handleRetry } from "utils/api";
+import InternalServerError from "ui-component/InternalServerError";
 
 const style = {
   position: "absolute",
@@ -65,6 +67,7 @@ function PhoneBook() {
   const [editedRowData, setEditedRowData] = useState(null);
   const [id, setId] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const columns = [
     { id: "id", label: "ID", align: "center", minWidth: 70 },
@@ -77,9 +80,9 @@ function PhoneBook() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/customer");
+        const response = await fetchCustomer();
 
-        const transformedData = response.data?.data?.map((item) => ({
+        const transformedData = response?.data?.data?.map((item) => ({
           name: item.c_name,
           contact: item.cus_contact,
           email: item.c_email,
@@ -91,6 +94,7 @@ function PhoneBook() {
         setId(ids);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setError(true);
       }
     };
 
@@ -239,6 +243,10 @@ function PhoneBook() {
       return a[1] - b[1];
     });
     return stabilizedThis.map((el) => el[0]);
+  }
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
   }
 
   return (

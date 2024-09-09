@@ -46,9 +46,10 @@ import MenuItem from "@mui/material/MenuItem";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import { updateEmployeeData } from "utils/api";
+import { fetchEmloyeeData, handleRetry, updateEmployeeData } from "utils/api";
 import { toast } from "react-toastify";
 import Loading from "ui-component/Loading";
+import InternalServerError from "ui-component/InternalServerError";
 
 
 const style = {
@@ -89,6 +90,7 @@ function ManageEmployee() {
   const [order, setOrder] = useState("asc");
   const [editedRowData, setEditedRowData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false); 
 
 
   const handleChangePage = (event, newPage) => {
@@ -121,10 +123,9 @@ function ManageEmployee() {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/employee-register");
-      console.log("response2332 : -------", response);
+      const response = await fetchEmloyeeData();
 
-      const transformedData = response.data?.data?.map((item) => ({
+      const transformedData = response?.data?.data?.map((item) => ({
         id: item.id,
         employeeId: item.em_id,
         // name: item.firstName + " " + item.lastName,
@@ -139,6 +140,7 @@ function ManageEmployee() {
       setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
+      setError(true);
     }
   };
 
@@ -394,6 +396,11 @@ function ManageEmployee() {
       return a[1] - b[1];
     });
     return stabilizedThis.map((el) => el[0]);
+  }
+
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
   }
 
   return (

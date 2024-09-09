@@ -33,6 +33,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { toast } from 'react-toastify';
 import Loading from "ui-component/Loading";
+import { fetchFireService, postFireServiceData } from 'utils/api';
 
 // import XLSX from 'xlsx';
 
@@ -82,6 +83,7 @@ function FireService() {
   const [contact, setContact] = useState('');
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
 
   const columns = [
@@ -94,8 +96,8 @@ function FireService() {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/fireService');
-      const transformedData = response.data?.data?.map((item) => ({
+      const response = await fetchFireService();
+      const transformedData = response?.data?.data?.map((item) => ({
         id: item.id,
         name: item.name,
         email: item.email,
@@ -109,6 +111,7 @@ function FireService() {
       setId(ids);
     } catch (error) {
       console.error('Error fetching data:', error);
+      setError(true);
     }
   };
 
@@ -127,31 +130,27 @@ function FireService() {
     setContact(numericInput);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append('name', Name);
-    formData.append('email', email);
-    formData.append('contact', contact);
-    formData.append('address', address);
+  const handleSubmit = async (e) => {
+    try {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('name', Name);
+      formData.append('email', email);
+      formData.append('contact', contact);
+      formData.append('address', address);
 
-    axios
-      .post(`http://localhost:8080/fireService`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
-      .then((response) => {
-        if (response.status === 200) {
-          // setSuccessAlert(true);
-          fetchData();
-          setOpen(false);
-          toast.success("Data added Successfully");
-        }
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
+      const response = await postFireServiceData(formData);
+
+      if (response.status === 200) {
+        // setSuccessAlert(true);
+        fetchData();
+        setOpen(false);
+        toast.success("Data added Successfully");
+      }
+
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
 
   const handleChangePage = (event, newPage) => {
@@ -316,6 +315,10 @@ function FireService() {
       return a[1] - b[1];
     });
     return stabilizedThis.map((el) => el[0]);
+  }
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />;
   }
 
   return (

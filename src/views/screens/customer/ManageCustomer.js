@@ -41,6 +41,8 @@ import Loading from "ui-component/Loading";
 
 
 import { toast } from "react-toastify";
+import { fetchCustomer, handleRetry } from "utils/api";
+import InternalServerError from "ui-component/InternalServerError";
 
 const style = {
   position: "absolute",
@@ -80,6 +82,7 @@ function ManageCustomer() {
   const [editedRowData, setEditedRowData] = useState(null);
   const [id, setId] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false); 
 
 
   const columns = [
@@ -106,7 +109,7 @@ function ManageCustomer() {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/customer");
+      const response = await fetchCustomer();
 
       const transformedData = response.data?.data?.map((item) => ({
         id: item.id,
@@ -129,6 +132,7 @@ function ManageCustomer() {
       setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
+      setError(true);
     }
   };
 
@@ -222,41 +226,39 @@ function ManageCustomer() {
   const [successAlert, setSuccessAlert] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      const formData = new FormData();
-      formData.append("c_name", customerName);
-      formData.append("cus_contact", customerContact);
-      formData.append("c_email", customerEmail);
-      formData.append("c_address", customerAddress);
-      formData.append("c_type", customerType);
-      formData.append("target_amount", targetAmount);
-      formData.append("regular_discount", regularDiscount);
-      formData.append("target_discount", targetDiscount);
-      formData.append("pharmacy_name", pharmacyName);
-      formData.append("c_note", note);
-      formData.append("image", selectedImage);
+  const handleSubmit = async (e) => {
+    try {
+      e.preventDefault();
+      if (validateForm()) {
+        const formData = new FormData();
+        formData.append("c_name", customerName);
+        formData.append("cus_contact", customerContact);
+        formData.append("c_email", customerEmail);
+        formData.append("c_address", customerAddress);
+        formData.append("c_type", customerType);
+        formData.append("target_amount", targetAmount);
+        formData.append("regular_discount", regularDiscount);
+        formData.append("target_discount", targetDiscount);
+        formData.append("pharmacy_name", pharmacyName);
+        formData.append("c_note", note);
+        formData.append("image", selectedImage);
 
-      axios
-        .put(`http://localhost:8080/customer/${editedRowData.id}`, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        })
-        .then((response) => {
-          if (response.status === 200) {
-            // setSuccessAlert(true);
-            setOpen(false);
-            fetchData();
-            toast.success('Data updated Successfully');
-          }
-        })
-        .catch((error) => {
-          console.error(`Error updating customer with ID ${id}:`, error);
-        });
+      
+        const response = await handleEditCustomer(editedRowData?.id, formData)
+
+    
+        if (response.status === 200) {
+          // setSuccessAlert(true);
+          setOpen(false);
+          fetchData();
+          toast.success('Data updated Successfully');
+        }
+      }
+    } catch (error) {
+      console.error(`Error updating customer with ID ${id}:`, error);
+      setError(true);
     }
-  };
+  }
 
   const validateForm = () => {
     const errors = {};
@@ -507,6 +509,10 @@ function ManageCustomer() {
     printWindow.document.close();
     printWindow.print();
   };
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
+  }
 
   return (
     <>

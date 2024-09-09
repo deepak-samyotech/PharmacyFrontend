@@ -21,6 +21,8 @@ import Grid from '@mui/material/Unstable_Grid2';
 import moment from 'moment';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { handleRetry, PostClosingData } from 'utils/api';
+import InternalServerError from 'ui-component/InternalServerError';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -31,18 +33,19 @@ const Item = styled(Paper)(({ theme }) => ({
 }));
 
 const Closing = () => {
-    const [date, setDate] = useState('');
+  const [date, setDate] = useState('');
 
-    useEffect(() => {
-      const currentDate = new Date().toISOString().split('T')[0];
-      setDate(currentDate);
-    }, [])
+  useEffect(() => {
+    const currentDate = new Date().toISOString().split('T')[0];
+    setDate(currentDate);
+  }, [])
   const [openBalance, setOpenBalance] = useState('');
   const [cashIn, setCashIn] = useState('');
   const [cashOut, setCashOut] = useState('');
   const [cashInHand, setCashInHand] = useState('');
   const [closeBalance, setCloseBalance] = useState(null);
   const [adjustment, setAdjustment] = useState('');
+  const [error, setError] = useState(false);
 
   const [errors, setErrors] = useState({});
 
@@ -57,53 +60,50 @@ const Closing = () => {
     setAdjustment('');
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
 
-    setIsCalling(true);
+    try {
+      e.preventDefault();
 
-    const newErrors = {};
-    if (!date) newErrors.date = 'Date is required';
-    if (!openBalance) newErrors.openBalance = 'Opening Balance is required';
-    if (!cashIn) newErrors.cashIn = 'Cash In is required';
-    if (!cashOut) newErrors.cashOut = 'Cash Out is required';
-    if (!cashInHand) newErrors.cashInHand = 'Cash In Hand is required';
-    if (!closeBalance) newErrors.closeBalance = 'Closing Balance is required';
+      setIsCalling(true);
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+      const newErrors = {};
+      if (!date) newErrors.date = 'Date is required';
+      if (!openBalance) newErrors.openBalance = 'Opening Balance is required';
+      if (!cashIn) newErrors.cashIn = 'Cash In is required';
+      if (!cashOut) newErrors.cashOut = 'Cash Out is required';
+      if (!cashInHand) newErrors.cashInHand = 'Cash In Hand is required';
+      if (!closeBalance) newErrors.closeBalance = 'Closing Balance is required';
+
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        setIsCalling(false);
+        return;
+      }
+
+      const formData = new FormData();
+
+      formData.append('date', date);
+      formData.append('opening_balance', openBalance);
+      formData.append('cash_in', cashIn);
+      formData.append('cash_out', cashOut);
+      formData.append('cash_in_hand', cashInHand);
+      formData.append('closing_balance', closeBalance);
+      formData.append('adjustment', adjustment);
+
+      const response = await PostClosingData(formData)
+
+      if (response.status === 200) {
+        // setSuccessAlert(true);
+        setAllValueEmpty();
+        toast.success("Data Saved Successfully");
+      }
+    } catch (error) {
+      console.log("Error : ", error);
+      setError(true);
+    } finally {
       setIsCalling(false);
-      return;
     }
-
-    const formData = new FormData();
-
-    formData.append('date', date);
-    formData.append('opening_balance', openBalance);
-    formData.append('cash_in', cashIn);
-    formData.append('cash_out', cashOut);
-    formData.append('cash_in_hand', cashInHand);
-    formData.append('closing_balance', closeBalance);
-    formData.append('adjustment', adjustment);
-
-    axios
-      .post(`http://localhost:8080/closing`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
-      .then((response) => {
-        if (response.status === 200) {
-          // setSuccessAlert(true);
-          setAllValueEmpty();
-          toast.success("Data Saved Successfully");
-        }
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      }).finally(() => {
-          setIsCalling(false);
-      });
   };
 
   // number input field
@@ -133,12 +133,15 @@ const Closing = () => {
   };
 
 
-   // Get the current date and time
-   const currentDate = moment();
+  // Get the current date and time
+  const currentDate = moment();
 
-   // Format the date according to the desired format
-   const formattedDate = currentDate.format('dddd Do [of] MMMM YYYY hh:mm:ss A');
- 
+  // Format the date according to the desired format
+  const formattedDate = currentDate.format('dddd Do [of] MMMM YYYY hh:mm:ss A');
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />;
+  }
 
   return (
     <div style={{ margin: '10px' }}>
@@ -150,7 +153,7 @@ const Closing = () => {
                 <h3>Add Closing</h3>
               </Grid>
               <Grid xs={6} md={2} lg={2}>
-              {formattedDate}              
+                {formattedDate}
               </Grid>
             </Grid>
             <hr />
@@ -251,7 +254,7 @@ const Closing = () => {
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                marginTop:'15px'
+                marginTop: '15px'
               }}
             >
               <Stack spacing={2} direction='row'>
@@ -261,7 +264,7 @@ const Closing = () => {
                   disabled={isCalling}
                 >
                   Submit</Button>
-              <Button variant='outlined'>Cancel</Button>
+                <Button variant='outlined'>Cancel</Button>
               </Stack>
             </div>
           </div>

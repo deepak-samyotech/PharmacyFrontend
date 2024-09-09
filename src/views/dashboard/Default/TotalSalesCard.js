@@ -19,8 +19,9 @@ import FileCopyTwoToneIcon from '@mui/icons-material/FileCopyOutlined';
 import PictureAsPdfTwoToneIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import ArchiveTwoToneIcon from '@mui/icons-material/ArchiveOutlined';
 import EarningCard from './EarningCard';
-import { todaySales } from 'utils/api';
+import { handleRetry, todaySales } from 'utils/api';
 import { HttpStatusCodes } from 'utils/statusCodes';
+import InternalServerError from 'ui-component/InternalServerError';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     backgroundColor: theme.palette.secondary.dark,
@@ -64,6 +65,7 @@ const TotalSalesCard = ({ isLoading }) => {
     const theme = useTheme();
 
     const [count, setCount] = useState(0);
+    const [error, setError] = useState(false); 
 
     const [anchorEl, setAnchorEl] = useState(null);
 
@@ -76,16 +78,25 @@ const TotalSalesCard = ({ isLoading }) => {
     };
 
     const fetchTodaySale = async() => {
-        const response = await todaySales();
+        try {
+            const response = await todaySales();
 
         if (response.status === HttpStatusCodes.OK) {
             setCount(response?.data?.data?.length);
+        }
+        } catch (error) {
+            console.log("Error : ", error);
+            setError(true);
         }
     }
 
     useEffect(() => {
         fetchTodaySale();
     }, [])
+
+    if (error) {
+        return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
+      }
 
     return (
         <>

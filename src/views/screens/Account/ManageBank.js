@@ -40,6 +40,8 @@ import Alert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
 import Swal from "sweetalert2";
 import Loading from "ui-component/Loading";
+import { fetchBankData, handleRetry, postBankData } from "utils/api";
+import InternalServerError from "ui-component/InternalServerError";
 
 
 const style = {
@@ -90,6 +92,7 @@ function ManageBank() {
   const [branch, setBranch] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
 
   const handleChangePage = (event, newPage) => {
@@ -117,13 +120,13 @@ function ManageBank() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/bank");
+        const response = await fetchBankData();
         // Check the structure of response.data
-        const bankList = response.data;
+        const bankList = response?.data;
         console.log("response of bank", response);
         console.log("bankList of bank", bankList);
 
-        const transformedData = bankList.data.map((item) => ({
+        const transformedData = bankList?.data?.map((item) => ({
           // bank_id: item.bank_id,
           bankName: item.bank_name,
           accountName: item.account_name,
@@ -140,6 +143,7 @@ function ManageBank() {
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setError(true);
       }
     };
 
@@ -156,44 +160,39 @@ function ManageBank() {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append("bank_name", bankname);
-    formData.append("account_name", accountName);
-    formData.append("account_number", accountNumber);
-    formData.append("branch", branch);
-    formData.append("image", selectedImage);
+  const handleSubmit = async (e) => {
+    try {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append("bank_name", bankname);
+      formData.append("account_name", accountName);
+      formData.append("account_number", accountNumber);
+      formData.append("branch", branch);
+      formData.append("image", selectedImage);
 
-    axios
-      .post(`http://localhost:8080/bank`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((response) => {
-        if (response.status === 200) {
-          setSuccessMessage("Bank data added successfully.");
-          setFailureMessage("");
-          Swal.fire({
-            icon: "success",
-            title: "Success",
-            text: "Bank data added successfully.",
-          });
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
-        }
-      })
-      .catch((error) => {
-        setFailureMessage("Error adding Bank data. Please try again.");
-        console.error("Error adding Bank data:", error);
+      const response = await postBankData(formData);
+
+      if (response?.status === 200) {
+        setSuccessMessage("Bank data added successfully.");
+        setFailureMessage("");
         Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "Error adding Bank data. Please try again.",
+          icon: "success",
+          title: "Success",
+          text: "Bank data added successfully.",
         });
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      }
+    } catch (error) {
+      setFailureMessage("Error adding Bank data. Please try again.");
+      console.error("Error adding Bank data:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Error adding Bank data. Please try again.",
       });
+    }
   };
 
   //models
@@ -336,6 +335,10 @@ function ManageBank() {
       return a[1] - b[1];
     });
     return stabilizedThis.map((el) => el[0]);
+  }
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
   }
 
   return (

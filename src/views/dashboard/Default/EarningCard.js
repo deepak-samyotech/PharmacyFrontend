@@ -20,7 +20,8 @@ import GetAppTwoToneIcon from '@mui/icons-material/GetAppOutlined';
 import FileCopyTwoToneIcon from '@mui/icons-material/FileCopyOutlined';
 import PictureAsPdfTwoToneIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import ArchiveTwoToneIcon from '@mui/icons-material/ArchiveOutlined';
-import { fetchMedicine } from "utils/api";
+import { fetchMedicine, handleRetry } from "utils/api";
+import InternalServerError from "ui-component/InternalServerError";
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
   backgroundColor: theme.palette.secondary.dark,
@@ -63,14 +64,21 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 const EarningCard = ({ isLoading }) => {
   const theme = useTheme();
   
-  const[countMed, setCountMed]=useState('');
+  const [countMed, setCountMed] = useState('');
+  const [error, setError] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      const responseCustomer = await fetchMedicine();
+      const transformedData = responseCustomer.data;
+      setCountMed(transformedData);
+    } catch (error) {
+      console.error("Error fetching medicine data:", error);
+      setError(true);
+    }
+  };
 
 useEffect(() => {
-  const fetchData = async () => {
-      const responseCustomer = await fetchMedicine();
-      const transformedData = responseCustomer.data
-      setCountMed(transformedData);
-  };
   fetchData();
 }, []);
 
@@ -84,6 +92,10 @@ useEffect(() => {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />;
+  }
 
   return (
     <>

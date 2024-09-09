@@ -20,6 +20,8 @@ import FileCopyTwoToneIcon from "@mui/icons-material/FileCopyOutlined";
 import PictureAsPdfTwoToneIcon from "@mui/icons-material/PictureAsPdfOutlined";
 import ArchiveTwoToneIcon from "@mui/icons-material/ArchiveOutlined";
 import EarningCard from "./EarningCard";
+import { fetchSupplier, handleRetry } from "utils/api";
+import InternalServerError from "ui-component/InternalServerError";
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
   backgroundColor: theme.palette.primary.dark,
@@ -60,17 +62,17 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 
 const TotalSupplierCard = ({ isLoading }) => {
   const [countSup, setCountSup] = useState("");
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const responseSupplier = await axios.get(
-          "http://localhost:8080/supplier"
-        );
+        const responseSupplier = await fetchSupplier();
         const transformedData1 = responseSupplier.data;
         setCountSup(transformedData1);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setError(true);
       }
     };
     fetchData();
@@ -87,6 +89,10 @@ const TotalSupplierCard = ({ isLoading }) => {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
+  }
 
   return (
     <>

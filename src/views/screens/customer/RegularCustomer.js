@@ -36,6 +36,8 @@ import TextField from "@mui/material/TextField";
 import { styled } from "@mui/material/styles";
 import "jspdf-autotable";
 import Loading from "ui-component/Loading";
+import { fetchCustomer, handleRetry } from "utils/api";
+import InternalServerError from "ui-component/InternalServerError";
 
 
 const style = {
@@ -74,6 +76,7 @@ function RegularCustomer() {
   const [orderBy, setOrderBy] = useState("");
   const [order, setOrder] = useState("asc");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
 
   const handleChangePage = (event, newPage) => {
@@ -113,8 +116,8 @@ function RegularCustomer() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/customer/");
-        const transformedData = response.data?.data?.map((item) => ({
+        const response = await fetchCustomer();
+        const transformedData = response?.data?.data?.map((item) => ({
           // id: item._id,
           customerID: item.c_id,
           customerName: item.c_name,
@@ -133,6 +136,7 @@ function RegularCustomer() {
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setError(true);
       }
     };
 
@@ -319,6 +323,10 @@ function RegularCustomer() {
     printWindow.document.close();
     printWindow.print();
   };
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
+  }
 
   return (
     <>

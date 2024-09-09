@@ -20,6 +20,8 @@ import { tableCellClasses } from '@mui/material/TableCell';
 import { styled } from '@mui/material/styles';
 import axios from 'axios';
 import Loading from "ui-component/Loading";
+import { fetchMedicine, handleRetry } from 'utils/api';
+import InternalServerError from 'ui-component/InternalServerError';
 
 
 
@@ -61,7 +63,7 @@ function SoonExpiring() {
   const [order, setOrder] = useState('asc');
   const [editedRowData, setEditedRowData] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const [error, setError] = useState(false);
 
   const navigate = useNavigate();
   const handleButtonClick = () => {
@@ -98,11 +100,9 @@ function SoonExpiring() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/medicine');
+        const response = await fetchMedicine();
 
-        console.log('response.data213131312', response.data);
-
-        const transformedData = response.data?.data?.map((item) => ({
+        const transformedData = response?.data?.data?.map((item) => ({
           id: item.id,
           medicineName: item.product_name || 0,
           genericName: item.generic_name || 0,
@@ -124,10 +124,11 @@ function SoonExpiring() {
 
         setData(filteredData);
         setLoading(false);
-        const ids = filteredData.map((item) => item.id);
-        setId(ids);
+        // const ids = filteredData.map((item) => item.id);
+        // setId(ids);
       } catch (error) {
         console.error('Error fetching data:', error);
+        setError(true);
       }
     };
 
@@ -281,6 +282,10 @@ function SoonExpiring() {
     return stabilizedThis.map((el) => el[0]);
   }
 
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
+  }
 
   return (
     <div style={{ margin: '10px' }}>

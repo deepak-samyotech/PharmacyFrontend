@@ -37,6 +37,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 //api call
 import axios from "axios";
 import Swal from "sweetalert2";
+import { handleRegister } from "utils/api";
 // ===========================|| FIREBASE - REGISTER ||=========================== //
 
 const FirebaseRegister = ({ ...others }) => {
@@ -67,14 +68,8 @@ const FirebaseRegister = ({ ...others }) => {
     formData.append("password", password);
   
     try {
-      const response = await axios.post(`http://localhost:8080/register`, {
-      firstName,
-      lastName,
-      email,
-      password
-    });
+      const response = await handleRegister(firstName, lastName, email, password);
 
-  
       if (response.status === 200) {
         Swal.fire({
           title: "Customer Register Successfully !",

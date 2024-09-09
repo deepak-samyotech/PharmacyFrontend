@@ -30,6 +30,8 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import axios from 'axios';
 import Loading from "ui-component/Loading";
+import { fetchClosingData, handleRetry } from 'utils/api';
+import InternalServerError from 'ui-component/InternalServerError';
 
 
 const style = {
@@ -71,6 +73,7 @@ function ClosingReport() {
   const [editedRowData, setEditedRowData] = useState(null);
   const [id, setId] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
 
   const columns = [
@@ -88,11 +91,11 @@ function ClosingReport() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/closing');
+        const response = await fetchClosingData();
 
-        console.log('response.data213131312', response.data);
+        console.log('response.data213131312', response?.data);
 
-        const transformedData = response.data?.data?.map((item) => ({
+        const transformedData = response?.data?.data?.map((item) => ({
           id: item.id,
           date: item.date,
           openingBalance: item.opening_balance,
@@ -110,6 +113,7 @@ function ClosingReport() {
         setId(ids);
       } catch (error) {
         console.error('Error fetching data:', error);
+        setError(true);
       }
     };
 
@@ -279,6 +283,10 @@ function ClosingReport() {
     return stabilizedThis.map((el) => el[0]);
   }
 
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
+  }
 
   return (
     <div style={{ margin: '10px' }}>
