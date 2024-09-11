@@ -33,6 +33,7 @@ import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import useAuth from './useAuth';
 import { loginSuccess } from './actions'; // Adjust the path as necessary
+import { handlelogin } from 'utils/api';
 
 const FirebaseLogin = ({ ...others }) => {
   useAuth(); // Check authentication status when accessing the login page
@@ -57,19 +58,21 @@ const FirebaseLogin = ({ ...others }) => {
 
   const handleSubmit = async (values, { setErrors, setStatus, setSubmitting }) => {
     try {
+      console.log("on login - ", values);
       const response = await handlelogin(values)
-      
+
       if (response.status === 200) {
         Cookies.set('user_login', response.data.token, { expires: 1 });
         const userData = JSON.stringify(response.data);
         localStorage.setItem('user_data', userData);
         dispatch(loginSuccess(response.data)); // Dispatch loginSuccess with user data
         Swal.fire({
-          title: 'Employee Login Successfully!',
+          title: 'Login Successfully!',
           icon: 'success',
         });
         setTimeout(() => {
-          navigate('/dashboard/default');
+          window.location.replace('/dashboard/default');
+          // navigate('/dashboard/default');
         }, 1000);
       }
     } catch (error) {
@@ -86,7 +89,7 @@ const FirebaseLogin = ({ ...others }) => {
       }
     }
   };
-  
+
   const handleSelectCounterChange = (event) => {
     setSelectedCounter(event.target.value);
   };

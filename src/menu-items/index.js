@@ -11,10 +11,28 @@ import reports from './report';
 import poses from './poses';
 import returns from './returns';
 import Suppliers from './Suppliers';
+import { decodeToken } from 'utils/jwtdecode';
+import { admin } from 'store/constant';
+import report from './SuperAdmin/report';
+import company from './SuperAdmin/company';
 // ==============================|| MENU ITEMS ||============================== //
 
-const menuItems = {
+let menuItems;
+const AdminItems = {
   items: [dashboard, poses, MedicineNew, customer, Suppliers, purchase, inventory, Accounts, returns, reports, employee, helps, other]
 };
+
+const SuperAdminItems = {
+  items: [dashboard, company, report]
+};
+
+
+const decode = decodeToken();
+if (decode?.role === admin) {
+  menuItems = AdminItems;
+} else {
+  menuItems = SuperAdminItems;
+}
+
 
 export default menuItems;

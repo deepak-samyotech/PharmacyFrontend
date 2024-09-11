@@ -29,7 +29,7 @@ export async function fetchSupplier() {
 
 export async function handleRegister(firstName, lastName, email, password) {
   try {
-    await axios.post(`http://localhost:8080/register`, {
+    return await axios.post(`http://localhost:8080/register`, {
       firstName,
       lastName,
       email,
@@ -272,7 +272,7 @@ export async function handleEditCustomer(id,formData) {
 }
 
 // Employee 
-export async function employeeRegister(){
+export async function employeeRegister(formData){
 try {
   return await axios.post(
     `${baseurl}/employee-register`,

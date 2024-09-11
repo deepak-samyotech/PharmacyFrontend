@@ -70,7 +70,10 @@ const FirebaseRegister = ({ ...others }) => {
     try {
       const response = await handleRegister(firstName, lastName, email, password);
 
-      if (response.status === 200) {
+      console.log("Response fgh ====> ", response);
+
+      if (response?.status === 201) {
+        console.log("Yser created");
         Swal.fire({
           title: "Customer Register Successfully !",
           text: "You clicked the button!",

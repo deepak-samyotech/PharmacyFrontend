@@ -5,6 +5,9 @@ import PrivateRoute from './PrivateRoute';
 import MainLayout from "layout/MainLayout";
 import Loadable from "ui-component/Loadable";
 import ManageInvoice from "views/screens/invoice/ManageInvoice";
+import Dashboard from "views/SuperAdmin/dashboard/Dashboard";
+import { decodeToken } from "utils/jwtdecode";
+import { admin } from "store/constant";
 
 // dashboard routing
 const DashboardDefault = Loadable(
@@ -119,20 +122,27 @@ const FireService = Loadable(
   lazy(() => import("views/screens/Help/FireService"))
 );
 const Police = Loadable(lazy(() => import("views/screens/Help/Police")));
-//setting routing
 const Setting = Loadable(
   lazy(() => import("views/screens/settingPage/Setting"))
 );
-//Pos routing
 const Pos = Loadable(lazy(() => import("views/screens/pos/Pos")));
-//invoice
 const GenerateInvoice = Loadable(
   lazy(() => import("views/screens/pos/invoice"))
 );
 
-// ==============================|| MAIN ROUTING ||============================== //
+// superadmin roution
+const Report = Loadable(
+  lazy(() => import("views/SuperAdmin/report/Report"))
+);
 
-const MainRoutes = {
+const Company = Loadable(
+  lazy(() => import("views/SuperAdmin/Company"))
+);
+
+let MainRoutes = []
+
+
+const AdminRoutes = {
   path: "/",
   element: <MainLayout />,
   children: [
@@ -337,7 +347,7 @@ const MainRoutes = {
       children: [
         {
           path: "payment",
-          element:<PrivateRoute> <Payment /></PrivateRoute>,
+          element: <PrivateRoute> <Payment /></PrivateRoute>,
         },
       ],
     },
@@ -503,7 +513,7 @@ const MainRoutes = {
       children: [
         {
           path: "fire-service",
-          element:<PrivateRoute> <FireService /></PrivateRoute>,
+          element: <PrivateRoute> <FireService /></PrivateRoute>,
         },
       ],
     },
@@ -521,8 +531,48 @@ const MainRoutes = {
       path: "setting-page",
       element: <PrivateRoute><Setting /></PrivateRoute>,
     },
-   
+
   ],
 };
+
+
+const SuperAdminRoutes = {
+  path: "/",
+  element: <MainLayout />,
+  children: [
+    {
+      path: "/",
+      element: <PrivateRoute><Dashboard /></PrivateRoute>,
+    },
+    {
+      path: "dashboard",
+      children: [
+        {
+          path: "default",
+          element: <PrivateRoute><Dashboard /></PrivateRoute>,
+        },
+      ],
+    },
+    {
+      path: "companies",
+      element: <PrivateRoute><Company /></PrivateRoute>,
+    },
+    {
+      path: "report",
+      element: <PrivateRoute><Report /></PrivateRoute>,
+    },
+  ],
+};
+
+
+const decode = decodeToken();
+
+if (decode?.role === admin) {
+  MainRoutes = AdminRoutes
+} else {
+  MainRoutes = SuperAdminRoutes
+}
+
+// MainRoutes = AdminRoutes
 
 export default MainRoutes;
