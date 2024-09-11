@@ -28,6 +28,8 @@ import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
 import CloseIcon from "@mui/icons-material/Close";
 import Loading from "ui-component/Loading";
+import { fetchTodayPurchase, fetchTodaySaleData, handleRetry } from "utils/api";
+import InternalServerError from "ui-component/InternalServerError";
 
 
 const style = {
@@ -69,6 +71,7 @@ const TodayReport = () => {
   const [order, setOrder] = useState("asc");
   const [editedRowData, setEditedRowData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
 
   const handleChangePage = (event, newPage) => {
@@ -105,9 +108,8 @@ const TodayReport = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:8080/manage_invoice/todaySale"
-        );
+        const response = await fetchTodaySaleData();
+
         const transformedData = response.data?.data?.map((item) => ({
           id: item.id,
           createDate: item.createDate,
@@ -122,17 +124,17 @@ const TodayReport = () => {
         // setId(ids);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setError(true);
       }
     };
 
     const fetchTodayPurchaseData = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:8080/purchase/todayPurchase"
-        );
+        const response = await fetchTodayPurchase();
         setPurchaseData(response.data.data);
       } catch (error) {
         console.error("Error fetching today's purchase data:", error);
+        setError(true);
       }
     };
 
@@ -333,6 +335,10 @@ const TodayReport = () => {
       return a[1] - b[1];
     });
     return stabilizedThis.map((el) => el[0]);
+  }
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
   }
 
 

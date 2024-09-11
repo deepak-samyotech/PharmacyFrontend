@@ -38,6 +38,8 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { toast } from "react-toastify";
 import Loading from "ui-component/Loading";
+import InternalServerError from "ui-component/InternalServerError";
+import { deleteSupplierLedgerData, handleRetry } from "utils/api";
 
 
 const style = {
@@ -78,6 +80,7 @@ function SupplierBalance() {
   const [editedRowData, setEditedRowData] = useState(null);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false); 
 
 
   //models
@@ -107,9 +110,7 @@ function SupplierBalance() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:8080/supplier_ledger"
-        );
+        const response = await fetchSupplierLedgerData();
         const transformedData = response.data?.data?.map((item) => ({
           id: item.id,
           supplierId: item.supplier_id,
@@ -122,6 +123,7 @@ function SupplierBalance() {
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setError(true);
       }
     };
 
@@ -328,10 +330,7 @@ function SupplierBalance() {
     if (!editedRowData) return;
 
     try {
-      await axios.put(
-        `http://localhost:8080/supplier_ledger/${editedRowData.id}`,
-        editedRowData
-      );
+      await putSupplierLedgerData(editedRowData.id, editedRowData)
       setData((prevData) =>
         prevData.map((row) =>
           row.id === editedRowData.id ? editedRowData : row
@@ -341,16 +340,18 @@ function SupplierBalance() {
       toast.success("Data updated Successfully.");
     } catch (error) {
       console.error("Error updating supplier:", error);
+      setError(true);
     }
   };
 
   const handleDeleteSupplier = async (id) => {
     try {
-      await axios.delete(`http://localhost:8080/supplier_ledger/${id}`);
+      await deleteSupplierLedgerData(id);
       setData((prevData) => prevData.filter((row) => row.id !== id));
       toast.warning("Data deleted Successfully!");
     } catch (error) {
       console.error("Error deleting supplier:", error);
+      setError(true);
     }
   };
 
@@ -362,6 +363,10 @@ function SupplierBalance() {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
+  }
 
   return (
     <div>

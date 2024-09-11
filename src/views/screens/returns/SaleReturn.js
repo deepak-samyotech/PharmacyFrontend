@@ -33,6 +33,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import AssignmentReturnIcon from "@mui/icons-material/AssignmentReturn";
 import { toast } from "react-toastify";
 import Loading from "ui-component/Loading";
+import { fetchInvoiceData, handleRetry, postSaleReturnData } from "utils/api";
+import InternalServerError from "ui-component/InternalServerError";
 
 
 const styles = {
@@ -129,6 +131,7 @@ function SaleReturn() {
   const [total, setTotal] = useState("");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const [formData, setFormData] = useState({
     customerName: "",
@@ -180,13 +183,9 @@ function SaleReturn() {
 
       console.log("Modified form data : ", modifiedFormData);
 
-      // Make a POST request to your API endpoint
-      const response = await axios.post(
-        "http://localhost:8080/sale_return",
-        modifiedFormData // Send the modified formData state as the request body
-      );
 
-      // Optionally, you can reset the form data after successful submission
+      const response = await postSaleReturnData(modifiedFormData);
+
       setFormData({
         customerName: "",
         invoiceNumber: "",
@@ -217,6 +216,7 @@ function SaleReturn() {
     } catch (error) {
       console.error("Error posting data:", error);
       // Optionally, you can display an error message to the user
+      setError(true);
     }
   };
 
@@ -352,10 +352,8 @@ function SaleReturn() {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:8080/manage_invoice"
-      );
-      const transformedData = response.data?.data?.map((item) => ({
+      const response = await fetchInvoiceData();
+      const transformedData = response?.data?.data?.map((item) => ({
         id: item.id,
         createDate: item.createDate,
         invoiceNumber: item.invoiceId,
@@ -369,6 +367,7 @@ function SaleReturn() {
       setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
+      setError(true);
     }
   };
 
@@ -537,6 +536,10 @@ function SaleReturn() {
   const handleButtonClick3 = () => {
     navigate("/customer/wholesale-customer");
   };
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
+  }
 
   return (
     <>

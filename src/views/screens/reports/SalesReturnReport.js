@@ -46,6 +46,8 @@ import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import Loading from "ui-component/Loading";
+import { fetchSaleReturnData, handleRetry } from "utils/api";
+import InternalServerError from "ui-component/InternalServerError";
 
 
 const style = {
@@ -88,7 +90,7 @@ function SalesReturnReport() {
   const [order, setOrder] = useState("asc");
   const [editedRowData, setEditedRowData] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const [error, setError] = useState(false);
 
   const columns = [
     {
@@ -139,9 +141,7 @@ function SalesReturnReport() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:8080/sale_return"
-        );
+        const response = await fetchSaleReturnData();
         const transformedData = response.data?.data?.map((item) => ({
           id: item.id,
           invoiceNumber: item.invoiceNumber,
@@ -156,6 +156,7 @@ function SalesReturnReport() {
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setError(true);
       }
     };
 
@@ -290,6 +291,9 @@ function SalesReturnReport() {
     return stabilizedThis.map((el) => el[0]);
   }
 
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
+  }
 
 
   return (

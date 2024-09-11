@@ -31,6 +31,8 @@ import { tableCellClasses } from "@mui/material/TableCell";
 import CloseIcon from "@mui/icons-material/Close";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import Loading from "ui-component/Loading";
+import InternalServerError from "ui-component/InternalServerError";
+import { handleRetry } from "utils/api";
 
 
 const style = {
@@ -73,6 +75,7 @@ function SalesReport() {
   const [order, setOrder] = useState("asc");
   const [editedRowData, setEditedRowData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false); 
 
 
   const handleChangePage = (event, newPage) => {
@@ -111,8 +114,7 @@ function SalesReport() {
 
   const fetchSaleData = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:8080/manage_invoice/totalSale");
+      const response = await fetchSaleData();
       const transformedData = response.data?.data?.map((item) => ({
         id: item.id,
         createDate: item.createDate,
@@ -127,6 +129,7 @@ function SalesReport() {
       // setId(ids);
     } catch (error) {
       console.error("Error fetching data:", error);
+      setError(true);
     }
   };
 
@@ -315,6 +318,9 @@ function SalesReport() {
     return stabilizedThis.map((el) => el[0]);
   }
 
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
+  }
 
   return (
     <>

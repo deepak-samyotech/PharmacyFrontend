@@ -45,6 +45,7 @@ import jsPDF from "jspdf";
 import { strengthColor } from "utils/password-strength";
 import { toast } from "react-toastify";
 import Loading from "ui-component/Loading";
+import { fetchSupplier } from "utils/api";
 
 
 const style = {
@@ -94,6 +95,7 @@ function ManageSupplier() {
   const [address, setAddress] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
 
   const columns = [
@@ -117,7 +119,7 @@ function ManageSupplier() {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/supplier");
+      const response = await fetchSupplier();
       const transformedData = response.data?.data?.map((item) => ({
         id: item.id,
         supplierId: item.s_id,
@@ -137,6 +139,7 @@ function ManageSupplier() {
       
     } catch (error) {
       console.error("Error fetching data:", error);
+      setError(true);
     }
   };
 
@@ -163,37 +166,32 @@ function ManageSupplier() {
   const handleClose = () => setOpen(false);
 
   //PUT Api calling
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // if (validateForm()) {
-    const formData = new FormData();
-    formData.append("s_name", supplierName);
-    formData.append("s_email", email);
-    formData.append("s_note", note);
-    formData.append("s_phone", phoneNumber);
-    formData.append("s_address", address);
-    formData.append("status", status);
-    formData.append("image", selectedImage);
-
-
-    axios
-      .put(`http://localhost:8080/supplier/${editedRowData.id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((response) => {
-        if (response.status === 200) {
-          // setSuccessAlert(true);
-          setOpen(false);
-          fetchData();
-          toast.success("Data updated Successfully");
-        }
-      })
-      .catch((error) => {
-        console.error(`Error updating customer with ID ${id}:`, error);
-      });
-    // }
+  const handleSubmit = async (e) => {
+    try {
+      e.preventDefault();
+      // if (validateForm()) {
+      const formData = new FormData();
+      formData.append("s_name", supplierName);
+      formData.append("s_email", email);
+      formData.append("s_note", note);
+      formData.append("s_phone", phoneNumber);
+      formData.append("s_address", address);
+      formData.append("status", status);
+      formData.append("image", selectedImage);
+  
+      const response = await putSupplierData(editedRowData.id, formData);
+     
+    
+          if (response?.status === 200) {
+            // setSuccessAlert(true);
+            setOpen(false);
+            fetchData();
+            toast.success("Data updated Successfully");
+          }
+    } catch (error) {
+      console.error(`Error updating customer with ID ${id}:`, error);
+      setError(true);
+    }
   };
 
   const rows = data;
@@ -371,6 +369,11 @@ function ManageSupplier() {
     printWindow.document.close();
     printWindow.print();
   };
+
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
+  }
 
   return (
     <>

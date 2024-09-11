@@ -22,6 +22,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2'
+import { postSupplierData } from 'utils/api';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -49,44 +50,39 @@ const AddSupplier = () => {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      const formData = new FormData();
-      formData.append('s_name', supplierName);
-      formData.append('s_email', email);
-      formData.append('s_note', note);
-      formData.append('status', status);
-      formData.append('s_phone', phoneNumber);
-      formData.append('s_address', address);
-      formData.append('image', selectedImage);
+  const handleSubmit = async (e) => {
+    try {
+      e.preventDefault();
+      if (validateForm()) {
+        const formData = new FormData();
+        formData.append('s_name', supplierName);
+        formData.append('s_email', email);
+        formData.append('s_note', note);
+        formData.append('status', status);
+        formData.append('s_phone', phoneNumber);
+        formData.append('s_address', address);
+        formData.append('image', selectedImage);
 
-      axios
-        .post(`http://localhost:8080/supplier`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        })
-        .then((response) => {
-          if (response.status === 200) {
-            Swal.fire({
-              title: 'Supplier Add Successfully !',
-              text: 'You clicked the button!',
-              icon: 'success'
-            });
-            setTimeout(() => {
-              window.location.reload();
-            }, 1000);
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
+        const response = await postSupplierData(formData);
+
+        if (response?.status === 200) {
           Swal.fire({
-            title: 'Error !',
+            title: 'Supplier Add Successfully !',
             text: 'You clicked the button!',
-            icon: 'error'
+            icon: 'success'
           });
-        });
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Swal.fire({
+        title: 'Error !',
+        text: 'You clicked the button!',
+        icon: 'error'
+      });
     }
   };
 

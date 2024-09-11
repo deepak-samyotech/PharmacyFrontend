@@ -45,6 +45,7 @@ import * as XLSX from "xlsx";
 import Loading from "ui-component/Loading";
 
 import { ToastContainer, toast } from 'react-toastify';
+import { fetchMedicine, fetchSupplierData, putMedicineData } from "utils/api";
 
 const style = {
   position: "absolute",
@@ -126,6 +127,7 @@ function ManageMedicine() {
   const [selectedSupplier, setSelectedSupplier] = useState("");
   const [errors, setErrors] = useState({});
   const [id, setId] = useState([]);
+  const [error, setError] = useState(false);
 
   const handleBoxPriceCalculation = () => {
     const calculatedBoxPrice = parseFloat(mrp) * parseInt(boxSize);
@@ -136,11 +138,9 @@ function ManageMedicine() {
   const fetchData = async () => {
     try {
       // Fetch medicine data
-      const responseMedicine = await axios.get(
-        "http://localhost:8080/medicine"
-      );
+      const responseMedicine = await fetchMedicine();
       console.log("medicine response: ", responseMedicine)
-      const transformedDataMedicine = responseMedicine.data?.data?.map(
+      const transformedDataMedicine = responseMedicine?.data?.data?.map(
         (item) => ({
           id: item.id,
           medicineName: item.product_name,
@@ -173,9 +173,7 @@ function ManageMedicine() {
       setId(ids);
 
       // Fetch supplier data
-      const responseSupplier = await axios.get(
-        "http://localhost:8080/medicine/s-data/:data"
-      );
+      const responseSupplier = await fetchSupplierData();
       // Check the structure of response.data
       const supplierDataList = responseSupplier.data.data.suppliers;
 
@@ -198,6 +196,7 @@ function ManageMedicine() {
       setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
+      setError(true);
     }
   };
 
@@ -340,45 +339,41 @@ function ManageMedicine() {
 
   const handleClose = () => setOpen(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const formData = new FormData();
+  const handleSubmit = async (e) => {
+    try {
+      e.preventDefault();
+      const formData = new FormData();
 
-    formData.append("supplier_name", companyName);
-    formData.append("generic_name", genericName);
-    formData.append("strength", strength);
-    formData.append("trade_price", tradePrice);
-    formData.append("box_size", boxSize);
-    formData.append("expire_date", expDate);
-    formData.append("side_effect", sideEffect);
-    formData.append("product_name", productName);
-    formData.append("barcode", barcodeNum);
-    formData.append("mrp", mrp);
-    formData.append("box_price", boxPrices);
-    formData.append("instock", quantity);
-    formData.append("short_stock", ShortQty);
-    formData.append("form", form);
-    formData.append("discount", discountType);
-    formData.append("image", selectedImage);
+      formData.append("supplier_name", companyName);
+      formData.append("generic_name", genericName);
+      formData.append("strength", strength);
+      formData.append("trade_price", tradePrice);
+      formData.append("box_size", boxSize);
+      formData.append("expire_date", expDate);
+      formData.append("side_effect", sideEffect);
+      formData.append("product_name", productName);
+      formData.append("barcode", barcodeNum);
+      formData.append("mrp", mrp);
+      formData.append("box_price", boxPrices);
+      formData.append("instock", quantity);
+      formData.append("short_stock", ShortQty);
+      formData.append("form", form);
+      formData.append("discount", discountType);
+      formData.append("image", selectedImage);
 
-    axios
-      .put(`http://localhost:8080/medicine/${editedRowData.id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((response) => {
-        console.log("Look at data = ", response);
-        if (response.status === 200) {
-          console.log("I am here");
-          fetchData();
-          setOpen(false);
-          toast.success('Data updated Successfully');
-        }
-      })
-      .catch((error) => {
-        console.error(`Error updating medicine with ID ${id}:`, error);
-      });
+      const response = await putMedicineData(editedRowData.id, formData);
+
+      console.log("Look at data = ", response);
+      if (response?.status === 200) {
+        console.log("I am here");
+        fetchData();
+        setOpen(false);
+        toast.success('Data updated Successfully');
+      }
+    } catch (error) {
+      console.error(`Error updating medicine with ID ${id}:`, error);
+      setError(true);
+    }
   };
 
   // const handleEdit = (rowData) => {
@@ -528,6 +523,10 @@ function ManageMedicine() {
     printWindow.document.close();
     printWindow.print();
   };
+
+  if (error) {
+    return <InternalServerError onRetry={handleRetry} />;
+  }
 
   return (
     <>
