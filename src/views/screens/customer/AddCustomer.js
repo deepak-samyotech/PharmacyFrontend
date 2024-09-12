@@ -119,7 +119,6 @@ const AddCustomer = () => {
     } else if (!isValidEmail(customerEmail)) {
       errors.customerEmail = 'Invalid email address';
       console.log("4");
-
     }
     if (customerAddress.trim() === '') {
       errors.customerAddress = 'Address is required';

@@ -39,7 +39,7 @@ import "jspdf-autotable";
 import { toast } from "react-toastify";
 import Loading from "ui-component/Loading";
 import InternalServerError from "ui-component/InternalServerError";
-import { deleteSupplierLedgerData, handleRetry } from "utils/api";
+import { deleteSupplierLedgerData, fetchSupplierLedgerData, handleRetry, putSupplierLedgerData } from "utils/api";
 
 
 const style = {

@@ -53,7 +53,7 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { toast } from "react-toastify";
 import context from "react-bootstrap/esm/AccordionContext";
-import { customerLedgerPost, fetchMedicine, invoiceDataPost, searchCustomer, searchMedicines, updateProductQuantity } from "utils/api";
+import { customerLedgerPost, deletePosConfigureData, fetchMedicine, fetchPosConfigured, invoiceDataPost, postPosConfigureData, putPosConfigureData, searchCustomer, searchMedicines, updateProductQuantity } from "utils/api";
 import { HttpStatusCodes } from "utils/statusCodes";
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -486,7 +486,7 @@ const Pos = () => {
   };
 
   const fetchPosData = async () => {
-    const response2 = await axios.get("http://localhost:8080/pos");
+    const response2 = await fetchPosConfigured();
 
     setPosConfigData(response2.data.filteredData);
   }
@@ -494,7 +494,7 @@ const Pos = () => {
   const fetchPosConfiguredData = async () => {
     try {
 
-      const response = await axios.get("http://localhost:8080/medicine");
+      const response = await fetchMedicine();
 
       fetchPosData();
 
@@ -527,29 +527,28 @@ const Pos = () => {
     fetchPosConfiguredData();
   }
 
-  const handleSubmitPos = () => {
+  const handleSubmitPos = async () => {
 
-    axios
-      .post(`http://localhost:8080/pos/set_value`, { productId: posId, value: posValue })
-      .then((response) => {
-        if (response.status === 200) {
-          setOpen(false);
-          setPosId("");
-          setPosValue("");
-          toast.success("Configuration saved Successfully");
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        const errMessage = error.response.data.error;
-        toast.error(errMessage);
-      });
+    try {
+      const response = await postPosConfigureData(posId,posValue)
+      
+          if (response.status === 200) {
+            setOpen(false);
+            setPosId("");
+            setPosValue("");
+            toast.success("Configuration saved Successfully");
+          }
+    } catch (error) {
+      console.error("Error:", error);
+      const errMessage = error.response.data.error;
+      toast.error(errMessage);
+    }
   }
 
 
   const handleClose1 = () => {
     setOpen1(false);
-    newValue = "";
+    setNewValue("");
   }
 
   const handleClose2 = () => {
@@ -575,23 +574,24 @@ const Pos = () => {
 
   }
 
-  const handleEditSubmit = () => {
-    axios
-      .put(`http://localhost:8080/pos/${editedRowData.id}`, { newValue: newValue })
-      .then((response) => {
-        if (response.status === 200) {
-          setOpen1(false);
-          setEditedRowData(null);
-          setNewValue("");
-          fetchPosData();
-          toast.success("Value updated Successfully");
-        }
-      })
-      .catch((error) => {
+  const handlePosConfigureEditSubmit = async () => {
+      try {
+        const response = await putPosConfigureData(editedRowData.id, newValue);
+
+        console.log("response ------===", response);
+    
+          if (response.status === 200) {
+            setOpen1(false);
+            setEditedRowData(null);
+            setNewValue("");
+            fetchPosData();
+            toast.success("Value updated Successfully");
+          }
+      } catch (error) {
         console.error("Error:", error);
         const errMessage = error.response.data.error;
         toast.error(errMessage);
-      });
+      }
   }
 
   const handleEdit2Submit = () => {
@@ -627,21 +627,21 @@ const Pos = () => {
   }
 
 
-  const handleDeleteClick = (id) => {
-    axios
-      .delete(`http://localhost:8080/pos/${id}`)
-      .then((response) => {
-        if (response.status === 200) {
-          fetchPosData();
-          fetchPosConfiguredData();
-          toast.warning("Data deleted Successfully");
-        }
-      })
-      .catch((error) => {
+  const handlePosConfigureDeleteClick = async (id) => {
+    try {
+      const response = await deletePosConfigureData(id)
+        
+          if (response.status === 200) {
+            fetchPosData();
+            fetchPosConfiguredData();
+            toast.warning("Data deleted Successfully");
+          }
+     
+    } catch (error) {
         console.error("Error:", error);
         const errMessage = error.response.data.error;
         toast.error(errMessage);
-      });
+    }
   }
 
   // ---------------Add product-------------------------------
@@ -1311,7 +1311,7 @@ const Pos = () => {
                                 <Button
                                   variant="contained"
                                   color="warning"
-                                  onClick={() => handleDeleteClick(row.id)}
+                                  onClick={() => handlePosConfigureDeleteClick(row.id)}
                                 >
                                   Delete
                                 </Button>
@@ -1458,7 +1458,7 @@ const Pos = () => {
                         <Button
                           variant="contained"
                           color="primary"
-                          onClick={handleEditSubmit}
+                          onClick={handlePosConfigureEditSubmit}
                         >
                           Save Changes
                         </Button>

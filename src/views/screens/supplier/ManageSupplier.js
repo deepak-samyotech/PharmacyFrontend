@@ -45,7 +45,8 @@ import jsPDF from "jspdf";
 import { strengthColor } from "utils/password-strength";
 import { toast } from "react-toastify";
 import Loading from "ui-component/Loading";
-import { fetchSupplier } from "utils/api";
+import { fetchSupplier, handleRetry } from "utils/api";
+import InternalServerError from "ui-component/InternalServerError";
 
 
 const style = {
@@ -135,8 +136,8 @@ function ManageSupplier() {
       setData(transformedData);
       const ids = transformedData.map((item) => item.id);
       setData(transformedData);
-      setId(ids);
-      
+      // setId(ids);
+
     } catch (error) {
       console.error("Error fetching data:", error);
       setError(true);
@@ -178,16 +179,16 @@ function ManageSupplier() {
       formData.append("s_address", address);
       formData.append("status", status);
       formData.append("image", selectedImage);
-  
+
       const response = await putSupplierData(editedRowData.id, formData);
-     
-    
-          if (response?.status === 200) {
-            // setSuccessAlert(true);
-            setOpen(false);
-            fetchData();
-            toast.success("Data updated Successfully");
-          }
+
+
+      if (response?.status === 200) {
+        // setSuccessAlert(true);
+        setOpen(false);
+        fetchData();
+        toast.success("Data updated Successfully");
+      }
     } catch (error) {
       console.error(`Error updating customer with ID ${id}:`, error);
       setError(true);

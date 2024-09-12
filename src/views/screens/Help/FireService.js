@@ -33,7 +33,8 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { toast } from 'react-toastify';
 import Loading from "ui-component/Loading";
-import { fetchFireService, postFireServiceData } from 'utils/api';
+import { fetchFireService, handleRetry, postFireServiceData } from 'utils/api';
+import InternalServerError from 'ui-component/InternalServerError';
 
 // import XLSX from 'xlsx';
 
@@ -108,7 +109,7 @@ function FireService() {
       setLoading(false);
       const ids = transformedData.map((item) => item.id);
       setData(transformedData);
-      setId(ids);
+      // setId(ids);
     } catch (error) {
       console.error('Error fetching data:', error);
       setError(true);

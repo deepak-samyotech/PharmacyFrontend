@@ -104,7 +104,7 @@ const AddEmployee = ({ ...others }) => {
 
     try {
       const response = await employeeRegister(formData);
-
+      console.log("Response =====> ", response);
       if (response?.status === 201) {
         Swal.fire({
           title: "Employee Created Successfully !",
@@ -114,6 +114,12 @@ const AddEmployee = ({ ...others }) => {
         setTimeout(() => {
           window.location.reload();
         }, 1000);
+      } else {
+        Swal.fire({
+          title: "Error !",
+          text: res.message,
+          icon: "error",
+        });
       }
     } catch (error) {
       console.error("Error:", error);

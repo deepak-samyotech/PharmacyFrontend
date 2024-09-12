@@ -32,7 +32,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import Loading from "ui-component/Loading";
 import InternalServerError from "ui-component/InternalServerError";
-import { handleRetry } from "utils/api";
+import { fetchSaleData, handleRetry } from "utils/api";
 
 
 const style = {
@@ -112,10 +112,10 @@ function SalesReport() {
   ];
 
 
-  const fetchSaleData = async () => {
+  const fetchSale = async () => {
     try {
       const response = await fetchSaleData();
-      const transformedData = response.data?.data?.map((item) => ({
+      const transformedData = response?.data?.data?.map((item) => ({
         id: item.id,
         createDate: item.createDate,
         invoiceNumber: item.invoiceNumber,
@@ -136,7 +136,7 @@ function SalesReport() {
   useEffect(() => {
 
 
-    fetchSaleData();
+    fetchSale();
   }, []);
 
   const rows = data;

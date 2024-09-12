@@ -24,7 +24,7 @@ import axios from 'axios';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Swal from 'sweetalert2';
-import { fetchSupplierData, handleRetry } from 'utils/api';
+import { fetchSupplierData, handleRetry, postMedicineData } from 'utils/api';
 import InternalServerError from 'ui-component/InternalServerError';
 
 const Item = styled(Paper)(({ theme }) => ({

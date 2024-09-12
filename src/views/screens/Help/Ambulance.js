@@ -86,6 +86,7 @@ function Ambulance() {
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [errors, setErrors] = useState({});
 
 
   const columns = [
@@ -144,26 +145,53 @@ function Ambulance() {
   const handleSubmit = async (e) => {
     try {
       e.preventDefault();
-      const formData = new FormData();
-      formData.append("name", Name);
-      formData.append("email", email);
-      formData.append("contact", contact);
-      formData.append("address", address);
-      formData.append("hospital_name", hospital_name);
-      formData.append("notes", notes);
+      if (validateForm()) {
+        const formData = new FormData();
+        formData.append("name", Name);
+        formData.append("email", email);
+        formData.append("contact", contact);
+        formData.append("address", address);
+        formData.append("hospital_name", hospital_name);
+        formData.append("notes", notes);
 
 
-      const response = await postAmbulanceData(formData)
-      if (response.status === 200) {
-        // setSuccessAlert(true);
-        fetchData();
-        setOpen(false);
-        toast.success("Data added Successfully.");
+        const response = await postAmbulanceData(formData)
+        if (response.status === 200) {
+          // setSuccessAlert(true);
+          fetchData();
+          setOpen(false);
+          toast.success("Data added Successfully.");
+        }
       }
     } catch (error) {
       console.error("Error:", error);
       setError(true);
     }
+  };
+
+  const validateForm = () => {
+
+    console.log("Here--------");
+
+    const errors = {};
+    if (Name.trim() === '') {
+      errors.Name = 'Name is required';
+    }
+    if (contact.trim() === '') {
+      errors.contact = 'Contact is required';
+    }
+    if (email.trim() === '') {
+      errors.email = 'Email is required';
+    }
+    if (address.trim() === '') {
+      errors.address = 'Address is required';
+    }
+    if (hospital_name.trim() === '') {
+      errors.hospital_name = 'Hospital name is required';
+    }
+    setErrors(errors);
+
+    return Object.keys(errors).length === 0;
   };
 
   const handleChangePage = (event, newPage) => {
@@ -178,7 +206,10 @@ function Ambulance() {
   //models-->
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setErrors({});
+  };
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -549,7 +580,10 @@ function Ambulance() {
                     size="small"
                     required
                     fullWidth
+                    value={Name}
                     onChange={(e) => setName(e.target.value)}
+                    error={!!errors.Name}
+                    helperText={errors.Name}
                   />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6}>
@@ -559,8 +593,11 @@ function Ambulance() {
                     value={contact}
                     size="small"
                     id="s_phone"
+                    required
                     onChange={handlephoneNum}
                     fullWidth
+                    error={!!errors.contact}
+                    helperText={errors.contact}
                   />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6}>
@@ -572,7 +609,10 @@ function Ambulance() {
                     size="small"
                     required
                     fullWidth
+                    value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    error={!!errors.email}
+                    helperText={errors.email}
                   />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6}>
@@ -582,9 +622,12 @@ function Ambulance() {
                     placeholder="Address"
                     multiline
                     size="small"
+                    value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     required
                     fullWidth
+                    error={!!errors.address}
+                    helperText={errors.address}
                   />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6}>
@@ -594,9 +637,12 @@ function Ambulance() {
                     placeholder="hospital Name"
                     multiline
                     size="small"
+                    value={hospital_name}
                     onChange={(e) => setHospital_name(e.target.value)}
                     required
                     fullWidth
+                    error={!!errors.hospital_name}
+                    helperText={errors.hospital_name}
                   />
                 </Grid>
                 <Grid item xs={12} md={6} lg={6}>
@@ -606,6 +652,7 @@ function Ambulance() {
                     placeholder="Notes"
                     multiline
                     size="small"
+                    value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     required
                     fullWidth

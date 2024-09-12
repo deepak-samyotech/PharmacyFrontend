@@ -325,6 +325,22 @@ export async function postHospitalData(formData) {
   }
 }
 
+export async function fetchPolice() {
+  try {
+    return await axios.get(`${baseurl}/police`, addToken);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function postPoliceData(formData) {
+  try {
+    return axios.post(`${baseurl}/police`, formData, addToken2);
+  } catch (error) {
+    throw error;
+  }
+}
+
 // Invoice section
 export async function fetchInvoices() {
   try {
@@ -465,6 +481,43 @@ export async function putSupplierLedgerData(id, editedRowData) {
 export async function deleteSupplierLedgerData(id) {
   try {
     return await axios.delete(`${baseurl}/supplier_ledger/${id}`, addToken);
+  } catch (error) {
+    throw error;
+  }
+}
+
+// pos
+export async function fetchPosConfigured() {
+  try {
+    return await axios.get(`${baseurl}/pos`, addToken);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function postPosConfigureData(posId,posValue) {
+  try {
+    return await axios.post(`${baseurl}/pos/set_value`,  { productId: posId, value: posValue }, addToken)
+  } catch (error) {
+    throw error;
+  }
+}
+
+
+export async function putPosConfigureData(id, newValue) {
+  try {
+    return await axios.put(`${baseurl}/pos/${id}`,
+      { newValue: newValue },
+      addToken
+    );
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function deletePosConfigureData(id) {
+  try {
+    return await axios.delete(`${baseurl}/pos/${id}`, addToken);
   } catch (error) {
     throw error;
   }
