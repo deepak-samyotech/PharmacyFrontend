@@ -80,7 +80,7 @@ function SupplierBalance() {
   const [editedRowData, setEditedRowData] = useState(null);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false); 
+  const [error, setError] = useState(false);
 
 
   //models
@@ -129,7 +129,7 @@ function SupplierBalance() {
 
     fetchData();
   }, []);
-  const rows = data;
+  const rows = data || [];
 
   const filteredRows = rows.filter((row) =>
     Object.values(row).some(
@@ -430,7 +430,7 @@ function SupplierBalance() {
                         No Data Found
                       </TableCell>
                     </TableRow>
-                   ) : (
+                  ) : (
                     sortedRows
                       .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                       .map((row) => (

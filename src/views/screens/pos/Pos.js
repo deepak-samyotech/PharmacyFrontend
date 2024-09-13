@@ -137,12 +137,24 @@ const Pos = () => {
   };
 
   const searchMedicinesData = async () => {
-    const medicineResponse = await searchMedicines(posValue, searchTerm)
-
-    if (medicineResponse?.status === HttpStatusCodes.OK) {
-      setMedicines(medicineResponse?.data?.medicines);
-
-      setProduct_id(medicineResponse?.data?.medicines?.product_id);
+    try {
+      const medicineResponse = await searchMedicines(posValue, searchTerm)
+  
+      console.log("medicineResponse : ", medicineResponse);
+  
+      if (medicineResponse?.status === HttpStatusCodes.OK) {
+        if (medicineResponse?.data?.status === false) {
+          toast.error("Not found!");
+          setSearchTerm("");
+          return;
+        }
+        setMedicines(medicineResponse?.data?.medicines);
+  
+        setProduct_id(medicineResponse?.data?.medicines?.product_id);
+      }
+    } catch (error) {
+      console.log("Error ", error);
+      toast.error("something went wrong");
     }
   };
 
@@ -221,12 +233,12 @@ const Pos = () => {
       return;
     }
 
-    if (quantity > medicines[0].instock) {
+    if (quantity > medicines[0]?.instock) {
       toast.error("Insufficient Stock");
       return;
     }
 
-    const isPresent = tableData.some((data) => data.p_id === medicines[0]._id);
+    const isPresent = tableData.some((data) => data?.p_id === medicines[0]?._id);
     if (isPresent) {
       toast.warning("This Product is already added");
       return;
@@ -234,16 +246,16 @@ const Pos = () => {
 
     if (medicines) {
 
-      const total = parseFloat(medicines[0].mrp) * parseFloat(quantity);
+      const total = parseFloat(medicines[0]?.mrp) * parseFloat(quantity);
       const newData = {
-        p_id: medicines[0]._id,
-        productName: medicines[0].product_name,
+        p_id: medicines[0]?._id,
+        productName: medicines[0]?.product_name,
         quantity: quantity,
         total: total.toFixed(2),
-        genericName: medicines[0].generic_name, // Add generic name to newData
-        medMrp: medicines[0].mrp, // Add MRP to newData
-        discount: medicines[0].w_discount, // Add discount to newData
-        inStockQuantity: medicines[0].instock
+        genericName: medicines[0]?.generic_name, // Add generic name to newData
+        medMrp: medicines[0]?.mrp, // Add MRP to newData
+        discount: medicines[0]?.w_discount, // Add discount to newData
+        inStockQuantity: medicines[0]?.instock
       };
 
       console.log("New Table data : ", newData);
@@ -252,7 +264,7 @@ const Pos = () => {
 
       const productNewQuantityObj = {
         _id: newData.p_id,
-        ProductNewQuantity: medicines[0].instock - quantity
+        ProductNewQuantity: medicines[0]?.instock - quantity
       };
 
       setUpdatedQuantity(prevData => [...prevData, productNewQuantityObj]);
@@ -498,11 +510,11 @@ const Pos = () => {
 
       fetchPosData();
 
-      if (!(response.data.data.length > 0)) {
-        toast.warning("There is no Product to Configure");
-        setOpen(false);
-        return;
-      }
+      // if (!(response.data.data.length > 0)) {
+      //   toast.warning("There is no Product to Configure");
+      //   setOpen(false);
+      //   return;
+      // }
 
       const filteredData = response.data.data.filter(item => item.posStatus === false);
 
@@ -820,7 +832,7 @@ const Pos = () => {
                     }}
                   />
                 </Grid>
-                {customer.map((customer, index) => (
+                {customer?.map((customer, index) => (
                   <>
                     {/* Customer Name TextField */}
                     <Grid item xs={12} md={2} key={index}>
@@ -828,7 +840,7 @@ const Pos = () => {
                         label="Customer Name"
                         fullWidth
                         size="small"
-                        value={customer.c_name}
+                        value={customer?.c_name}
                         sx={{ mr: 1 }}
                         InputProps={{
                           startAdornment: (
@@ -845,7 +857,7 @@ const Pos = () => {
                         label="Customer ID"
                         fullWidth
                         size="small"
-                        value={customer.c_id}
+                        value={customer?.c_id}
                         sx={{ mr: 1 }}
                         InputProps={{
                           startAdornment: (
@@ -910,7 +922,7 @@ const Pos = () => {
                         fullWidth
                         size="small"
                         sx={{ mr: 1 }}
-                        value={medicine.product_name}
+                        value={medicine?.product_name}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
@@ -927,7 +939,7 @@ const Pos = () => {
                         label="Generic Name"
                         fullWidth
                         size="small"
-                        value={medicine.generic_name}
+                        value={medicine?.generic_name}
                         sx={{ mr: 1 }}
                         InputProps={{
                           startAdornment: (
@@ -980,7 +992,7 @@ const Pos = () => {
                         label="MRP"
                         fullWidth
                         size="small"
-                        value={medicine.mrp}
+                        value={medicine?.mrp}
                         sx={{ mr: 1 }}
                         InputProps={{
                           startAdornment: (
@@ -998,7 +1010,7 @@ const Pos = () => {
                         label="Stock"
                         fullWidth
                         size="small"
-                        value={medicine.instock}
+                        value={medicine?.instock}
                         sx={{ mr: 1 }}
                         InputProps={{
                           startAdornment: (
@@ -1039,11 +1051,11 @@ const Pos = () => {
                           </TableRow>
                         </TableHead>
                         <TableBody sx={{ zIndex: "-10" }} >
-                          {tableData.map((item, index) => (
+                          {tableData?.map((item, index) => (
                             <TableRow key={index} >
-                              <TableCell>{item.productName}</TableCell>
-                              <TableCell>{item.quantity}</TableCell>
-                              <TableCell>{item.total}</TableCell>
+                              <TableCell>{item?.productName}</TableCell>
+                              <TableCell>{item?.quantity}</TableCell>
+                              <TableCell>{item?.total}</TableCell>
                               {/* <TableCell>
                                 <Fab aria-label="edit">
                                   <EditIcon
@@ -1091,7 +1103,7 @@ const Pos = () => {
                         }}
                       />
                       {/* Discount Field */}
-                      {customer.map((customer, index) => (
+                      {customer?.map((customer, index) => (
                         <TextField
                           key={index}
                           label="Discount"
@@ -1180,12 +1192,12 @@ const Pos = () => {
                                 bgcolor: "background.paper",
                               }}
                             >
-                              {data3.map((item, index) => (
+                              {data3?.map((item, index) => (
                                 <ListItem key={index}>
                                   <ListItemAvatar>
                                     <Avatar
                                       alt="logo"
-                                      src={item.image}
+                                      src={item?.image}
                                       width="100px"
                                     />
                                   </ListItemAvatar>
@@ -1197,7 +1209,7 @@ const Pos = () => {
                                           variant="subtitle1"
                                           color="textPrimary"
                                         >
-                                          {item.medicineName}
+                                          {item?.medicineName}
                                         </Typography>
                                         <br />
                                         <Typography
@@ -1205,7 +1217,7 @@ const Pos = () => {
                                           variant="body2"
                                           color="textSecondary"
                                         >
-                                          {item.genericName}
+                                          {item?.genericName}
                                         </Typography>
                                       </React.Fragment>
                                     }
@@ -1216,7 +1228,7 @@ const Pos = () => {
                                           variant="body2"
                                           color="textSecondary"
                                         >
-                                          Exp Date: {item.expDate}
+                                          Exp Date: {item?.expDate}
                                         </Typography>
                                       </React.Fragment>
                                     }
@@ -1289,16 +1301,16 @@ const Pos = () => {
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {posConfigData.map((row) => (
+                          {posConfigData?.map((row) => (
                             <TableRow
                               key={row.id}
                               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                             >
                               {/* <TableCell align="right">{row.id}</TableCell> */}
                               <TableCell component="th" scope="row">
-                                {row.productName}
+                                {row?.productName}
                               </TableCell>
-                              <TableCell align="right">{row.value}</TableCell>
+                              <TableCell align="right">{row?.value}</TableCell>
                               <TableCell align="right">
                                 <Button
                                   variant="contained"
@@ -1347,12 +1359,12 @@ const Pos = () => {
                                   multiline
                                   variant="outlined"
                                 >
-                                  {posData.map((medData) => (
+                                  {posData?.map((medData) => (
                                     <MenuItem
-                                      key={medData.id}
-                                      value={medData.id}
+                                      key={medData?.id}
+                                      value={medData?.id}
                                     >
-                                      {medData.product_name}
+                                      {medData?.product_name}
                                     </MenuItem>
                                   ))}
                                 </Select>

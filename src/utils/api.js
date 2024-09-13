@@ -1,6 +1,6 @@
 /*eslint-disable*/
 import { toast } from "react-toastify";
-import { addToken, addToken2, apiUrl, baseurl } from "./constants";
+import { addToken, addToken2, apiUrl, baseurl, headers } from "./constants";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { HttpStatusCodes } from 'utils/statusCodes';
@@ -89,12 +89,12 @@ export async function searchMedicines(posValue, searchTerm) {
       `${baseurl}/medicine/search?product_id=${posValue}`,
       {
         params: { query: searchTerm },
-      },
-       addToken
+        headers:headers,
+      }
     );
 
   } catch (error) {
-    console.error("Error searching for medicines:", error);
+    throw error;
   }
 }
 
@@ -104,8 +104,8 @@ export async function searchCustomer(cus_contact, searchTerms) {
       `${baseurl}/customer/search?cus_contact=${cus_contact}`,
       {
         params: { query: searchTerms },
-      },
-      addToken
+        headers:headers,
+      }
     );
   } catch (error) {
     console.error("Error searching for customer:", error);
@@ -114,7 +114,7 @@ export async function searchCustomer(cus_contact, searchTerms) {
 
 export async function customerLedgerPost(formDataCustomerLedger) {
   try {
-    return await axios.post(`http://localhost:8080/Customer_ledger`, formDataCustomerLedger, addToken2)
+    return await axios.post(`${baseurl}/Customer_ledger`, formDataCustomerLedger, addToken2)
   } catch (error) {
     console.error("Error:", error);
     Swal.fire({
@@ -518,6 +518,15 @@ export async function putPosConfigureData(id, newValue) {
 export async function deletePosConfigureData(id) {
   try {
     return await axios.delete(`${baseurl}/pos/${id}`, addToken);
+  } catch (error) {
+    throw error;
+  }
+}
+
+// purchase section
+export async function fetchPurchaseBillingData() {
+  try {
+    return await axios.get(`${baseurl}/purchase/purchaseBilling`, addToken);
   } catch (error) {
     throw error;
   }

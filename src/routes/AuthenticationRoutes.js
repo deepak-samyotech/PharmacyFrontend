@@ -20,23 +20,19 @@ const AuthenticationRoutes = {
   element: <MinimalLayout />,
   children: [
     {
-      // path: '/pages/login/login3',
       path: '/login',
       element: <AuthLogin3 />
     },
     {
-      // path: '/pages/login/login3',
       path: '/counterLogin',
       element: <SalesLogin />
     },
     {
-      // path: '/pages/register/register3',
       path: '/register',
       element: <AuthRegister3 />
     },
     
     {
-      // path: '/pages/register/register3',
       path: '/change-password',
       element: <ChangePassword3/>
     }

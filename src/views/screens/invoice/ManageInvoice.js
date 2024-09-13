@@ -340,63 +340,70 @@ function ManageInvoice() {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {sortedRows
-                          .slice(
-                            page * rowsPerPage,
-                            page * rowsPerPage + rowsPerPage
-                          )
-                          .map((row, index) => {
-                            return (
-                              <StyledTableRow key={row.id}>
-                                {columns.slice(1).map((
-                                  column // Exclude the first column (ID)
-                                ) => (
-                                  <StyledTableCell
-                                    key={column.id}
-                                    align={column.align}
-                                  >
-                                    {column.id === "imageUrl" ? (
-                                      row[column.id] ? (
-                                        <img
-                                          src={row[column.id]}
-                                          alt="img"
-                                          style={{
-                                            maxWidth: "50px",
-                                            maxHeight: "50px",
-                                            borderRadius: "50%",
-                                          }} // Fixed typo: '50spx' to '50px'
-                                        />
+                        {sortedRows.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={columns.length} align="center">
+                              No Data Found
+                            </TableCell>
+                          </TableRow>
+                        ) :
+                          sortedRows
+                            .slice(
+                              page * rowsPerPage,
+                              page * rowsPerPage + rowsPerPage
+                            )
+                            .map((row, index) => {
+                              return (
+                                <StyledTableRow key={row.id}>
+                                  {columns.slice(1).map((
+                                    column // Exclude the first column (ID)
+                                  ) => (
+                                    <StyledTableCell
+                                      key={column.id}
+                                      align={column.align}
+                                    >
+                                      {column.id === "imageUrl" ? (
+                                        row[column.id] ? (
+                                          <img
+                                            src={row[column.id]}
+                                            alt="img"
+                                            style={{
+                                              maxWidth: "50px",
+                                              maxHeight: "50px",
+                                              borderRadius: "50%",
+                                            }} // Fixed typo: '50spx' to '50px'
+                                          />
+                                        ) : (
+                                          "no image"
+                                        )
                                       ) : (
-                                        "no image"
-                                      )
-                                    ) : (
-                                      row[column.id] || "------------"
-                                    )}
-                                    {column.id === "actions" ? (
-                                      <div
-                                        style={{
-                                          display: "flex",
-                                          justifyContent: "center",
-                                          width: "100px",
-                                          alignItems: "center",
-                                        }}
-                                      >
-                                        <IconButton
-                                          color="gray"
-                                          aria-label="view"
-                                          onClick={() => handleViewInvoice(row)} // Pass 'row' instead of 'rows'
+                                        row[column.id] || "------------"
+                                      )}
+                                      {column.id === "actions" ? (
+                                        <div
+                                          style={{
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            width: "100px",
+                                            alignItems: "center",
+                                          }}
                                         >
-                                          <RemoveRedEyeIcon />
-                                        </IconButton>
-                                      </div>
-                                    ) : (
-                                      ""
-                                    )}
-                                  </StyledTableCell>
-                                ))}
-                              </StyledTableRow>
-                            );
-                          })}
+                                          <IconButton
+                                            color="gray"
+                                            aria-label="view"
+                                            onClick={() => handleViewInvoice(row)} // Pass 'row' instead of 'rows'
+                                          >
+                                            <RemoveRedEyeIcon />
+                                          </IconButton>
+                                        </div>
+                                      ) : (
+                                        ""
+                                      )}
+                                    </StyledTableCell>
+                                  ))}
+                                </StyledTableRow>
+                              );
+                            })}
                       </TableBody>
                     </Table>
                   </TableContainer>
@@ -552,7 +559,7 @@ function ManageInvoice() {
                   <Typography
                     variant="h6"
                     gutterBottom
-                    // style={styles.smallTypography}
+                  // style={styles.smallTypography}
                   >
                     THANK YOU
                   </Typography>

@@ -609,7 +609,14 @@ function SaleReturn() {
                               </StyledTableCell>
                             </StyledTableRow>
                           ) :
-                          (sortedRows
+                          (sortedRows.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={columns.length} align="center">
+                                No Data Found
+                              </TableCell>
+                            </TableRow>
+                          ) : 
+                            sortedRows
                             .slice(
                               page * rowsPerPage,
                               page * rowsPerPage + rowsPerPage

@@ -62,7 +62,7 @@ const FirebaseLogin = ({ ...others }) => {
       const response = await handlelogin(values)
 
       if (response.status === 200) {
-        Cookies.set('user_login', response.data.token, { expires: 1 });
+        Cookies.set('user_login', response?.data?.token, { expires: 1 });
         const userData = JSON.stringify(response.data);
         localStorage.setItem('user_data', userData);
         dispatch(loginSuccess(response.data)); // Dispatch loginSuccess with user data

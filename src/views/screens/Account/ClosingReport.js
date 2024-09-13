@@ -108,9 +108,9 @@ function ClosingReport() {
         setData(transformedData);
         setLoading(false);
         console.log('response data----------->', transformedData);
-        const ids = transformedData.map((item) => item.id);
-        console.log('IDs:', ids);
-        setId(ids);
+        // const ids = transformedData.map((item) => item.id);
+        // console.log('IDs:', ids);
+        // setId(ids);
       } catch (error) {
         console.error('Error fetching data:', error);
         setError(true);
@@ -386,7 +386,14 @@ function ClosingReport() {
                                 </StyledTableCell>
                               </StyledTableRow>
                             ) :
-                        (sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
+                        (sortedRows.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={columns.length} align="center">
+                              No Data Found
+                            </TableCell>
+                          </TableRow>
+                        ) : 
+                          sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
                           return (
                             <StyledTableRow key={row.id}>
                               {columns.slice(1).map(

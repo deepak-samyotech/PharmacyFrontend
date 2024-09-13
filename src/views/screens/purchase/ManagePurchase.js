@@ -33,6 +33,7 @@ import Logo from "ui-component/Logo";
 import "./style.css";
 import logoing from "../../../assets/images/logo.svg";
 import Loading from "ui-component/Loading";
+import { fetchPurchaseBillingData } from "utils/api";
 
 
 const tableContainer = {
@@ -129,10 +130,9 @@ function ManagePurchase() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:8080/purchase/purchaseBilling"
-        );
-        console.log("aggregate data is comingggg : - ", response);
+        const response = await fetchPurchaseBillingData();
+
+        // console.log("aggregate data is comingggg : - ", response);
 
         const transformedData = response.data?.data?.map((item) => ({
           id: item.id,
@@ -156,8 +156,8 @@ function ManagePurchase() {
         }));
         setData(transformedData);
         setLoading(false);
-        const ids = transformedData.map((item) => item.id);
-        setId(ids);
+        // const ids = transformedData.map((item) => item.id);
+        // setId(ids);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -165,8 +165,8 @@ function ManagePurchase() {
 
     fetchData();
   }, []);
-  const rows = data;
-  console.log(rows, "rows data aaa rhaa haiiiiiiiii");
+  const rows = data || [];
+  
 
   //   buttons-------------------------->
   const handleCopy = () => {
@@ -508,7 +508,14 @@ function ManagePurchase() {
                               </StyledTableCell>
                             </StyledTableRow>
                           ) :
-                          (sortedRows
+                          (sortedRows.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={columns.length} align="center">
+                                No Data Found
+                              </TableCell>
+                            </TableRow>
+                          ) : 
+                            sortedRows
                             .slice(
                               page * rowsPerPage,
                               page * rowsPerPage + rowsPerPage

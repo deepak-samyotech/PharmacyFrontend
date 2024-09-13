@@ -170,7 +170,7 @@ function CounterReport() {
                     InputLabelProps={{
                         shrink: true,
                     }}
-                /> 
+                />
 
                 <FormControl style={{ width: '450px' }}>
 
@@ -256,8 +256,6 @@ function CounterReport() {
                                                         <TableCell>{item.TotalAmount}</TableCell>
                                                         <TableCell>{item.Counter}</TableCell>
                                                         <TableCell>{item.EntryName}</TableCell>
-
-
                                                     </TableRow>
                                                 ))}
                                         </TableBody>

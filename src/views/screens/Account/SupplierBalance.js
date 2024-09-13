@@ -98,8 +98,8 @@ function SupplierBalance() {
         }));
         setData(transformedData);
         setLoading(false);
-        const ids = transformedData.map((item) => item.id);
-        setId(ids);
+        // const ids = transformedData?.map((item) => item.id);
+        // setId(ids);
       } catch (error) {
         console.error('Error fetching data:', error);
         setError(true);
@@ -108,7 +108,7 @@ function SupplierBalance() {
 
     fetchData();
   }, []);
-  const rows = data;
+  const rows = data || [];
 
 
   const handleChangePage = (event, newPage) => {
@@ -380,7 +380,14 @@ function SupplierBalance() {
                             </StyledTableCell>
                           </StyledTableRow>
                         ) :
-                        (sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
+                        (sortedRows.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={columns.length} align="center">
+                              No Data Found
+                            </TableCell>
+                          </TableRow>
+                        ) : 
+                          sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
                           return (
                             <StyledTableRow key={row.id}>
                               {columns.slice(1).map(

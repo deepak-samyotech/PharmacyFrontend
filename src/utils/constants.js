@@ -25,3 +25,8 @@ export const addToken2 = {
         'Content-Type': 'multipart/form-data',  
       }
 }
+
+export const headers = {
+  'Authorization': `Bearer ${getToken()}`,  // Authorization header
+  'Content-Type': 'application/json',  // Content-Type header
+}

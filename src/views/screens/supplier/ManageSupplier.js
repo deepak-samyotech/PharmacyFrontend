@@ -134,7 +134,7 @@ function ManageSupplier() {
       }));
       setLoading(false);
       setData(transformedData);
-      const ids = transformedData.map((item) => item.id);
+      // const ids = transformedData.map((item) => item.id);
       setData(transformedData);
       // setId(ids);
 
@@ -195,7 +195,7 @@ function ManageSupplier() {
     }
   };
 
-  const rows = data;
+  const rows = data || [];
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -228,7 +228,7 @@ function ManageSupplier() {
     navigate("/account/supplier-balance");
   };
 
-  const filteredRows = data.filter((row) =>
+  const filteredRows = rows.filter((row) =>
     Object.values(row).some(
       (value) =>
         typeof value === "string" &&
@@ -499,62 +499,69 @@ function ManageSupplier() {
                             </StyledTableRow>
                           ) :
 
-                          (sortedRows
-                            .slice(
-                              page * rowsPerPage,
-                              page * rowsPerPage + rowsPerPage
-                            )
-                            .map((row, index) => {
-                              return (
-                                <StyledTableRow key={row.id}>
-                                  {columns.map((column) => {
-                                    console.log("colunm ", column);
-                                    return (<>
-                                      <StyledTableCell
-                                        key={column.id}
-                                        align={column.align}
-                                      >
-                                        {column.id === "imageUrl" ? (
-                                          row[column.id] ? (
-                                            <img
-                                              src={row[column.id]}
-                                              alt="img"
-                                              style={{
-                                                maxWidth: "50px",
-                                                maxHeight: "50spx",
-                                                borderRadius: "50%",
-                                              }}
-                                            />
+                          (sortedRows.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={columns.length} align="center">
+                                No Data Found
+                              </TableCell>
+                            </TableRow>
+                          ) :
+                            sortedRows
+                              .slice(
+                                page * rowsPerPage,
+                                page * rowsPerPage + rowsPerPage
+                              )
+                              .map((row, index) => {
+                                return (
+                                  <StyledTableRow key={row.id}>
+                                    {columns.map((column) => {
+                                      console.log("colunm ", column);
+                                      return (<>
+                                        <StyledTableCell
+                                          key={column.id}
+                                          align={column.align}
+                                        >
+                                          {column.id === "imageUrl" ? (
+                                            row[column.id] ? (
+                                              <img
+                                                src={row[column.id]}
+                                                alt="img"
+                                                style={{
+                                                  maxWidth: "50px",
+                                                  maxHeight: "50spx",
+                                                  borderRadius: "50%",
+                                                }}
+                                              />
+                                            ) : (
+                                              "no image"
+                                            )
                                           ) : (
-                                            "no image"
-                                          )
-                                        ) : (
-                                          row[column.id]
-                                        )}
-                                        {column.id === "actions" ? (
-                                          <div>
-                                            <IconButton
-                                              onClick={() => handleOpen(row)}
-                                            >
-                                              <EditIcon />
-                                            </IconButton>
-                                            <IconButton
-                                              onClick={() => handlePrint(row.id)}
-                                            >
-                                              <PrintIcon />
-                                            </IconButton>
-                                          </div>
-                                        ) : (
-                                          ""
-                                        )}
-                                      </StyledTableCell>
+                                            row[column.id]
+                                          )}
+                                          {column.id === "actions" ? (
+                                            <div>
+                                              <IconButton
+                                                onClick={() => handleOpen(row)}
+                                              >
+                                                <EditIcon />
+                                              </IconButton>
+                                              <IconButton
+                                                onClick={() => handlePrint(row.id)}
+                                              >
+                                                <PrintIcon />
+                                              </IconButton>
+                                            </div>
+                                          ) : (
+                                            ""
+                                          )}
+                                        </StyledTableCell>
 
-                                    </>)
+                                      </>)
 
-                                  })}
-                                </StyledTableRow>
-                              );
-                            })
+                                    })}
+                                  </StyledTableRow>
+                                );
+                              })
                           )
                         }
                       </TableBody>

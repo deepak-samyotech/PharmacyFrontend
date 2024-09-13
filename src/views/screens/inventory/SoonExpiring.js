@@ -408,7 +408,14 @@ function SoonExpiring() {
                             </StyledTableCell>
                           </StyledTableRow>
                         ) :
-                        (sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
+                        (sortedRows.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={columns.length} align="center">
+                              No Data Found
+                            </TableCell>
+                          </TableRow>
+                        ) : 
+                          sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
                           return (
                             <StyledTableRow key={row.id}>
                               {columns.map((column) => (
