@@ -31,6 +31,7 @@ import FormControl from "@mui/material/FormControl";
 import Modal from "@mui/material/Modal";
 import logo from "../../../assets/images/logo.svg";
 import Swal from "sweetalert2";
+import { fetchSupplierByName, postPurchaseData, postPurchaseHistoryData, postSupplierLedgerData, postSupplierPaymentData, postUpplierLedgerData } from "utils/api";
 
 const tableContainer = {
   border: "1px solid #e0e0e0",
@@ -313,16 +314,14 @@ function AddPurchase() {
   }, [supplier_Name]);
   const fetchData = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:8080/medicine/bySupplierName?supplier_name=${supplier_Name}`
-      );
+      const response = await fetchSupplierByName(supplier_Name);
 
-      setMedicineData(response.data.data);
+      setMedicineData(response?.data?.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
-  const rows = medicineData;
+  const rows = medicineData || [];
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -380,7 +379,7 @@ function AddPurchase() {
   //current date & time
   const currentDate = new Date().toISOString().split("T")[0];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const { supplier_name, supplier_id } = medicineData[0];
     const formDataPurchase = new FormData();
@@ -427,63 +426,37 @@ function AddPurchase() {
     formDataPurchaseHistory.append("total_amount", totalAmount);
     formDataPurchaseHistory.append("details", purchaseDetails);
 
-    axios
-      .post(`http://localhost:8080/purchase`, formDataPurchase, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((response) => {
-        if (response.status === 200) {
-          Swal.fire({
-            title: "Purchase Add Successfully !",
-            text: "You clicked the button!",
-            icon: "success",
+    try {
+      const response = await postPurchaseData(formDataPurchase);
+      
+          if (response?.status === 200) {
+            Swal.fire({
+              title: "Purchase Add Successfully !",
+              text: "You clicked the button!",
+              icon: "success",
+            });
+  
+            setOpen(false);
+            // setTimeout(() => {
+            //   window.location.reload();
+            // }, 1000);
+          }
+  
+  
+      await postSupplierLedgerData(formDataSupplierLedger);
+       
+      await postSupplierPaymentData(formDataSupplierPayment);
+  
+      await postPurchaseHistoryData(formDataPurchaseHistory);
+    } catch (error) {
+      console.log("Error : ", error);
+      Swal.fire({
+            title: "Error !",
+            text: "Something went Wrong!",
+            icon: "error",
           });
+    }
 
-          setOpen(false);
-          // setTimeout(() => {
-          //   window.location.reload();
-          // }, 1000);
-        }
-      })
-      .catch((error) => {
-        Swal.fire({
-          title: "Error !",
-          text: "You clicked the button!",
-          icon: "error",
-        });
-      });
-
-    axios
-      .post(`http://localhost:8080/supplier_ledger`, formDataSupplierLedger, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-
-    axios
-      .post(`http://localhost:8080/supplier_payment`, formDataSupplierPayment, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-
-    axios
-      .post(`http://localhost:8080/purchase-history`, formDataPurchaseHistory, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
   };
 
   // Calculate grand total

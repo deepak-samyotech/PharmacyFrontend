@@ -120,7 +120,7 @@ function ClosingReport() {
     fetchData();
   }, []);
   console.log('set===-->', data);
-  const rows = data;
+  const rows = data || [];
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -214,7 +214,7 @@ function ClosingReport() {
       { header: "Adjustment", dataKey: "adjustment" },
 
     ];
-    const rows = sortedRows.map((row) => ({
+    const rows = sortedRows?.map((row) => ({
       date: row.date,
       openingBalance: row.openingBalance,
       cashIn: row.cashIn,
@@ -239,7 +239,7 @@ function ClosingReport() {
   };
   
   // Function to filter rows based on search term
-  const filteredRows = rows.filter((row) =>
+  const filteredRows = rows?.filter((row) =>
     Object.values(row).some(
       (value) =>
         typeof value === "string" &&
@@ -255,7 +255,7 @@ function ClosingReport() {
   const sortedRows = stableSort(filteredRows, getComparator(order, orderBy));
   
   const emptyRows =
-    rowsPerPage - Math.min(rowsPerPage, sortedRows.length - page * rowsPerPage);
+    rowsPerPage - Math.min(rowsPerPage, sortedRows?.length - page * rowsPerPage);
   
   function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
@@ -274,13 +274,13 @@ function ClosingReport() {
   }
   
   function stableSort(array, comparator) {
-    const stabilizedThis = array.map((el, index) => [el, index]);
-    stabilizedThis.sort((a, b) => {
+    const stabilizedThis = array?.map((el, index) => [el, index]);
+    stabilizedThis?.sort((a, b) => {
       const order = comparator(a[0], b[0]);
       if (order !== 0) return order;
       return a[1] - b[1];
     });
-    return stabilizedThis.map((el) => el[0]);
+    return stabilizedThis?.map((el) => el[0]);
   }
 
 
@@ -386,14 +386,14 @@ function ClosingReport() {
                                 </StyledTableCell>
                               </StyledTableRow>
                             ) :
-                        (sortedRows.length === 0 ? (
+                        (sortedRows?.length === 0 ? (
                           <TableRow>
                             <TableCell colSpan={columns.length} align="center">
                               No Data Found
                             </TableCell>
                           </TableRow>
                         ) : 
-                          sortedRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
+                          sortedRows?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
                           return (
                             <StyledTableRow key={row.id}>
                               {columns.slice(1).map(

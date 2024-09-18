@@ -98,8 +98,8 @@ const AddEmployee = ({ ...others }) => {
     formData.append("contact", contact);
     formData.append("details", details);
     formData.append("address", address);
-    formData.append("role", role);
-    formData.append("status", status);
+    // formData.append("role", 'EMPLOYEE');
+    formData.append("active", status === 'ACTIVE' ? true : false);
     formData.append("image", selectedImage);
 
     try {
@@ -303,7 +303,7 @@ const AddEmployee = ({ ...others }) => {
                       </Select>
                     </FormControl>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  {/* <Grid item xs={12} sm={6}>
                     <FormControl fullWidth>
                       <InputLabel id="status">Employee Roll</InputLabel>
                       <Select
@@ -318,7 +318,7 @@ const AddEmployee = ({ ...others }) => {
                         <MenuItem value={"MANAGER"}>MANAGER</MenuItem>
                       </Select>
                     </FormControl>
-                  </Grid>
+                  </Grid> */}
                   <Grid item xs={12} sm={6}>
                     <FormControl
                       fullWidth

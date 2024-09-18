@@ -7,7 +7,7 @@ import Loadable from "ui-component/Loadable";
 import ManageInvoice from "views/screens/invoice/ManageInvoice";
 import Dashboard from "views/SuperAdmin/dashboard/Dashboard";
 import { decodeToken } from "utils/jwtdecode";
-import { admin } from "store/constant";
+import { admin, superAdmin } from "store/constant";
 
 // dashboard routing
 const DashboardDefault = Loadable(
@@ -564,13 +564,244 @@ const SuperAdminRoutes = {
   ],
 };
 
+const EmployeeRoutes = {
+  path: "/",
+  element: <MainLayout />,
+  children: [
+    {
+      path: "/",
+      element: <PrivateRoute><Pos /></PrivateRoute>,
+    },
+    {
+      path: "pos-page",
+      element: <PrivateRoute><Pos /></PrivateRoute>,
+    },
+    {
+      path: "/invoice/manage-invoice",
+      element: <PrivateRoute><ManageInvoice /></PrivateRoute>,
+    },
+    {
+      path: "/manage_invoice/:id",
+      element: <PrivateRoute><GenerateInvoice /></PrivateRoute>,
+    },
+    // -------------------medicine-----------------
+    {
+      path: "medicine",
+      children: [
+        {
+          path: "add-medicine",
+          element: <PrivateRoute><AddMedicine /></PrivateRoute>,
+        },
+      ],
+    },
+    {
+      path: "medicine",
+      children: [
+        {
+          path: "manage-medicine",
+          element: <PrivateRoute><ManageMedicine /></PrivateRoute>,
+        },
+      ],
+    },
+    // --------------------customer---------------------
+    {
+      path: "customer",
+      children: [
+        {
+          path: "add-customer",
+          element: <PrivateRoute><AddCustomer /></PrivateRoute>,
+        },
+      ],
+    },
+    {
+      path: "customer",
+      children: [
+        {
+          path: "manage-customer",
+          element: <PrivateRoute><ManageCustomer /></PrivateRoute>,
+        },
+      ],
+    },
+    {
+      path: "customer",
+      children: [
+        {
+          path: "regular-customer",
+          element: <PrivateRoute><RegularCustomer /></PrivateRoute>,
+        },
+      ],
+    },
+    {
+      path: "customer",
+      children: [
+        {
+          path: "wholesale-customer",
+          element: <PrivateRoute><WholesaleCustomer /></PrivateRoute>,
+        },
+      ],
+    },
+    // --------------------Supplier---------------------
+    {
+      path: "supplier",
+      children: [
+        {
+          path: "add-supplier",
+          element: <PrivateRoute><AddSupplier /></PrivateRoute>,
+        },
+      ],
+    },
+    {
+      path: "supplier",
+      children: [
+        {
+          path: "manage-supplier",
+          element: <PrivateRoute><ManageSupplier /></PrivateRoute>,
+        },
+      ],
+    },
+    {
+      path: "supplier",
+      children: [
+        {
+          path: "supplier-balance",
+          element: <PrivateRoute><SupplierBalance /></PrivateRoute>,
+        },
+      ],
+    },
+    //------------------inventory-----------------
+    {
+      path: "inventory",
+      children: [
+        {
+          path: "manage-stock",
+          element: <PrivateRoute><ManageStock /></PrivateRoute>,
+        },
+      ],
+    },
+    {
+      path: "inventory",
+      children: [
+        {
+          path: "short-stock",
+          element: <PrivateRoute><ShortStock /></PrivateRoute>,
+        },
+      ],
+    },
+    {
+      path: "inventory",
+      children: [
+        {
+          path: "out-of-stock",
+          element: <PrivateRoute><OutOfStock /></PrivateRoute>,
+        },
+      ],
+    },
+    {
+      path: "inventory",
+      children: [
+        {
+          path: "soon-expiring",
+          element: <PrivateRoute><SoonExpiring /></PrivateRoute>,
+        },
+      ],
+    },
+    {
+      path: "inventory",
+      children: [
+        {
+          path: "expire-medicine",
+          element: <PrivateRoute><ExpiredMedicine /></PrivateRoute>,
+        },
+      ],
+    },
+    // --------------------RETURN---------------------
+    {
+      path: "Returns",
+      children: [
+        {
+          path: "purchase-return",
+          element: <PrivateRoute><PurchaseReturn /></PrivateRoute>,
+        },
+      ],
+    },
+    {
+      path: "Returns",
+      children: [
+        {
+          path: "sale-return",
+          element: <PrivateRoute><SaleReturn /></PrivateRoute>,
+        },
+      ],
+    },
+    // --------------------help---------------------
+    {
+      path: "help",
+      children: [
+        {
+          path: "phone-book",
+          element: <PrivateRoute><PhoneBook /></PrivateRoute>,
+        },
+      ],
+    },
+    {
+      path: "help",
+      children: [
+        {
+          path: "doctor",
+          element: <PrivateRoute><Doctor /></PrivateRoute>,
+        },
+      ],
+    },
+    {
+      path: "help",
+      children: [
+        {
+          path: "hospital",
+          element: <PrivateRoute><Hospital /></PrivateRoute>,
+        },
+      ],
+    },
+    {
+      path: "help",
+      children: [
+        {
+          path: "ambulance",
+          element: <PrivateRoute><Ambulance /></PrivateRoute>,
+        },
+      ],
+    },
+    {
+      path: "help",
+      children: [
+        {
+          path: "fire-service",
+          element: <PrivateRoute> <FireService /></PrivateRoute>,
+        },
+      ],
+    },
+    {
+      path: "help",
+      children: [
+        {
+          path: "police",
+          element: <PrivateRoute><Police /></PrivateRoute>,
+        },
+      ],
+    },
+  ],
+};
+
 
 const decode = decodeToken();
 
-if (decode?.role === admin) {
-  MainRoutes = AdminRoutes
+if (decode?.role === superAdmin) {
+  MainRoutes = SuperAdminRoutes;
+}
+else if (decode?.role === admin) {
+  MainRoutes = AdminRoutes;
 } else {
-  MainRoutes = SuperAdminRoutes
+  console.log("employee routes");
+  MainRoutes = EmployeeRoutes;
 }
 
 // MainRoutes = AdminRoutes

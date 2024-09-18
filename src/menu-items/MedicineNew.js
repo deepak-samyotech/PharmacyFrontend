@@ -1,5 +1,5 @@
 // assets
-import MedicalServicesOutlinedIcon from '@mui/icons-material/MedicalServicesOutlined';// constant
+import MedicalServicesOutlinedIcon from '@mui/icons-material/MedicalServicesOutlined';
 const icons = {
     MedicalServicesOutlinedIcon
 };

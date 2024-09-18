@@ -501,7 +501,7 @@ const AddMedicine = () => {
                         value={quantity}
                         onChange={(e) => setQuantity(e.target.value)}
                         fullWidth
-                        placeholder='Short Quantity'
+                        placeholder='Quantity'
                         error={!!errors.quantity}
                         helperText={errors.quantity}
                       />

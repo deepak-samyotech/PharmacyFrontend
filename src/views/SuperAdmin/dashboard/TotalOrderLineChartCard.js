@@ -50,7 +50,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 }));
 
 
-const TotalOrderLineChartCard = ({ isLoading }) => {
+const TotalOrderLineChartCard = ({ isLoading, totalAdmin }) => {
 
   const [count, setCount] = useState('');
   const [error, setError] = useState(false);
@@ -81,7 +81,7 @@ if (error) {
                   variant="body1"
                   style={{ marginLeft: 10, zIndex: 10 }}
                 >
-                  Total User
+                  Total Company
                 </Typography>
               </div>
 
@@ -100,11 +100,8 @@ if (error) {
                   variant="body1"
                   style={{ marginLeft: 10, zIndex: 10, fontSize: "20px" }}
                 >
-                  18
+                  {totalAdmin}
                 </Typography>
-                {/* <Typography variant="body1" style={{ marginLeft: 'auto', zIndex: 10 }}>
-                2
-              </Typography> */}
               </div>
             </Grid>
           </Box>

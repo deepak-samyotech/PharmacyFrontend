@@ -12,26 +12,36 @@ import poses from './poses';
 import returns from './returns';
 import Suppliers from './Suppliers';
 import { decodeToken } from 'utils/jwtdecode';
-import { admin } from 'store/constant';
+import { admin, superAdmin } from 'store/constant';
 import report from './SuperAdmin/report';
 import company from './SuperAdmin/company';
 // ==============================|| MENU ITEMS ||============================== //
 
 let menuItems;
 const AdminItems = {
-  items: [dashboard, poses, MedicineNew, customer, Suppliers, purchase, inventory, Accounts, returns, reports, employee, helps, other]
+  items: [dashboard, poses, MedicineNew, customer, Suppliers, purchase, inventory, Accounts, returns, reports, employee, helps]
 };
 
 const SuperAdminItems = {
-  items: [dashboard, company, report]
+  items: [dashboard, company]
+};
+
+const EmployeeItems = {
+  items: [poses, MedicineNew, customer, Suppliers, inventory, returns, helps]
 };
 
 
+
 const decode = decodeToken();
-if (decode?.role === admin) {
+
+if (decode?.role === superAdmin) {
+  menuItems = SuperAdminItems;
+}
+else if (decode?.role === admin) {
   menuItems = AdminItems;
 } else {
-  menuItems = SuperAdminItems;
+  console.log("employee routes--------");
+  menuItems = EmployeeItems;
 }
 
 

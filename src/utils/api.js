@@ -21,20 +21,38 @@ export async function fetchCustomer() {
 
 export async function fetchSupplier() {
   try {
-    return await axios.get(`${baseurl}/supplier` , addToken);
+    return await axios.get(`${baseurl}/supplier`, addToken);
   } catch (error) {
     throw error;
   }
 }
 
-export async function handleRegister(firstName, lastName, email, password) {
+export async function fetchAdmins() {
   try {
-    return await axios.post(`http://localhost:8080/register`, {
-      firstName,
-      lastName,
-      email,
-      password
+    return await axios.get(`${baseurl}/superadmin/all-admin`, addToken);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function toggleAdminStatus(id) {
+  const userData = JSON.parse(localStorage.getItem('user_data'));
+  const token = userData?.token;
+  try {
+    console.log("headers   ", headers);
+    return await axios.put(`${baseurl}/superadmin/change-status/${id}`, {}, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
     });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function handleRegister(company) {
+  try {
+    return await axios.post(`${baseurl}/superadmin/create-user`, company, addToken);
   } catch (error) {
     throw error;
   }
@@ -89,7 +107,7 @@ export async function searchMedicines(posValue, searchTerm) {
       `${baseurl}/medicine/search?product_id=${posValue}`,
       {
         params: { query: searchTerm },
-        headers:headers,
+        headers: headers,
       }
     );
 
@@ -104,7 +122,7 @@ export async function searchCustomer(cus_contact, searchTerms) {
       `${baseurl}/customer/search?cus_contact=${cus_contact}`,
       {
         params: { query: searchTerms },
-        headers:headers,
+        headers: headers,
       }
     );
   } catch (error) {
@@ -435,7 +453,7 @@ export async function fetchInvoiceData() {
 
 export async function postSaleReturnData(modifiedFormData) {
   try {
-    return await axios.post("http://localhost:8080/sale_return",modifiedFormData, addToken);
+    return await axios.post("http://localhost:8080/sale_return", modifiedFormData, addToken);
   } catch (error) {
     throw error;
   }
@@ -495,9 +513,9 @@ export async function fetchPosConfigured() {
   }
 }
 
-export async function postPosConfigureData(posId,posValue) {
+export async function postPosConfigureData(posId, posValue) {
   try {
-    return await axios.post(`${baseurl}/pos/set_value`,  { productId: posId, value: posValue }, addToken)
+    return await axios.post(`${baseurl}/pos/set_value`, { productId: posId, value: posValue }, addToken)
   } catch (error) {
     throw error;
   }
@@ -527,6 +545,48 @@ export async function deletePosConfigureData(id) {
 export async function fetchPurchaseBillingData() {
   try {
     return await axios.get(`${baseurl}/purchase/purchaseBilling`, addToken);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function fetchSupplierByName(supplier_Name) {
+  try {
+    return await axios.get(`${baseurl}/medicine/bySupplierName?supplier_name=${supplier_Name} `, addToken);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function postPurchaseData(formDataPurchase) {
+  try {
+    return await axios.post(`${baseurl}/purchase`, formDataPurchase, addToken2)
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function postSupplierLedgerData(formDataSupplierLedger) {
+  try {
+    return await axios.post(`${baseurl}/supplier_ledger`, formDataSupplierLedger, addToken2)
+  } catch (error) {
+    throw error;
+  }
+}
+
+
+export async function postSupplierPaymentData(formDataSupplierPayment) {
+  try {
+    return await axios.post(`${baseurl}/supplier_payment`, formDataSupplierPayment, addToken2)
+  } catch (error) {
+    throw error;
+  }
+}
+
+
+export async function postPurchaseHistoryData(formDataPurchaseHistory) {
+  try {
+    return await axios.post(`${baseurl}/purchase-history`, formDataPurchaseHistory, addToken2)
   } catch (error) {
     throw error;
   }

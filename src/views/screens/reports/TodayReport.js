@@ -119,7 +119,7 @@ const TodayReport = () => {
         }));
         setData(transformedData);
         setLoading(false);
-        const ids = transformedData.map((item) => item.id);
+        // const ids = transformedData.map((item) => item.id);
         setData(transformedData);
         // setId(ids);
       } catch (error) {
@@ -130,8 +130,10 @@ const TodayReport = () => {
 
     const fetchTodayPurchaseData = async () => {
       try {
+        setLoading(true);
         const response = await fetchTodayPurchase();
-        setPurchaseData(response.data.data);
+        setPurchaseData(response?.data?.data);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching today's purchase data:", error);
         setError(true);
@@ -640,16 +642,33 @@ const TodayReport = () => {
                               </TableRow>
                             </TableHead>
                             <TableBody>
-                              {purchaseData.map((purchase) => (
-                                <TableRow key={purchase._id}>
-                                  <TableCell>{purchase.entry_date}</TableCell>
-                                  <TableCell>{purchase.invoice_no}</TableCell>
-                                  <TableCell>
-                                    {purchase.supplier_name}
-                                  </TableCell>
-                                  <TableCell>{purchase.total_amount}</TableCell>
-                                </TableRow>
-                              ))}
+                              {loading ?
+                                (
+                                  <StyledTableRow>
+                                    <StyledTableCell colSpan={columns.length} sx={{ p: 2 }}>
+                                      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+                                        <Loading /> {/* Render loading spinner */}
+                                      </Box>
+                                    </StyledTableCell>
+                                  </StyledTableRow>
+                                ) :
+                                (purchaseData.length === 0 ? (
+                                  <TableRow>
+                                    <TableCell colSpan={columns.length} align="center">
+                                      No Data Found
+                                    </TableCell>
+                                  </TableRow>
+                                ) : 
+                                  purchaseData.map((purchase) => (
+                                  <TableRow key={purchase._id}>
+                                    <TableCell>{purchase.entry_date}</TableCell>
+                                    <TableCell>{purchase.invoice_no}</TableCell>
+                                    <TableCell>
+                                      {purchase.supplier_name}
+                                    </TableCell>
+                                    <TableCell>{purchase.total_amount}</TableCell>
+                                  </TableRow>
+                                )))}
                             </TableBody>
                           </Table>
                         </TableContainer>

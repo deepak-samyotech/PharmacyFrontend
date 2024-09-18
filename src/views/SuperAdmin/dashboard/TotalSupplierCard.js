@@ -53,27 +53,9 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 }));
 // ===========================|| DASHBOARD DEFAULT - Supplier CARD ||=========================== //
 
-const TotalSupplierCard = ({ isLoading }) => {
+const TotalSupplierCard = ({ isLoading, totalActiveAdmin }) => {
   const [countSup, setCountSup] = useState("");
   const [error, setError] = useState(false);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const responseSupplier = await fetchSupplier();
-  //       const transformedData1 = responseSupplier.data;
-  //       setCountSup(transformedData1);
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error);
-  //       setError(true);
-  //     }
-  //   };
-  //   fetchData();
-  // }, []);
-
-  const theme = useTheme();
-
-  const [anchorEl, setAnchorEl] = useState(null);
 
   if (error) {
     return <InternalServerError onRetry={handleRetry} />; // Show error page if error occurred
@@ -101,7 +83,7 @@ const TotalSupplierCard = ({ isLoading }) => {
                   variant="body1"
                   style={{ marginLeft: 10, zIndex: 10 }}
                 >
-                  Total Subscription
+                  Total Active Company
                 </Typography>
               </div>
 
@@ -120,11 +102,8 @@ const TotalSupplierCard = ({ isLoading }) => {
                   variant="body1"
                   style={{ marginLeft: 10, zIndex: 10, fontSize: "20px" }}
                 >
-                  8
+                  {totalActiveAdmin}
                 </Typography>
-                {/* <Typography variant="body1" style={{ marginLeft: 'auto', zIndex: 10 }}>
-                2
-              </Typography> */}
               </div>
             </Grid>
           </Box>

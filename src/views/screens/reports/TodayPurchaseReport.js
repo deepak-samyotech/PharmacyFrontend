@@ -19,6 +19,8 @@ function TodayPurchaseReport() {
     ];
 
     const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(true);
+
 
     const handlePrint = () => {
         window.print();

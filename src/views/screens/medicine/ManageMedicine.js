@@ -45,7 +45,8 @@ import * as XLSX from "xlsx";
 import Loading from "ui-component/Loading";
 
 import { ToastContainer, toast } from 'react-toastify';
-import { fetchMedicine, fetchSupplierData, putMedicineData } from "utils/api";
+import { fetchMedicine, fetchSupplierData, handleRetry, putMedicineData } from "utils/api";
+import InternalServerError from "ui-component/InternalServerError";
 
 const style = {
   position: "absolute",

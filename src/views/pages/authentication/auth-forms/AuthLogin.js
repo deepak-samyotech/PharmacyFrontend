@@ -34,6 +34,8 @@ import Cookies from 'js-cookie';
 import useAuth from './useAuth';
 import { loginSuccess } from './actions'; // Adjust the path as necessary
 import { handlelogin } from 'utils/api';
+import { decodeToken } from 'utils/jwtdecode';
+import { toast } from 'react-toastify';
 
 const FirebaseLogin = ({ ...others }) => {
   useAuth(); // Check authentication status when accessing the login page
@@ -61,18 +63,31 @@ const FirebaseLogin = ({ ...others }) => {
       console.log("on login - ", values);
       const response = await handlelogin(values)
 
-      if (response.status === 200) {
+      if (response?.status === 200) {
         Cookies.set('user_login', response?.data?.token, { expires: 1 });
         const userData = JSON.stringify(response.data);
         localStorage.setItem('user_data', userData);
-        dispatch(loginSuccess(response.data)); // Dispatch loginSuccess with user data
+
+        const decode = await decodeToken();
+
+        if (decode?.active === false) {
+          console.log("User Inactive");
+          toast.error("Your status is Inactive, Please Contact SuperAdmin!!!");
+          // window.location.replace('/login');
+          return;
+        }
+
+        dispatch(loginSuccess(response.data));
         Swal.fire({
           title: 'Login Successfully!',
           icon: 'success',
         });
         setTimeout(() => {
-          window.location.replace('/dashboard/default');
-          // navigate('/dashboard/default');
+          if (decode?.role === 'EMPLOYEE') {
+            window.location.replace('/pos-page');
+          } else {
+            window.location.replace('/dashboard/default');
+          }
         }, 1000);
       }
     } catch (error) {
