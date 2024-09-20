@@ -117,7 +117,7 @@ function SupplierBalance() {
           supplierName: item.supplier_name,
           totalAmount: item.total_amount,
           paidAmount: item.total_paid,
-          dueAmount: item.total_paid,
+          dueAmount: item.total_due,
         }));
         setData(transformedData);
         setLoading(false);

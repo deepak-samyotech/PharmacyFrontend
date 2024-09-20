@@ -1,6 +1,6 @@
 import axios from "axios";
 import Cookies from 'js-cookie';
-import Swal from "sweetalert2";
+import { toast } from "react-toastify";
 
 const baseUrl = 'http://localhost:8080/';
 
@@ -16,6 +16,6 @@ export const authenticate = async()=>{
             return false;
         }
     }catch(error){
-        Swal.fire({icon:'error',text:'error while authenticate',timer:3000});
+        toast.error("error while authenticate");
     }
 }

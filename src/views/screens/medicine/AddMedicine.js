@@ -23,9 +23,9 @@ import MenuIcon from '@mui/icons-material/Menu';
 import axios from 'axios';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import Swal from 'sweetalert2';
 import { fetchSupplierData, handleRetry, postMedicineData } from 'utils/api';
 import InternalServerError from 'ui-component/InternalServerError';
+import { toast } from 'react-toastify';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -139,11 +139,7 @@ const AddMedicine = () => {
         if (response?.status === 200) {
           setSuccessMessage('Medicine added successfully.');
           setFailureMessage('');
-          Swal.fire({
-            icon: 'success',
-            title: 'Success',
-            text: 'Medicine added successfully.'
-          });
+          toast.success("Medicine added successfully.")
           setTimeout(() => {
             window.location.reload();
           }, 1000);
@@ -153,11 +149,7 @@ const AddMedicine = () => {
         console.error('Error appending barcode number to form data:', error);
         setFailureMessage('Error adding medicine. Please try again.');
         console.error('Error adding medicine:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Error adding medicine. Please try again.'
-        });
+        toast.error("Error adding medicine. Please try again.")
       }
   };
 

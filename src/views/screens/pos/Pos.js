@@ -40,7 +40,6 @@ import EditIcon from "@mui/icons-material/Edit";
 import axios from "axios";
 import DisabledByDefaultIcon from "@mui/icons-material/DisabledByDefault";
 import "./pos.css";
-import Swal from "sweetalert2";
 import { set } from "immutable";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
@@ -55,6 +54,7 @@ import { toast } from "react-toastify";
 import context from "react-bootstrap/esm/AccordionContext";
 import { customerLedgerPost, deletePosConfigureData, fetchMedicine, fetchPosConfigured, invoiceDataPost, postPosConfigureData, putPosConfigureData, searchCustomer, searchMedicines, updateProductQuantity } from "utils/api";
 import { HttpStatusCodes } from "utils/statusCodes";
+import { decodeToken } from "utils/jwtdecode";
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -106,8 +106,11 @@ const Pos = () => {
   const [generatedInvoiceId, setGeneratedInvoiceId] = useState();
   const [isGenerateInvoice, setIsGenerateInvoice] = useState(false);
 
-
-  console.log("newquantity==========================>>>>>>>", newQuantity)
+  // Pos section functionality
+  const [posData, setPosData] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [posId, setPosId] = useState("");
+  const [role, setRole] = useState('');
 
   const fetchMedicineData = async () => {
     const response = await fetchMedicine();
@@ -139,9 +142,9 @@ const Pos = () => {
   const searchMedicinesData = async () => {
     try {
       const medicineResponse = await searchMedicines(posValue, searchTerm)
-  
+
       console.log("medicineResponse : ", medicineResponse);
-  
+
       if (medicineResponse?.status === HttpStatusCodes.OK) {
         if (medicineResponse?.data?.status === false) {
           toast.error("Not found!");
@@ -149,7 +152,7 @@ const Pos = () => {
           return;
         }
         setMedicines(medicineResponse?.data?.medicines);
-  
+
         setProduct_id(medicineResponse?.data?.medicines?.product_id);
       }
     } catch (error) {
@@ -199,8 +202,12 @@ const Pos = () => {
     setPosValue(event.target.value);
   };
   const handleChange1 = (event) => {
-    setSearchTerms(event.target.value);
-    setCus_contact(event.target.value);
+    const value = e.target.value;
+    if (value.length <= 10) {
+      setSearchTerms(value);
+      setCus_contact(value);
+    }
+
   };
 
   const handleQuantityChange = (event) => {
@@ -369,7 +376,7 @@ const Pos = () => {
       setOpen3(true);
       setUpdatedQuantity([]);
     }
-   
+
     setIsLoading(false); // Re-enable the button after all API calls
 
   };
@@ -480,10 +487,7 @@ const Pos = () => {
   const currentDate = new Date().toISOString().split("T")[0];
   const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
 
-  // Pos section functionality
-  const [posData, setPosData] = useState([]);
-  const [open, setOpen] = useState(false);
-  const [posId, setPosId] = useState("");
+
 
   const [posConfigData, setPosConfigData] = useState([]);
 
@@ -542,14 +546,14 @@ const Pos = () => {
   const handleSubmitPos = async () => {
 
     try {
-      const response = await postPosConfigureData(posId,posValue)
-      
-          if (response.status === 200) {
-            setOpen(false);
-            setPosId("");
-            setPosValue("");
-            toast.success("Configuration saved Successfully");
-          }
+      const response = await postPosConfigureData(posId, posValue)
+
+      if (response.status === 200) {
+        setOpen(false);
+        setPosId("");
+        setPosValue("");
+        toast.success("Configuration saved Successfully");
+      }
     } catch (error) {
       console.error("Error:", error);
       const errMessage = error.response.data.error;
@@ -587,23 +591,23 @@ const Pos = () => {
   }
 
   const handlePosConfigureEditSubmit = async () => {
-      try {
-        const response = await putPosConfigureData(editedRowData.id, newValue);
+    try {
+      const response = await putPosConfigureData(editedRowData.id, newValue);
 
-        console.log("response ------===", response);
-    
-          if (response.status === 200) {
-            setOpen1(false);
-            setEditedRowData(null);
-            setNewValue("");
-            fetchPosData();
-            toast.success("Value updated Successfully");
-          }
-      } catch (error) {
-        console.error("Error:", error);
-        const errMessage = error.response.data.error;
-        toast.error(errMessage);
+      console.log("response ------===", response);
+
+      if (response.status === 200) {
+        setOpen1(false);
+        setEditedRowData(null);
+        setNewValue("");
+        fetchPosData();
+        toast.success("Value updated Successfully");
       }
+    } catch (error) {
+      console.error("Error:", error);
+      const errMessage = error.response.data.error;
+      toast.error(errMessage);
+    }
   }
 
   const handleEdit2Submit = () => {
@@ -642,17 +646,17 @@ const Pos = () => {
   const handlePosConfigureDeleteClick = async (id) => {
     try {
       const response = await deletePosConfigureData(id)
-        
-          if (response.status === 200) {
-            fetchPosData();
-            fetchPosConfiguredData();
-            toast.warning("Data deleted Successfully");
-          }
-     
+
+      if (response.status === 200) {
+        fetchPosData();
+        fetchPosConfiguredData();
+        toast.warning("Data deleted Successfully");
+      }
+
     } catch (error) {
-        console.error("Error:", error);
-        const errMessage = error.response.data.error;
-        toast.error(errMessage);
+      console.error("Error:", error);
+      const errMessage = error.response.data.error;
+      toast.error(errMessage);
     }
   }
 
@@ -706,6 +710,11 @@ const Pos = () => {
     setPaybleAmmount(calculatePayable());
     setTotalbalance(calculateTotal());
   }, [discount, tableData.length]);
+
+  useEffect(() => {
+    const decode = decodeToken();
+    setRole(decode?.role);
+  }, []);
 
   const handleNewQuantityChange = (event) => {
     console.log(event)
@@ -773,15 +782,17 @@ const Pos = () => {
                       justifyContent: "end",
                     }}
                   >
-                    <Button
-                      onClick={handleOpen}
-                      variant="contained"
-                      size="small"
-                      startIcon={<AddIcon />}
-                      style={{ boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)" }}
-                    >
-                      Configure POS
-                    </Button>
+                    {(role === 'ADMIN') &&
+                      <Button
+                        onClick={handleOpen}
+                        variant="contained"
+                        size="small"
+                        startIcon={<AddIcon />}
+                        style={{ boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)" }}
+                      >
+                        Configure POS
+                      </Button>
+                    }
                     <Button
                       onClick={handleButtonClick}
                       variant="contained"
@@ -820,6 +831,7 @@ const Pos = () => {
                     fullWidth
                     placeholder="Enter Phone No."
                     size="small"
+                    type="number"
                     value={searchTerms}
                     onChange={handleChange1}
                     sx={{ mr: 1 }}
@@ -1259,12 +1271,6 @@ const Pos = () => {
                   >
                     Save
                   </Button>
-                  <Button
-                    variant="contained"
-                    onClick={() => alert("Invoice & Print clicked")}
-                  >
-                    Invoice & Print
-                  </Button>
                 </Stack>
               </div>
             </div>
@@ -1292,8 +1298,8 @@ const Pos = () => {
                       </Grid>
                     </Grid>
                     <hr />
-                    <TableContainer component={Paper} sx={{maxHeight:400}}>
-                      <Table sx={{ minWidth: 600}} stickyHeader aria-label="scrollable table">
+                    <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
+                      <Table sx={{ minWidth: 600 }} stickyHeader aria-label="scrollable table">
                         <TableHead>
                           <TableRow>
                             <TableCell>Configured Product Name</TableCell>

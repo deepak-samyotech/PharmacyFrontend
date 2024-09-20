@@ -30,8 +30,8 @@ import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
 import Modal from "@mui/material/Modal";
 import logo from "../../../assets/images/logo.svg";
-import Swal from "sweetalert2";
 import { fetchSupplierByName, postPurchaseData, postPurchaseHistoryData, postSupplierLedgerData, postSupplierPaymentData, postUpplierLedgerData } from "utils/api";
+import { toast } from "react-toastify";
 
 const tableContainer = {
   border: "1px solid #e0e0e0",
@@ -430,16 +430,12 @@ function AddPurchase() {
       const response = await postPurchaseData(formDataPurchase);
       
           if (response?.status === 200) {
-            Swal.fire({
-              title: "Purchase Add Successfully !",
-              text: "You clicked the button!",
-              icon: "success",
-            });
-  
+            
+            toast.success("Purchase Add Successfully !")
             setOpen(false);
-            // setTimeout(() => {
-            //   window.location.reload();
-            // }, 1000);
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
           }
   
   
@@ -450,11 +446,7 @@ function AddPurchase() {
       await postPurchaseHistoryData(formDataPurchaseHistory);
     } catch (error) {
       console.log("Error : ", error);
-      Swal.fire({
-            title: "Error !",
-            text: "Something went Wrong!",
-            icon: "error",
-          });
+      toast.error("Something went Wrong!")
     }
 
   };

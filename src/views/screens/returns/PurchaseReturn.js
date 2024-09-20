@@ -15,7 +15,7 @@ import {
   Paper,
 } from "@mui/material";
 import axios from "axios";
-import Swal from "sweetalert2";
+
 import Alert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
 import { toast } from "react-toastify";
@@ -128,11 +128,7 @@ const PurchaseReturn = () => {
         if (response.status === 200) {
           setSuccessMessage("Purchase history added successfully.");
           setFailureMessage("");
-          Swal.fire({
-            icon: "success",
-            title: "Success",
-            text: "Return Added successfully.",
-          });
+          toast.success("Return Added successfully.")
           setTimeout(() => {
             window.location.reload();
           }, 1000);
@@ -142,11 +138,7 @@ const PurchaseReturn = () => {
         console.error("Error appending barcode number to form data:", error);
         setFailureMessage("Error adding Return. Please try again.");
         console.error("Error adding Return:", error);
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "Error adding Return. Please try again.",
-        });
+        toast.error("Error adding Return. Please try again.")
       });
   };
 

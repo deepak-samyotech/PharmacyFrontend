@@ -2,7 +2,6 @@
 import { toast } from "react-toastify";
 import { addToken, addToken2, apiUrl, baseurl, headers } from "./constants";
 import axios from "axios";
-import Swal from "sweetalert2";
 import { HttpStatusCodes } from 'utils/statusCodes';
 import employee from "menu-items/employee";
 
@@ -30,6 +29,14 @@ export async function fetchSupplier() {
 export async function fetchAdmins() {
   try {
     return await axios.get(`${baseurl}/superadmin/all-admin`, addToken);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function fetchAdminById(id) {
+  try {
+    return await axios.get(`${baseurl}/userdetails/${id}`);
   } catch (error) {
     throw error;
   }
@@ -75,7 +82,6 @@ export async function updateEmployeeData(formData, empId) {
     if (response.status === HttpStatusCodes.OK) return true;
   } catch (error) {
     console.log(error);
-
   }
 }
 
@@ -84,11 +90,7 @@ export async function getInvoiceData(url) {
     return await axios.get(url, addToken);
   } catch (error) {
     console.error('Error:', error);
-    Swal.fire({
-      title: 'Error!',
-      text: 'Something went wrong',
-      icon: 'error'
-    });
+    toast.error("Something went wrong");
   }
 }
 
@@ -135,11 +137,7 @@ export async function customerLedgerPost(formDataCustomerLedger) {
     return await axios.post(`${baseurl}/Customer_ledger`, formDataCustomerLedger, addToken2)
   } catch (error) {
     console.error("Error:", error);
-    Swal.fire({
-      title: "Error!",
-      text: "Failed to save customer ledger.",
-      icon: "error",
-    });
+    toast.error("Failed to save customer ledger.")
   }
 }
 
@@ -148,11 +146,7 @@ export async function invoiceDataPost(formDataManageInvoice) {
     return await axios.post(`${baseurl}/manage_invoice`, formDataManageInvoice, addToken2)
   } catch (error) {
     console.error("Error:", error);
-    Swal.fire({
-      title: "Error!",
-      text: "Failed to save invoice.",
-      icon: "error",
-    });
+    toast.error("Failed to save invoice.")
   }
 }
 
@@ -161,11 +155,7 @@ export async function updateProductQuantity(updatedQuantity) {
     return await axios.put(`${baseurl}/medicine/updateQuantity`, updatedQuantity, addToken)
   } catch (error) {
     console.error("Error:", error);
-    Swal.fire({
-      title: "Error!",
-      text: "Failed to update new Quantity.",
-      icon: "error",
-    });
+    toast.error("Failed to update new Quantity.")
   }
 }
 

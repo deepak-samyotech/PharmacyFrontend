@@ -30,8 +30,6 @@ const EmployeeItems = {
   items: [poses, MedicineNew, customer, Suppliers, inventory, returns, helps]
 };
 
-
-
 const decode = decodeToken();
 
 if (decode?.role === superAdmin) {

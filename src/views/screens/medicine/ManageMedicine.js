@@ -5,6 +5,7 @@ import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Unstable_Grid2";
 import Button from "@mui/material/Button";
 import AddIcon from "@mui/icons-material/Add";
+import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import {
   Table,
   TableBody,
@@ -129,6 +130,8 @@ function ManageMedicine() {
   const [errors, setErrors] = useState({});
   const [id, setId] = useState([]);
   const [error, setError] = useState(false);
+  const [open, setOpen] = React.useState(false);
+  const [open2, setOpen2] = useState(false);
 
   const handleBoxPriceCalculation = () => {
     const calculatedBoxPrice = parseFloat(mrp) * parseInt(boxSize);
@@ -165,10 +168,6 @@ function ManageMedicine() {
         })
       );
 
-
-
-      console.log("transformedDataMedicine : ", transformedDataMedicine);
-      // Log and set medicine data
       const ids = transformedDataMedicine.map((item) => item.id);
       setData(transformedDataMedicine);
       setId(ids);
@@ -310,7 +309,7 @@ function ManageMedicine() {
     setSelectedSupplier(event.target.value); // Update the selected supplier state
     setCompanyName(event.target.value); // Set the selected supplier as the company name
   };
-  const [open, setOpen] = React.useState(false);
+
 
   const handleOpen = (row) => {
     setEditedRowData(row);
@@ -338,7 +337,32 @@ function ManageMedicine() {
     setSelectedImage(row.imageUrl || null);
   };
 
+  const handleViewInvoice = (row) => {
+    setOpen2(true)
+
+
+    setGenericName(row.genericName);
+    setStrength(row.strength);
+    setTradePrice(row.tradePrice);
+    setBoxSize(row.boxSize);
+    setExpDate(row.expDate);
+    setSideEffect(row.sideEffect);
+    setProductName(row.medicineName);
+    setBarcodeNum(row.barcode);
+    setMrp(row.mrp);
+    // setBoxPrices(row.boxPrice);
+    setQuantity(row.quantity);
+    setShortQty(row.ShortQty);
+    setForm(row.form);
+    setSelectedOption(row.discountType);
+    setSelectedSupplier(row.company);
+
+    // If you have an image URL, you might want to set it to selectedImage as well
+    setSelectedImage(row.imageUrl || null);
+  }
+
   const handleClose = () => setOpen(false);
+  const handleClose2 = () => setOpen2(false);
 
   const handleSubmit = async (e) => {
     try {
@@ -716,6 +740,13 @@ function ManageMedicine() {
                                                 onClick={() => handlePrint(row.id)}
                                               >
                                                 <PrintIcon />
+                                              </IconButton>
+                                              <IconButton
+                                                color="gray"
+                                                aria-label="view"
+                                                onClick={() => handleViewInvoice(row)} // Pass 'row' instead of 'rows'
+                                              >
+                                                <RemoveRedEyeIcon />
                                               </IconButton>
                                             </div>
                                           ) : (
@@ -1147,6 +1178,257 @@ function ManageMedicine() {
                         Cancel
                       </Button>
                     </Stack>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Typography>
+        </Box>
+      </Modal>
+
+      <Modal
+        open={open2}
+        onClose={handleClose2}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <Typography id="modal-modal-description">
+            <Card style={{ backgroundColor: "#ffffff" }}>
+              <CardContent>
+                <div className="bg-light">
+                  <Grid container spacing={2}>
+                    <Grid item xs={6} md={10} lg={10}>
+                      <h3 className="text-primary">Medicine View</h3>
+                    </Grid>
+                    {/* <Grid item xs={6} md={2} lg={2}>
+                      Wednesday 7th of February 2024 04:37:08 PM
+                    </Grid> */}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "end",
+                      }}
+                    >
+                      <img
+                        // src={URL.createObjectURL(selectedImage)}
+                        src={selectedImage}
+                        alt="Selected"
+                        style={{
+                          maxWidth: "100%",
+                          maxHeight: "100px",
+                        }}
+                      />
+                    </div>
+                  </Grid>
+                  <hr />
+                  <div style={{ marginBottom: "20px" }}>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} md={6}>
+                        <Box
+                          component="form"
+                          sx={{
+                            "& .MuiTextField-root": { m: 1, width: "100%" },
+                          }}
+                          noValidate
+                          autoComplete="off"
+                        >
+                          <TextField
+                            size="small"
+                            id="companyName"
+                            required
+                            value={selectedSupplier}
+                            label="Company Name"
+                            placeholder="supplier Name"
+                            multiline
+                          />
+                          <TextField
+                            size="small"
+                            id="generic_name"
+                            required
+                            value={genericName}
+                            label="Generic Name"
+                            placeholder="Generic Name"
+                            multiline
+                          />
+                          <TextField
+                            size="small"
+                            id="strength"
+                            required
+                            label="Strength"
+                            placeholder="Strength"
+                            value={strength}
+                            multiline
+                          />
+                          <TextField
+                            size="small"
+                            label="Trade Price"
+                            id="trade_price"
+                            placeholder="Trade Price"
+                            multiline
+                            required
+                            value={tradePrice}
+                            fullWidth
+                          />
+                          <TextField
+                            size="small"
+                            label="Box Size"
+                            id="boxSize"
+                            placeholder="Box Size"
+                            multiline
+                            required
+                            value={boxSize}
+                            fullWidth
+                          />
+                          <TextField
+                            size="small"
+                            id="expiry-date"
+                            label="Expiry Date"
+                            value={expDate}
+                            type="date"
+                            InputLabelProps={{ shrink: true }}
+                          />
+                          <TextField
+                            size="small"
+                            id="outlined-textarea"
+                            value={sideEffect}
+                            label="Side Effect"
+                            placeholder="Side Effect"
+                            multiline
+                          />
+                        </Box>
+                      </Grid>
+
+                      {/* Second Column */}
+                      <Grid item xs={12} md={6}>
+                        <Box
+                          component="form"
+                          sx={{
+                            "& .MuiTextField-root": { m: 1, width: "100%" },
+                          }}
+                          noValidate
+                          Validate
+                          autoComplete="off"
+                        >
+                          <TextField
+                            size="small"
+                            id="outlined-textarea"
+                            label="Product Name"
+                            placeholder="Product Name"
+                            multiline
+                            value={productName}
+                          />
+                          <TextField
+                            size="small"
+                            id="barcodeNum"
+                            multiline
+                            required
+                            value={barcodeNum}
+                            fullWidth
+                            label="Barcode Number"
+                            placeholder="Barcode Number"
+                          />
+                          <TextField
+                            size="small"
+                            label="M.R.P."
+                            id="mrp"
+                            multiline
+                            required
+                            value={mrp}
+                            fullWidth
+                            placeholder="M.R.P."
+                          />
+                          <TextField
+                            label="Box Pirce"
+                            multiline
+                            required
+                            value={boxPrices}
+                            size="small"
+                            id="boxPrices"
+                            fullWidth
+                            placeholder="Box Pirce"
+                            error={!!errors.boxPrices}
+                            helperText={errors.boxPrices}
+                          />
+                          <TextField
+                            size="small"
+                            label="Quantity"
+                            id="Quantity"
+                            multiline
+                            required
+                            value={quantity}
+                            fullWidth
+                            placeholder="Short Quantity"
+                          />
+                          <TextField
+                            size="small"
+                            label="Short Quantity"
+                            id="ShortQty"
+                            multiline
+                            required
+                            value={ShortQty}
+                            fullWidth
+                            placeholder="Short Quantity"
+                          />
+                          <TextField
+                            size="small"
+                            label="formValue"
+                            id="formValue"
+                            multiline
+                            required
+                            value={form}
+                            fullWidth
+                            placeholder="Form Value"
+                          />
+
+                          {/* <div
+                            style={{
+                              marginTop: "15px",
+                              display: "flex",
+                              alignItems: "center",
+                              marginLeft: "10px",
+                              border: "1px solid #ccc",
+                              width: "100%",
+                              padding: "10px",
+                              borderRadius: "10px",
+                            }}
+                          >
+                            <input
+                              type="file"
+                              onChange={handleImageChange}
+                              required
+                              accept="image/*"
+                              style={{ width: "100%" }}
+                            // value={selectedImage}
+                            />
+                            {errors.selectedImage && (
+                              <div style={{ color: "red" }}>
+                                {errors.selectedImage}
+                              </div>
+                            )}
+                            {selectedImage && (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "end",
+                                }}
+                              >
+                                <img
+                                  // src={URL.createObjectURL(selectedImage)}
+                                  src={selectedImage}
+                                  alt="Selected"
+                                  style={{
+                                    maxWidth: "100%",
+                                    maxHeight: "30px",
+                                  }}
+                                />
+                              </div>
+                            )}
+                          </div> */}
+
+                        </Box>
+                      </Grid>
+                    </Grid>
                   </div>
                 </div>
               </CardContent>

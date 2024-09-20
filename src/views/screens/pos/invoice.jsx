@@ -5,8 +5,6 @@ import { styled } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 import React, { useEffect, useRef, useState } from 'react';
 import { Table } from 'react-bootstrap';
-import axios from 'axios';
-import Swal from 'sweetalert2';
 import { useReactToPrint } from 'react-to-print';
 import { getInvoiceData } from 'utils/api';
 import { toast } from 'react-toastify';

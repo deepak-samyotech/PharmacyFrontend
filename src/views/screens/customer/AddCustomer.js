@@ -19,8 +19,8 @@ import { display } from '@mui/system';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import moment from 'moment';
-import Swal from 'sweetalert2'
 import { postCustomerData } from 'utils/api';
+import { toast } from 'react-toastify';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -78,11 +78,7 @@ const AddCustomer = () => {
         const response = await postCustomerData(formData);
 
         if (response?.status === 200) {
-          Swal.fire({
-            title: 'Customer Add Successfully !',
-            text: 'You clicked the button!',
-            icon: 'success'
-          });
+          toast.success("Customer Add Successfully !")
           setTimeout(() => {
             window.location.reload();
           }, 1000);
@@ -90,11 +86,7 @@ const AddCustomer = () => {
       }
     } catch (error) {
       console.error('Error:', error);
-      Swal.fire({
-        title: 'Error !',
-        text: 'You clicked the button!',
-        icon: 'error'
-      });
+      toast.error("Error while adding Customer");
     }
   };
 

@@ -20,9 +20,8 @@ import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Unstable_Grid2';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import Swal from 'sweetalert2'
 import { postSupplierData } from 'utils/api';
+import { toast } from 'react-toastify';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -66,11 +65,7 @@ const AddSupplier = () => {
         const response = await postSupplierData(formData);
 
         if (response?.status === 200) {
-          Swal.fire({
-            title: 'Supplier Add Successfully !',
-            text: 'You clicked the button!',
-            icon: 'success'
-          });
+          toast.success('Supplier Add Successfully !')
           setTimeout(() => {
             window.location.reload();
           }, 1000);
@@ -78,11 +73,7 @@ const AddSupplier = () => {
       }
     } catch (error) {
       console.error('Error:', error);
-      Swal.fire({
-        title: 'Error !',
-        text: 'You clicked the button!',
-        icon: 'error'
-      });
+      toast.error("Something went wrong");
     }
   };
 

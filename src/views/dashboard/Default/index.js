@@ -15,7 +15,6 @@ import TotalGrowthBarChart from './TotalGrowthBarChart';
 import TotalSalesCard from './TotalSalesCard';
 import { useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
-import Swal from 'sweetalert2';
 // ==============================|| DEFAULT DASHBOARD ||============================== //
 
 const Dashboard = () => {

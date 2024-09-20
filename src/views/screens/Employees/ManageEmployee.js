@@ -99,7 +99,7 @@ function ManageEmployee() {
 
   //employee status
   const handleStatusChange = (event) => {
-    setStatus(event.target.value);
+    setStatus(event.target?.value);
   };
   //   employee role
   const handleroleChange = (event) => {
@@ -128,14 +128,15 @@ function ManageEmployee() {
       const transformedData = response?.data?.data?.map((item) => ({
         id: item.id,
         employeeId: item.em_id,
-        // name: item.firstName + " " + item.lastName,
         name: item.name,
         phoneNumber: item.contact,
         email: item.email,
         role: item.role,
+        address: item.address,
+        active: item.active,
+        image: item.image,
       }));
 
-      console.log("Transformed data : ", transformedData);
       setData(transformedData);
       setLoading(false);
     } catch (error) {
@@ -149,7 +150,6 @@ function ManageEmployee() {
     fetchData();
 
   }, []);
-  console.log(data, "data");
 
   // update employee
   const [successAlert, setSuccessAlert] = useState(false);
@@ -159,7 +159,7 @@ function ManageEmployee() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState('');
   const [details, setDetails] = useState("");
   const [contact, setContact] = useState("");
   const [address, setAddress] = useState("");
@@ -189,6 +189,9 @@ function ManageEmployee() {
     setEmail(row.email);
     setContact(row.phoneNumber);
     setRole(row.role);
+    setAddress(row.address);
+    setStatus(row.active ? 'ACTIVE' : 'INACTIVE');
+    // setSelectedImage(row.image);
   };
   const handleClose = () => setOpen(false);
   //PUT Api calling
@@ -196,36 +199,15 @@ function ManageEmployee() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-    // formData.append("firstName", name.split(" ")[0]);
-    // formData.append("lastName", name.split(" ")[1]);
     formData.append("name", name)
     formData.append("email", email);
-    formData.append("password", password);
+    // formData.append("password", password);
     formData.append("contact", contact);
     formData.append("address", address);
-    // formData.append("details", details);
-    // formData.append("entrydate", entrydate);
     formData.append("role", role);
-    formData.append("status", status);
+    formData.append("active", status === 'ACTIVE' ? true : false);
     formData.append("image", selectedImage);
-
-    console.log("firstName : ", name.split(" ")[0]);
-    console.log("lastName : ", name.split(" ")[1]);
-    console.log("email : ", email);
-    console.log("password : ", password);
-    console.log("contact : ", contact);
-    console.log("address : ", address);
-    // console.log("details : ", details);
-    // console.log("entrydate : ", entrydate);
-    console.log("role : ", role);
-    console.log("status : ", status);
-    console.log("image : ", selectedImage);
-    console.log("empid : ", editedRowData.id);
-
-
-    console.log("formadata : ", formData);
-
-
+    
     const response = await updateEmployeeData(formData, editedRowData.id);
 
     console.log("response", response);
@@ -367,7 +349,7 @@ function ManageEmployee() {
 
   const sortedRows = stableSort(filteredRows, getComparator(order, orderBy));
 
-  // console.log("sortedRows : ", sortedRows);
+  console.log("sortedRows : ", sortedRows);
 
   const emptyRows =
     rowsPerPage - Math.min(rowsPerPage, sortedRows.length - page * rowsPerPage);
@@ -639,7 +621,7 @@ function ManageEmployee() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                           />
-                          <TextField
+                          {/* <TextField
                             id="outlined-textarea"
                             label="Password"
                             placeholder="Password"
@@ -647,17 +629,9 @@ function ManageEmployee() {
                             size="small"
                             required
                             onChange={(e) => setPassword(e.target.value)}
-                          />
-                          {/* <TextField
-                            id="outlined-textarea"
-                            label="Confirm Password"
-                            placeholder="Confirm Password"
-                            multiline
-                            size="small"
-                            required
                           /> */}
 
-                          <div
+                          {/* <div
                             style={{
                               marginTop: "8px",
                               marginBottom: "8px",
@@ -694,7 +668,7 @@ function ManageEmployee() {
                                 />
                               </div>
                             )}
-                          </div>
+                          </div> */}
                         </Box>
                       </Grid>
 
@@ -745,30 +719,6 @@ function ManageEmployee() {
                               </Select>
                             </FormControl>
                           </Grid>
-                          <Grid item>
-                            <FormControl size="small" fullWidth>
-                              <InputLabel id="status">Employee role</InputLabel>
-                              <Select
-                                labelId="role"
-                                id="role"
-                                value={role}
-                                label="Employee role"
-                                onChange={handleroleChange}
-                              >
-                                <MenuItem value={"SALESMAN"}>SALESMAN</MenuItem>
-                                <MenuItem value={"ADMIN"}>ADMIN</MenuItem>
-                                <MenuItem value={"MANAGER"}>MANAGER</MenuItem>
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          {/* <TextField
-                            id="details"
-                            label="Note"
-                            placeholder="Note"
-                            multiline
-                            onChange={(e) => setDetails(e.target.value)}
-                            rows={4}
-                          /> */}
                         </Box>
                       </Grid>
                     </Grid>

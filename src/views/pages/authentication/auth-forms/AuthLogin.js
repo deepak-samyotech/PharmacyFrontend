@@ -27,13 +27,11 @@ import AnimateButton from 'ui-component/extended/AnimateButton';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import Google from 'assets/images/icons/social-google.svg';
-import axios from 'axios';
-import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import useAuth from './useAuth';
 import { loginSuccess } from './actions'; // Adjust the path as necessary
-import { handlelogin } from 'utils/api';
+import { fetchAdminById, handlelogin } from 'utils/api';
 import { decodeToken } from 'utils/jwtdecode';
 import { toast } from 'react-toastify';
 
@@ -70,18 +68,30 @@ const FirebaseLogin = ({ ...others }) => {
 
         const decode = await decodeToken();
 
-        if (decode?.active === false) {
-          console.log("User Inactive");
-          toast.error("Your status is Inactive, Please Contact SuperAdmin!!!");
-          // window.location.replace('/login');
-          return;
+        console.log("decode : ", decode);
+
+        if (decode?.role === 'ADMIN') {
+          if (decode?.active === false) {
+            toast.error("Your status is Inactive, Please Contact SuperAdmin!!!");
+            return;
+          }
+        }
+
+        if (decode?.role === 'EMPLOYEE') {
+          if (decode?.active === false) {
+            toast.error("Your Status is Inactive, Please Contact Admin!!!");
+            return;
+          }
+
+          const response = await fetchAdminById(decode?._id);
+          if (response?.data?.user?.active === false) {
+            toast.error("Admin is Inactive, Please Contact SuperAdmin!!!");
+            return;
+          }
         }
 
         dispatch(loginSuccess(response.data));
-        Swal.fire({
-          title: 'Login Successfully!',
-          icon: 'success',
-        });
+        toast.success('Login Successful.');
         setTimeout(() => {
           if (decode?.role === 'EMPLOYEE') {
             window.location.replace('/pos-page');
@@ -92,11 +102,7 @@ const FirebaseLogin = ({ ...others }) => {
       }
     } catch (error) {
       setErrors({ submit: error.message });
-      Swal.fire({
-        title: 'Error!',
-        text: 'Invalid email or password',
-        icon: 'error',
-      });
+      toast.error("Invalid email or password");
     } finally {
       if (scriptedRef.current) {
         setStatus({ success: true });

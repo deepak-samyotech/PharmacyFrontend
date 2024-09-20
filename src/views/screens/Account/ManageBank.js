@@ -38,10 +38,10 @@ import { tableCellClasses } from "@mui/material/TableCell";
 import { styled } from "@mui/material/styles";
 import Alert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
-import Swal from "sweetalert2";
 import Loading from "ui-component/Loading";
 import { fetchBankData, handleRetry, postBankData } from "utils/api";
 import InternalServerError from "ui-component/InternalServerError";
+import { toast } from "react-toastify";
 
 
 const style = {
@@ -175,11 +175,7 @@ function ManageBank() {
       if (response?.status === 200) {
         setSuccessMessage("Bank data added successfully.");
         setFailureMessage("");
-        Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "Bank data added successfully.",
-        });
+        toast.success("Bank data added successfully.");
         setTimeout(() => {
           window.location.reload();
         }, 1000);
@@ -187,11 +183,7 @@ function ManageBank() {
     } catch (error) {
       setFailureMessage("Error adding Bank data. Please try again.");
       console.error("Error adding Bank data:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Error adding Bank data. Please try again.",
-      });
+      toast.error("Error adding Bank data. Please try again.");
     }
   };
 

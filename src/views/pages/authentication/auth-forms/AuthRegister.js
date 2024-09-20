@@ -34,10 +34,8 @@ import { strengthColor, strengthIndicator } from "utils/password-strength";
 // assets
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-//api call
-import axios from "axios";
-import Swal from "sweetalert2";
 import { handleRegister } from "utils/api";
+import { toast } from "react-toastify";
 // ===========================|| FIREBASE - REGISTER ||=========================== //
 
 const FirebaseRegister = ({ ...others }) => {
@@ -74,22 +72,14 @@ const FirebaseRegister = ({ ...others }) => {
 
       if (response?.status === 201) {
         console.log("Yser created");
-        Swal.fire({
-          title: "Customer Register Successfully !",
-          text: "You clicked the button!",
-          icon: "success",
-        });
+        toast.success("Customer Register Successfully !")
         setTimeout(() => {
           window.location.reload();
         }, 1000);
       }
     } catch (error) {
       console.error("Error:", error);
-      Swal.fire({
-        title: "Error !",
-        text: "You clicked the button!",
-        icon: "error",
-      });
+      toast.error("Something went wrong!");
     }
   };
   
