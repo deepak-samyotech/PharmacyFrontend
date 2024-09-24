@@ -5,9 +5,9 @@ export const apiUrl = {
 
 function getToken() {
     const userData = JSON.parse(localStorage.getItem('user_data'));
-    const token = userData?.token;
+    let token = userData?.token;
     if (!token) {
-      throw new Error("No token found");
+      token = "hgsdajsdakdskasdalkdjaldalajkds";
     }
     return token;
 }

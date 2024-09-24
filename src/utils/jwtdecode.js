@@ -10,7 +10,7 @@ export const decodeToken = () => {
   if (userData && userData.token) {
     try {
       const decodedToken = jwtDecode(userData.token);
-      console.log("Decoded token :::::::::", decodedToken);
+      // console.log("Decoded token :::::::::", decodedToken);
       return decodedToken;
     } catch (error) {
       // window.location.replace("/login")
