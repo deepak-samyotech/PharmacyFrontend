@@ -92,6 +92,7 @@ const AddMedicine = () => {
     const selectedSupplierObj = supplierList.find((supplier) => supplier.supplier_id === event.target.value);
     setCompanyName(selectedSupplierObj.supplier_name);
     setSelectedSupplier(event.target.value);
+    errors.companyName = '';
   };
 
   const handleBoxPriceCalculation = () => {
@@ -233,12 +234,15 @@ const AddMedicine = () => {
     const handleTradePrice = (e) => {
       const input = e.target.value;
       const numericInput = input.replace(/\D/g, '');
+      errors.tradePrice = '';
       setTradePrice(numericInput);
+      
     };
     //Box Size
     const handleBoxSize = (e) => {
       const input = e.target.value;
       const numericInput = input.replace(/\D/g, '');
+      errors.boxSize = '';
       setBoxSize(numericInput);
     };
     //Barcode number
@@ -250,6 +254,7 @@ const AddMedicine = () => {
     const handleMrp = (e) => {
       const input = e.target.value;
       const numericInput = input.replace(/\D/g, '');
+      errors.mrp = '';
       setMrp(numericInput);
     };
     //Box price
@@ -368,7 +373,10 @@ const AddMedicine = () => {
                         size='small'
                         id='generic_name'
                         required
-                        onChange={(e) => setGenericName(e.target.value)}
+                        onChange={(e) => {
+                          errors.genericName = '';
+                          setGenericName(e.target.value)
+                        }}
                         label='Generic Name'
                         placeholder='Generic Name'
                         multiline
@@ -379,7 +387,10 @@ const AddMedicine = () => {
                         size='small'
                         id='strength'
                         required
-                        onChange={(e) => setStrength(e.target.value)}
+                        onChange={(e) => {
+                          errors.strength = '';
+                          setStrength(e.target.value)
+                        }}
                         label='Strength'
                         placeholder='Strength'
                         multiline
@@ -418,7 +429,10 @@ const AddMedicine = () => {
                         id='expiry-date'
                         label='Expiry Date'
                         type='date'
-                        onChange={(e) => setExpDate(e.target.value)}
+                        onChange={(e) => {
+                          errors.expDate = '';
+                          setExpDate(e.target.value)
+                        }}
                         InputLabelProps={{ shrink: true }}
                         error={!!errors.expDate}
                         helperText={errors.expDate}
@@ -444,7 +458,10 @@ const AddMedicine = () => {
                         label='Product Name'
                         placeholder='Product Name'
                         multiline
-                        onChange={(e) => setProductName(e.target.value)}
+                        onChange={(e) => {
+                          errors.productName = '';
+                          setProductName(e.target.value)
+                        }}
                         error={!!errors.productName}
                         helperText={errors.productName}
                       />

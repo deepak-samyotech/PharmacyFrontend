@@ -202,7 +202,7 @@ const Pos = () => {
     setPosValue(event.target.value);
   };
   const handleChange1 = (event) => {
-    const value = e.target.value;
+    const value = event.target.value;
     if (value.length <= 10) {
       setSearchTerms(value);
       setCus_contact(value);
@@ -1393,7 +1393,11 @@ const Pos = () => {
                               label="Value"
                               fullWidth
                               value={posValue}
-                              onChange={(e) => setPosValue(e.target.value)}
+                              onChange={(e) => {
+                                if (e.target.value < 10) {
+                                  setPosValue(e.target.value)
+                                }
+                              }}
                               multiline
                               variant="outlined"
                             />

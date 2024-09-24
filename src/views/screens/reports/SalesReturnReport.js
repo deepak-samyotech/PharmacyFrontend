@@ -129,12 +129,12 @@ function SalesReturnReport() {
       align: "center",
       minWidth: 170,
     },
-    {
-      id: "entryName",
-      label: "Entry Name",
-      align: "center",
-      minWidth: 170,
-    },
+    // {
+    //   id: "entryName",
+    //   label: "Entry Name",
+    //   align: "center",
+    //   minWidth: 170,
+    // },
   ];
 
 
@@ -374,7 +374,7 @@ function SalesReturnReport() {
                         <StyledTableCell align="center">Return Date</StyledTableCell>
                         <StyledTableCell align="center">Total Amount</StyledTableCell>
                         <StyledTableCell align="center">Total Deducation</StyledTableCell>
-                        <StyledTableCell align="center">Entry Name</StyledTableCell>
+                        {/* <StyledTableCell align="center">Entry Name</StyledTableCell> */}
                       </TableRow>
                     </TableHead>
                     <TableBody>

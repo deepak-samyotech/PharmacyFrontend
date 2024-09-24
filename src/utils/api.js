@@ -581,3 +581,20 @@ export async function postPurchaseHistoryData(formDataPurchaseHistory) {
     throw error;
   }
 }
+
+// purchase return section
+export async function fetchPurchaseReturn(searchTerm) {
+  try {
+    return await axios.get(`${baseurl}/purchase-history/search?invoice_no=${searchTerm} `, addToken);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function submitPurchaseReturn(returnData) {
+  try {
+    return await axios.post(`${baseurl}/purchase_return`, returnData, addToken2)
+  } catch (error) {
+    throw error;
+  }
+}

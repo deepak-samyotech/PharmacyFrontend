@@ -322,6 +322,7 @@ function AddPurchase() {
     }
   };
   const rows = medicineData || [];
+  console.log("Rows ----->>>>>", rows);
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -341,16 +342,21 @@ function AddPurchase() {
     }));
   };
 
+  useEffect(() => {
+    console.log("Quantities : ", quantities);
+    console.log("Transformide data : ", transformMedicineData(quantities));
+  }, [quantities]);
+
   const columns = [
     { id: "product_name", label: "Medicine", align: "center" },
     { id: "generic_name", label: "G. Name", align: "center" },
     { id: "form", label: "Form", align: "center" },
     { id: "expire_date", label: "Expire Date", align: "center" },
-    { id: "stock", label: "Stock", align: "center" },
+    { id: "instock", label: "Stock", align: "center" },
     { id: "qty", label: "Qty", align: "center" },
     { id: "trade_price", label: "TP", align: "center" },
     { id: "mrp", label: "M.R.P.", align: "center" },
-    { id: "w_discount", label: "Disc.(W)", align: "center" },
+    // { id: "w_discount", label: "Disc.(W)", align: "center" },
     { id: "total", label: "Total", align: "center" },
   ];
 
@@ -379,6 +385,14 @@ function AddPurchase() {
   //current date & time
   const currentDate = new Date().toISOString().split("T")[0];
 
+
+  function transformMedicineData(inputObject) {
+    return Object.entries(inputObject).map(([key, value]) => ({
+      medicine_id: key,
+      purchase_qty: value
+    }));
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { supplier_name, supplier_id } = medicineData[0];
@@ -388,9 +402,9 @@ function AddPurchase() {
     formDataPurchase.append("sid", supplier_id);
     formDataPurchase.append("supplier_name", supplier_name);
     formDataPurchase.append("pur_details", purchaseDetails);
-    formDataPurchase.append("total_discount", totalDiscount);
+    // formDataPurchase.append("total_discount", totalDiscount);
     formDataPurchase.append("gtotal_amount", totalAmount);
-    formDataPurchase.append("entry_date", payDate);
+    // formDataPurchase.append("entry_date", payDate);
     // console.log("gtotal_amount : ",totalAmount)
     const formDataSupplierLedger = new FormData();
     formDataSupplierLedger.append("supplier_id", supplier_id);
@@ -410,23 +424,33 @@ function AddPurchase() {
     formDataSupplierPayment.append("paid_amount", totalPaid);
     formDataSupplierPayment.append("date", date);
 
+
+
     const formDataPurchaseHistory = new FormData();
-    rows.forEach((item) => {
-      for (var key in item) {
-        if (key === "sale_qty") {
-          formDataPurchaseHistory.append(key, quantities[item.id]);
-        } else {
-          formDataPurchaseHistory.append(key, item[key]);
-        }
-      }
-    });
-    formDataPurchaseHistory.append("supplier_id", supplier_id);
+    // rows.forEach((item) => {
+    //   for (var key in item) {
+    //     if (key === "sale_qty") {
+    //       formDataPurchaseHistory.append(key, quantities[item.id]);
+    //     } else {
+    //       formDataPurchaseHistory.append(key, item[key]);
+    //     }
+    //   }
+    // });
+
+    const transformedData = transformMedicineData(quantities);
+
+    formDataPurchaseHistory.append("medicineData", JSON.stringify(transformedData));
     formDataPurchaseHistory.append("invoice_no", invoiceNumber);
-    formDataPurchaseHistory.append("date", currentDate);
+    // formDataPurchaseHistory.append("date", currentDate);
     formDataPurchaseHistory.append("total_amount", totalAmount);
     formDataPurchaseHistory.append("details", purchaseDetails);
 
     try {
+
+      await postPurchaseHistoryData(formDataPurchaseHistory);
+      await postSupplierLedgerData(formDataSupplierLedger);
+       
+      await postSupplierPaymentData(formDataSupplierPayment);
       const response = await postPurchaseData(formDataPurchase);
       
           if (response?.status === 200) {
@@ -437,13 +461,7 @@ function AddPurchase() {
               window.location.reload();
             }, 1000);
           }
-  
-  
-      await postSupplierLedgerData(formDataSupplierLedger);
-       
-      await postSupplierPaymentData(formDataSupplierPayment);
-  
-      await postPurchaseHistoryData(formDataPurchaseHistory);
+      
     } catch (error) {
       console.log("Error : ", error);
       toast.error("Something went Wrong!")
