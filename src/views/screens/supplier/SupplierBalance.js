@@ -301,7 +301,7 @@ function SupplierBalance() {
     //     };
 
     //     // Send request to add supplier
-    //     await axios.post("http://localhost:8080/supplier_ledger", newSupplier);
+    //     await axios.post("http://143.110.251.102:8080/supplier_ledger", newSupplier);
     //     console.log("New supplier added:", newSupplier);
 
     //     // Update state with the new supplier

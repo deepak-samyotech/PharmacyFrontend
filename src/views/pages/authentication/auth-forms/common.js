@@ -2,7 +2,7 @@ import axios from "axios";
 import Cookies from 'js-cookie';
 import { toast } from "react-toastify";
 
-const baseUrl = 'http://localhost:8080/';
+const baseUrl = 'http://143.110.251.102:8080/';
 
 export const authenticate = async()=>{
     try{

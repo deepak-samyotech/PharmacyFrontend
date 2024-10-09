@@ -53,7 +53,7 @@ const Setting = () => {
     formData.append('image', selectedImage);
 
     axios
-      .post(`http://localhost:8080/setting`, formData, {
+      .post(`http://143.110.251.102:8080/setting`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

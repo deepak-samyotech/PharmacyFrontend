@@ -87,7 +87,7 @@ const handleReturnSubmit = async (formData) => {
   try {
     // Make a POST request to your API endpoint
     const response = await axios.post(
-      "http://localhost:8080/sale_return",
+      "http://143.110.251.102:8080/sale_return",
       formData // Send the formData state as the request body
     );
     // Optionally, you can reset the form data after successful submission

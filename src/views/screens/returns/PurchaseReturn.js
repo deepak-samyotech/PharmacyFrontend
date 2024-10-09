@@ -126,7 +126,7 @@
 //     formData.append("barcode", barcode);
 
 //     axios
-//       .post(`http://localhost:8080/purchase_return`, formData, {
+//       .post(`http://143.110.251.102:8080/purchase_return`, formData, {
 //         headers: {
 //           "Content-Type": "multipart/form-data",
 //         },

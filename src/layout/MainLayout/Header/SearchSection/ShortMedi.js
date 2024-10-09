@@ -30,7 +30,7 @@ function ShortMedi() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/medicine");
+        const response = await axios.get("http://143.110.251.102:8080/medicine");
 
         console.log("response.data213131312", response.data);
 

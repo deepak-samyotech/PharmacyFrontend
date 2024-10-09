@@ -206,7 +206,7 @@ export async function fetchCustomerLedger() {
 
 export async function fetchBankData() {
   try {
-    return await axios.get("http://localhost:8080/bank", addToken);
+    return await axios.get("http://143.110.251.102:8080/bank", addToken);
   } catch (error) {
     throw error;
   }
@@ -239,7 +239,7 @@ export async function postCustomerData(formData) {
 
 export async function handleEditCustomer(id, formData) {
   try {
-    return await axios.put(`http://localhost:8080/customer/${id}`, formData, addToken2)
+    return await axios.put(`http://143.110.251.102:8080/customer/${id}`, formData, addToken2)
   } catch (error) {
     throw error;
   }
@@ -443,7 +443,7 @@ export async function fetchInvoiceData() {
 
 export async function postSaleReturnData(modifiedFormData) {
   try {
-    return await axios.post("http://localhost:8080/sale_return", modifiedFormData, addToken);
+    return await axios.post("http://143.110.251.102:8080/sale_return", modifiedFormData, addToken);
   } catch (error) {
     throw error;
   }

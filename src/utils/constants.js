@@ -1,4 +1,4 @@
-export const baseurl = 'http://localhost:8080'
+export const baseurl = 'http://143.110.251.102:8080'
 export const apiUrl = {
     updateEmployee:'/employee/'
 }

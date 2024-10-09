@@ -202,7 +202,7 @@ const ChangePassword = () => {
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     try {
-      const response = await axios.post('http://localhost:8080/register/change-password', {
+      const response = await axios.post('http://143.110.251.102:8080/register/change-password', {
         email: values.email,
         oldPassword: values.currentPassword,
         newPassword: values.newPassword,
